@@ -1,4 +1,3 @@
-cat > app/static/js/maintenance.js << 'EOF'
 /**
  * DON'T PANIC - Maintenance Page Interactivity
  */
@@ -108,4 +107,3 @@ document.addEventListener('keydown', function(e) {
             : '0 0 30px rgba(0, 255, 65, 0.5), 0 20px 60px rgba(0, 0, 0, 0.5)';
     }
 });
-EOF
