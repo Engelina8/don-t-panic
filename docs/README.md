@@ -26,4 +26,4 @@ each user’s strengths and weaknesses.
 
 ## Installation
 
-``` pip install -r requirements.txt ```
+` pip install -r requirements.txt `
