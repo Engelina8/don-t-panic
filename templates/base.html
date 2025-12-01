@@ -42,9 +42,9 @@
                             <span class="nav-user-name">{{ current_user.username }}</span>
                             <span class="nav-user-role">{{ current_user.role }}</span>
                         </li>
-                        <li><a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger">Logout</a></li>
+                        <li><a href="{{ url_for('auth.logout') }}" class="nav-box logout">Logout</a></li>
                     {% else %}
-                        <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                        <li><a href="{{ url_for('auth.login') }}" class="nav-box login">Login</a></li>
                         <li><a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary">Register</a></li>
                     {% endif %}
                 </ul>

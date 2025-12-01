@@ -311,6 +311,15 @@ nav ul li a.active {
     border: 1px solid var(--primary-color);
     box-shadow: 0 0 10px var(--primary-glow);
 }
+.nav-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1.25rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+}
 
 /* User info in nav */
 .nav-user {
