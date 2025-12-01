@@ -27,3 +27,7 @@ each user’s strengths and weaknesses.
 ## Installation
 
 ` pip install -r requirements.txt `
+` python run.py `
+
+Go into your browser and type : localhost:5000
+And there you go!!
