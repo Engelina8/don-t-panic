@@ -181,16 +181,69 @@
         <div>
             <h1>📚 Manage Scenarios</h1>
         </div>
-        <a href="{{ url_for('admin.create_scenario') }}" class="btn-primary-custom">+ Create New Scenario</a>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <a href="{{ url_for('admin.create_scenario') }}" class="btn-primary-custom">+ Create New Scenario</a>
+        </div>
+    </div>
+
+    <!-- Quick Create (collapsible) -->
+    <div style="margin-bottom: 18px;">
+        <details>
+            <summary style="cursor:pointer; padding:12px 16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius: var(--border-radius-sm);">Quick Create Scenario</summary>
+            <div style="padding:16px; background:var(--bg-card); border:1px solid var(--border-color); border-top:none;">
+                <form id="quickCreateForm" method="POST" action="{{ url_for('admin.create_scenario') }}">
+                    <input type="hidden" name="scenario_content" id="scenario_content_hidden" value='{"intro":"","stages":[]}'>
+
+                    <div style="display:grid; gap:8px; grid-template-columns: 1fr 200px; margin-bottom:8px;">
+                        <input type="text" id="qc_title" name="title" placeholder="Title" required style="padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">
+                        <select id="qc_incident_type" name="incident_type" style="padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">
+                            <option value="ransomware">Ransomware</option>
+                            <option value="data_breach">Data Breach</option>
+                            <option value="ddos">DDoS</option>
+                            <option value="phishing">Phishing</option>
+                            <option value="insider_threat">Insider Threat</option>
+                            <option value="malware">Malware</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom:8px;">
+                        <textarea id="qc_description" name="description" placeholder="Short description" required style="width:100%; padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); min-height:60px;"></textarea>
+                    </div>
+
+                    <div style="display:flex; gap:8px; margin-bottom:8px;">
+                        <select id="qc_difficulty" name="difficulty_level" style="padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">
+                            <option value="1">1 - Beginner</option>
+                            <option value="2">2 - Easy</option>
+                            <option value="3" selected>3 - Medium</option>
+                            <option value="4">4 - Hard</option>
+                            <option value="5">5 - Expert</option>
+                        </select>
+                        <input type="number" id="qc_time" name="estimated_time" value="30" min="5" max="180" style="padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">
+                        <label style="display:flex; align-items:center; gap:6px; color:var(--text-secondary);">
+                            <input type="checkbox" id="advancedToggle"> Advanced (JSON)
+                        </label>
+                    </div>
+
+                    <div id="advancedArea" style="display:none; margin-bottom:8px;">
+                        <textarea id="scenario_content_visible" placeholder='{"intro":"...","stages":[]}' style="width:100%; height:140px; padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);"></textarea>
+                    </div>
+
+                    <div style="display:flex; gap:8px;">
+                        <button type="submit" class="btn-primary-custom">Create</button>
+                        <a href="{{ url_for('admin.create_scenario') }}" class="btn-icon" style="align-self:center; padding:8px 12px;">Open Editor</a>
+                    </div>
+                </form>
+            </div>
+        </details>
     </div>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div style="background: {% if category == 'success' %}var(--success-color){% else %}var(--danger-color){% endif %}; color: white; padding: 16px; border-radius: var(--border-radius-sm); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div class="alert {% if category == 'success' %}alert-success{% else %}alert-error{% endif %}">
                     <span>{{ message }}</span>
-                    <button onclick="this.parentElement.style.display='none'" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">×</button>
+                    <button class="close-btn" onclick="this.parentElement.style.display='none'">×</button>
                 </div>
             {% endfor %}
         {% endif %}
@@ -230,7 +283,7 @@
 
                     <div class="scenario-actions">
                         <a href="{{ url_for('admin.edit_scenario', scenario_id=scenario.id) }}" class="btn-icon btn-edit">✏️ Edit</a>
-                        <button onclick="deleteScenario({{ scenario.id }}, '{{ scenario.title }}')" class="btn-icon btn-danger">🗑️ Delete</button>
+                        <button onclick="deleteScenario({{ scenario.id }}, {{ scenario.title|tojson }})" class="btn-icon btn-danger">🗑️ Delete</button>
                     </div>
                 </div>
             {% endfor %}
@@ -245,6 +298,36 @@
 </div>
 
 <script>
+    // Quick Create form behavior
+    (function() {
+        const advToggle = document.getElementById('advancedToggle');
+        const advArea = document.getElementById('advancedArea');
+        if (advToggle && advArea) {
+            advToggle.addEventListener('change', function() {
+                advArea.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+
+        const qcForm = document.getElementById('quickCreateForm');
+        if (qcForm) {
+            qcForm.addEventListener('submit', function(e) {
+                // Build scenario_content if advanced not used
+                const advanced = document.getElementById('advancedToggle').checked;
+                const hiddenInput = document.getElementById('scenario_content_hidden');
+                if (!advanced) {
+                    const intro = document.getElementById('qc_description').value || '';
+                    const content = { intro: intro, stages: [] };
+                    hiddenInput.value = JSON.stringify(content);
+                } else {
+                    const visible = document.getElementById('scenario_content_visible').value || '';
+                    hiddenInput.value = visible;
+                }
+                // allow submit to continue
+            });
+        }
+    })();
+
+    // Delete handler
     function deleteScenario(scenarioId, title) {
         if (confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
             fetch(`/admin/scenarios/${scenarioId}/delete`, {

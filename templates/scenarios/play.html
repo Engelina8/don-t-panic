@@ -215,26 +215,7 @@
                     <h5 id="question-text">What do you do?</h5>
                 </div>
                 <div class="decisions-body" id="decisions-body">
-                    <button type="button" class="decision-btn" data-decision="escalate">
-                        <strong>🚨 Escalate to Security Team</strong>
-                        <small>Inform your security team immediately</small>
-                    </button>
-                    <button type="button" class="decision-btn" data-decision="contain">
-                        <strong>🔒 Contain the Threat</strong>
-                        <small>Isolate affected systems from the network</small>
-                    </button>
-                    <button type="button" class="decision-btn" data-decision="investigate">
-                        <strong>🔍 Investigate First</strong>
-                        <small>Gather more information before taking action</small>
-                    </button>
-                    <button type="button" class="decision-btn" data-decision="backup">
-                        <strong>💾 Create Backups</strong>
-                        <small>Secure your data before taking further action</small>
-                    </button>
-                    <button type="button" class="decision-btn" data-decision="communicate">
-                        <strong>📢 Notify Stakeholders</strong>
-                        <small>Inform management and customers</small>
-                    </button>
+                    <!-- Options will be dynamically populated from scenario JSON -->
                 </div>
             </div>
         </div>
@@ -293,6 +274,13 @@
                     <p><strong>Session ID:</strong> {{ session.id }}</p>
                     <p><strong>Scenario:</strong> {{ scenario.title }}</p>
                 </div>
+            </div>
+
+            <!-- Stop Scenario Button -->
+            <div class="sidebar-section">
+                <button type="button" onclick="stopScenario()" class="btn-icon" style="width: 100%; padding: 12px; background: var(--danger-color); color: white; border: none; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s ease;">
+                    ⏹️ Stop Scenario
+                </button>
             </div>
         </div>
     </div>
@@ -446,6 +434,12 @@
                 window.location.href = data.redirect;
             }
         });
+    }
+
+    function stopScenario() {
+        if (confirm('Are you sure you want to stop this scenario? Your progress will not be saved.')) {
+            window.location.href = '{{ url_for("scenarios.list") }}';
+        }
     }
 
     // Initialize on page load

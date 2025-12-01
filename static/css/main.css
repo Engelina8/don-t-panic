@@ -31,9 +31,9 @@
     
     /* Text */
     --text-primary: #e8eaed;         /* Almost white */
-    --text-secondary: #a8b2c1;       /* Light grey-blue */
-    --text-muted: #6b7589;           /* Muted grey */
-    --text-disabled: #4a5568;        /* Disabled text */
+    --text-secondary: #d6e3ef;       /* Lighter secondary for readability */
+    --text-muted: #b6c2d1;           /* Softer muted grey */
+    --text-disabled: #95a4b6;        /* Less contrast for disabled text */
     
     /* Borders & Shadows */
     --border-color: #2a3447;

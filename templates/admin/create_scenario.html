@@ -354,20 +354,39 @@
                     <div class="form-hint">How long should this scenario take?</div>
                 </div>
 
-                <!-- JSON Content Editor -->
+                <!-- Scenario Builder (friendly UI) -->
                 <div class="form-group">
-                    <label>Scenario Content (JSON) *</label>
-                    <div class="json-editor">
-                        <label class="json-editor-label">📝 Story & Decisions</label>
-                        <textarea id="scenario_content" name="scenario_content" required>{{ scenario.scenario_content if scenario else '{"intro": "...", "stages": []}' }}</textarea>
-                        <div class="json-buttons">
-                            <button type="button" class="btn-small" onclick="formatJSON()">Format JSON</button>
-                            <button type="button" class="btn-small" onclick="validateJSON()">Validate</button>
-                            <button type="button" class="btn-small" onclick="loadTemplate()">Load Template</button>
+                    <label>Scenario Builder</label>
+                    <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:12px; border-radius:6px;">
+                        <div style="margin-bottom:8px;">
+                            <label class="json-editor-label">📝 Intro</label>
+                            <textarea id="builder_intro" placeholder="Short intro/incident description" style="width:100%; padding:8px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">{{ (scenario.scenario_content|default('{}'))|safe }}</textarea>
+                        </div>
+
+                        <div id="stageBuilder" style="margin-bottom:12px;"></div>
+
+                        <div style="display:flex; gap:8px; margin-bottom:8px;">
+                            <button type="button" class="btn-small" id="addStageBtn">+ Add Stage</button>
+                            <button type="button" class="btn-small" onclick="loadTemplate()">Load Example</button>
+                            <button type="button" class="btn-small" onclick="formatJSONFromBuilder()">Format JSON</button>
+                        </div>
+
+                        <label style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+                            <input type="checkbox" id="showRawJSON"> Show raw JSON editor (Advanced)
+                        </label>
+
+                        <div id="rawJsonArea" style="display:none; margin-top:8px;">
+                            <label class="json-editor-label">Raw JSON</label>
+                            <textarea id="scenario_content" name="scenario_content" required style="width:100%; min-height:200px; padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">{{ scenario.scenario_content if scenario else '{"intro": "...", "stages": []}' }}</textarea>
+                            <div class="json-buttons" style="margin-top:8px;">
+                                <button type="button" class="btn-small" onclick="formatJSON()">Format JSON</button>
+                                <button type="button" class="btn-small" onclick="validateJSON()">Validate</button>
+                                <button type="button" class="btn-small" onclick="loadTemplate()">Load Template</button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-hint" style="color: var(--text-secondary); margin-top: 12px;">
-                        JSON must contain <code>"intro"</code> and <code>"stages"</code> array
+                        Use the builder to add stages and options. Toggle raw JSON to edit advanced content directly.
                     </div>
                 </div>
 
@@ -430,84 +449,318 @@
 </div>
 
 <script>
-    // Update difficulty preview
-    document.getElementById('difficulty').addEventListener('change', function() {
-        const level = parseInt(this.value);
-        let stars = '';
-        for (let i = 0; i < level; i++) stars += '★';
-        for (let i = level; i < 5; i++) stars += '☆';
-        document.getElementById('difficultyPreview').textContent = stars;
+// Update difficulty preview
+document.getElementById('difficulty').addEventListener('change', function() {
+    const level = parseInt(this.value);
+    let stars = '';
+    for (let i = 0; i < level; i++) stars += '★';
+    for (let i = level; i < 5; i++) stars += '☆';
+    document.getElementById('difficultyPreview').textContent = stars;
+});
+
+// Builder data model
+let builder = { intro: '', stages: [] };
+
+// Helpers to create DOM for builder
+function createOptionRow(stageIndex, optionIndex, option) {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.gap = '8px';
+    row.style.marginBottom = '6px';
+
+    const textInput = document.createElement('input');
+    textInput.type = 'text';
+    textInput.placeholder = 'Option text';
+    textInput.value = option.text || '';
+    textInput.style.flex = '1';
+    textInput.addEventListener('input', () => syncFromDOM());
+
+    const pointsInput = document.createElement('input');
+    pointsInput.type = 'number';
+    pointsInput.value = (option.points !== undefined) ? option.points : 0;
+    pointsInput.style.width = '90px';
+    pointsInput.addEventListener('input', () => syncFromDOM());
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn-small warning';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', () => { removeOption(stageIndex, optionIndex); });
+
+    row.appendChild(textInput);
+    row.appendChild(pointsInput);
+    row.appendChild(removeBtn);
+    return row;
+}
+
+function renderStage(stage, index) {
+    const container = document.createElement('div');
+    container.style.border = '1px solid var(--border-color)';
+    container.style.padding = '10px';
+    container.style.borderRadius = '6px';
+    container.style.marginBottom = '10px';
+
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.marginBottom = '8px';
+
+    const title = document.createElement('strong');
+    title.textContent = `Stage ${index + 1}`;
+
+    const removeStageBtn = document.createElement('button');
+    removeStageBtn.type = 'button';
+    removeStageBtn.className = 'btn-small warning';
+    removeStageBtn.textContent = 'Remove Stage';
+    removeStageBtn.addEventListener('click', () => removeStage(index));
+
+    header.appendChild(title);
+    header.appendChild(removeStageBtn);
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Stage name (optional)';
+    nameInput.value = stage.stage || '';
+    nameInput.style.width = '100%';
+    nameInput.style.marginBottom = '6px';
+    nameInput.addEventListener('input', () => syncFromDOM());
+
+    const questionInput = document.createElement('textarea');
+    questionInput.placeholder = 'Question / prompt for this stage';
+    questionInput.value = stage.question || '';
+    questionInput.style.width = '100%';
+    questionInput.style.marginBottom = '6px';
+    questionInput.addEventListener('input', () => syncFromDOM());
+
+    const optionsLabel = document.createElement('div');
+    optionsLabel.textContent = 'Options';
+    optionsLabel.style.marginBottom = '6px';
+
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'options-container';
+
+    (stage.options || []).forEach((opt, oi) => {
+        optionsContainer.appendChild(createOptionRow(index, oi, opt));
     });
 
-    // Format JSON
-    function formatJSON() {
-        const textarea = document.getElementById('scenario_content');
-        try {
-            const parsed = JSON.parse(textarea.value);
-            textarea.value = JSON.stringify(parsed, null, 2);
-            alert('✅ JSON formatted');
-        } catch (e) {
-            alert('❌ Invalid JSON: ' + e.message);
-        }
-    }
+    const addOptBtn = document.createElement('button');
+    addOptBtn.type = 'button';
+    addOptBtn.className = 'btn-small';
+    addOptBtn.textContent = '+ Add Option';
+    addOptBtn.addEventListener('click', () => { addOption(index); });
 
-    // Validate JSON
-    function validateJSON() {
-        const textarea = document.getElementById('scenario_content');
-        try {
-            const parsed = JSON.parse(textarea.value);
-            if (!parsed.intro || !parsed.stages) {
-                alert('❌ Missing required fields: "intro" and/or "stages"');
-                return;
+    container.appendChild(header);
+    container.appendChild(nameInput);
+    container.appendChild(questionInput);
+    container.appendChild(optionsLabel);
+    container.appendChild(optionsContainer);
+    container.appendChild(addOptBtn);
+
+    // store references for sync
+    container._nameInput = nameInput;
+    container._questionInput = questionInput;
+    container._optionsContainer = optionsContainer;
+
+    return container;
+}
+
+function renderBuilder() {
+    const builderDiv = document.getElementById('stageBuilder');
+    builderDiv.innerHTML = '';
+    builderDiv.appendChild(document.createElement('div'));
+    builder.stages.forEach((stage, idx) => {
+        const el = renderStage(stage, idx);
+        builderDiv.appendChild(el);
+    });
+}
+
+function addStage(stageObj) {
+    const newStage = stageObj || { stage: '', question: '', options: [{ text: '', points: 0 }] };
+    builder.stages.push(newStage);
+    renderBuilder();
+}
+
+function removeStage(index) {
+    builder.stages.splice(index, 1);
+    renderBuilder();
+}
+
+function addOption(stageIndex, optionObj) {
+    const opts = builder.stages[stageIndex].options || [];
+    opts.push(optionObj || { text: '', points: 0 });
+    builder.stages[stageIndex].options = opts;
+    renderBuilder();
+}
+
+function removeOption(stageIndex, optionIndex) {
+    const opts = builder.stages[stageIndex].options || [];
+    opts.splice(optionIndex, 1);
+    builder.stages[stageIndex].options = opts;
+    renderBuilder();
+}
+
+// Read the DOM values into builder model
+function syncFromDOM() {
+    const builderDiv = document.getElementById('stageBuilder');
+    const children = Array.from(builderDiv.children).filter(n => n && n._nameInput);
+    const newStages = children.map((child) => {
+        const stageName = child._nameInput.value;
+        const question = child._questionInput.value;
+        const opts = [];
+        const optionRows = Array.from(child._optionsContainer.children);
+        optionRows.forEach((row) => {
+            const inputs = row.querySelectorAll('input');
+            if (inputs.length >= 2) {
+                opts.push({ text: inputs[0].value, points: parseInt(inputs[1].value) || 0 });
             }
-            if (!Array.isArray(parsed.stages)) {
-                alert('❌ "stages" must be an array');
-                return;
-            }
-            alert('✅ JSON is valid!');
-        } catch (e) {
-            alert('❌ Invalid JSON: ' + e.message);
+        });
+        return { stage: stageName, question: question, options: opts };
+    });
+    builder.stages = newStages;
+    // update intro
+    const introEl = document.getElementById('builder_intro');
+    builder.intro = introEl ? introEl.value : '';
+}
+
+function updateTextareaFromBuilder() {
+    syncFromDOM();
+    const textarea = document.getElementById('scenario_content');
+    if (!textarea) return;
+    const out = { intro: builder.intro || '', stages: builder.stages || [] };
+    textarea.value = JSON.stringify(out, null, 2);
+}
+
+function formatJSONFromBuilder() {
+    updateTextareaFromBuilder();
+    formatJSON();
+}
+
+// Existing helpers operate on #scenario_content textarea
+function formatJSON() {
+    const textarea = document.getElementById('scenario_content');
+    try {
+        const parsed = JSON.parse(textarea.value);
+        textarea.value = JSON.stringify(parsed, null, 2);
+        alert('✅ JSON formatted');
+    } catch (e) {
+        alert('❌ Invalid JSON: ' + e.message);
+    }
+}
+
+function validateJSON() {
+    const textarea = document.getElementById('scenario_content');
+    try {
+        const parsed = JSON.parse(textarea.value);
+        if (!parsed.intro || !parsed.stages) {
+            alert('❌ Missing required fields: "intro" and/or "stages"');
+            return;
         }
+        if (!Array.isArray(parsed.stages)) {
+            alert('❌ "stages" must be an array');
+            return;
+        }
+        alert('✅ JSON is valid!');
+    } catch (e) {
+        alert('❌ Invalid JSON: ' + e.message);
+    }
+}
+
+function loadTemplate() {
+    const template = {
+        "intro": "Your company's systems have been compromised. You are the incident response lead. What do you do?",
+        "stages": [
+            {
+                "stage": "detection",
+                "question": "What is your first action?",
+                "options": [
+                    {"text": "Escalate to Security Team immediately", "points": 25},
+                    {"text": "Investigate on your own first", "points": 15},
+                    {"text": "Ignore it and continue work", "points": -30}
+                ]
+            },
+            {
+                "stage": "containment",
+                "question": "How do you contain the threat?",
+                "options": [
+                    {"text": "Isolate affected systems from network", "points": 30},
+                    {"text": "Shut down all systems", "points": 10},
+                    {"text": "Just monitor the situation", "points": -20}
+                ]
+            }
+        ]
+    };
+    // populate builder
+    builder = template;
+    document.getElementById('builder_intro').value = builder.intro;
+    renderBuilder();
+    updateTextareaFromBuilder();
+    alert('✅ Template loaded into builder');
+}
+
+// Toggle raw JSON view
+document.getElementById('showRawJSON').addEventListener('change', function() {
+    const area = document.getElementById('rawJsonArea');
+    if (this.checked) {
+        updateTextareaFromBuilder();
+        area.style.display = 'block';
+    } else {
+        area.style.display = 'none';
+    }
+});
+
+// Quick add stage button
+document.getElementById('addStageBtn').addEventListener('click', function() { addStage(); });
+
+// Initialize on load: try to parse existing scenario JSON and populate builder
+document.addEventListener('DOMContentLoaded', function() {
+    // initialize builder intro default if scenario exists
+    try {
+        const raw = {{ scenario.scenario_content|default('{}')|tojson }};
+        let parsed = {};
+        if (raw) {
+            parsed = JSON.parse(raw);
+        }
+        if (parsed && (parsed.stages || parsed.intro)) {
+            builder.intro = parsed.intro || '';
+            builder.stages = parsed.stages || [];
+        } else {
+            // if no parsed content, keep builder empty
+            builder = { intro: '', stages: [] };
+        }
+    } catch (e) {
+        builder = { intro: '', stages: [] };
     }
 
-    // Load template
-    function loadTemplate() {
-        const template = {
-            "intro": "Your company's systems have been compromised. You are the incident response lead. What do you do?",
-            "stages": [
-                {
-                    "stage": "detection",
-                    "question": "What is your first action?",
-                    "options": [
-                        {"text": "Escalate to Security Team immediately", "points": 25},
-                        {"text": "Investigate on your own first", "points": 15},
-                        {"text": "Ignore it and continue work", "points": -30}
-                    ]
-                },
-                {
-                    "stage": "containment",
-                    "question": "How do you contain the threat?",
-                    "options": [
-                        {"text": "Isolate affected systems from network", "points": 30},
-                        {"text": "Shut down all systems", "points": 10},
-                        {"text": "Just monitor the situation", "points": -20}
-                    ]
-                }
-            ]
-        };
-        document.getElementById('scenario_content').value = JSON.stringify(template, null, 2);
-        alert('✅ Template loaded');
-    }
+    // set intro textarea and render
+    const introEl = document.getElementById('builder_intro');
+    if (introEl) introEl.value = builder.intro || '';
+    renderBuilder();
 
-    // Form submission
+    // wireup: whenever the builder loses focus, sync
+    document.getElementById('stageBuilder').addEventListener('input', () => updateTextareaFromBuilder());
+    const introElem = document.getElementById('builder_intro');
+    if (introElem) introElem.addEventListener('input', () => updateTextareaFromBuilder());
+
+    // If raw JSON exists (editing scenario), ensure raw area hidden by default but up-to-date
+    const rawArea = document.getElementById('rawJsonArea');
+    if (rawArea) rawArea.style.display = 'none';
+    updateTextareaFromBuilder();
+
+    // Form submission: ensure textarea has builder JSON if raw not shown
     document.getElementById('scenarioForm').addEventListener('submit', function(e) {
-        const textarea = document.getElementById('scenario_content');
+        const rawShown = document.getElementById('showRawJSON').checked;
+        if (!rawShown) {
+            updateTextareaFromBuilder();
+        }
+        // validate JSON
         try {
-            JSON.parse(textarea.value);
-        } catch (e) {
+            JSON.parse(document.getElementById('scenario_content').value);
+        } catch (err) {
             e.preventDefault();
-            alert('❌ Invalid JSON in scenario content: ' + e.message);
+            alert('❌ Invalid JSON in scenario content: ' + err.message);
         }
     });
+});
 </script>
 {% endblock %}

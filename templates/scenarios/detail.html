@@ -158,6 +158,7 @@
     .badge-secondary {
         background: var(--text-muted);
         color: var(--bg-primary);
+    }
 </style>
 {% endblock %}
 
@@ -194,7 +195,7 @@
                     <h5>Scenario Content</h5>
                 </div>
                 <div class="detail-body">
-                    <p>{{ scenario.scenario_content }}</p>
+                    <pre class="mono" style="white-space: pre-wrap; word-break: break-word;">{{ scenario.scenario_content }}</pre>
                 </div>
             </div>
         </div>
