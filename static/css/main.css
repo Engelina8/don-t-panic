@@ -127,7 +127,6 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.2;
     margin-bottom: 1rem;
     color: var(--text-primary);
-    text-align: center;
 }
 
 h1 {
@@ -158,7 +157,6 @@ h3 {
 p {
     margin-bottom: 1rem;
     color: var(--text-secondary);
-    text-align: center;
 }
 
 /* Monospace for code/technical text */
@@ -201,13 +199,15 @@ header {
 
 header .container {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
     max-width: 1400px;
     margin: 0 auto;
     gap: 2rem;
     flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* === LOGO === */
@@ -248,9 +248,9 @@ header .container {
 
 /* === NAVIGATION === */
 nav {
-    flex: 1;
+    flex: 0 1 auto;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
 }
 
 nav ul {
@@ -337,29 +337,25 @@ nav ul li a.active {
 
 /* === MAIN CONTAINER === */
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
     width: 100%;
+    box-sizing: border-box;
 }
 
 main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     padding: 3rem 0;
     width: 100%;
 }
 
-/* Center all content */
+/* Natural content flow */
 main .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    display: block;
+    width: 100%;
 }
 
 /* === BUTTONS === */
@@ -506,10 +502,6 @@ main .container {
     transition: var(--transition);
     position: relative;
     overflow: hidden;
-    max-width: 600px;
-    width: 100%;
-    margin: 1rem auto;
-    text-align: center;
 }
 
 /* Card glow effect on hover */
@@ -539,25 +531,21 @@ main .container {
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
-    text-align: center;
 }
 
 .card-title {
     font-size: 1.5rem;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
-    text-align: center;
 }
 
 .card-subtitle {
     color: var(--text-muted);
     font-size: 0.95rem;
-    text-align: center;
 }
 
 .card-body {
     color: var(--text-secondary);
-    text-align: center;
 }
 
 .card-footer {
@@ -572,9 +560,6 @@ main .container {
 
 /* === FORMS === */
 .form-container {
-    max-width: 500px;
-    width: 100%;
-    margin: 0 auto;
     background: var(--bg-card);
     padding: 2.5rem;
     border-radius: var(--border-radius-lg);
@@ -785,7 +770,7 @@ thead {
 
 thead th {
     padding: 1rem;
-    text-align: center;
+    text-align: left;
     font-weight: 700;
     color: var(--primary-color);
     text-transform: uppercase;
@@ -810,7 +795,7 @@ tbody tr:hover {
 tbody td {
     padding: 1rem;
     color: var(--text-secondary);
-    text-align: center;
+    text-align: left;
 }
 
 /* === BADGES === */
@@ -986,6 +971,16 @@ footer {
         padding: 1rem;
     }
     
+    .logo {
+        text-align: center;
+        width: 100%;
+    }
+    
+    nav {
+        justify-content: center;
+        width: 100%;
+    }
+    
     nav ul {
         flex-wrap: wrap;
         justify-content: center;
@@ -1018,6 +1013,23 @@ footer {
     .grid-3,
     .grid-4 {
         grid-template-columns: 1fr;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        font-size: 0.85rem;
+    }
+    
+    thead th {
+        padding: 0.75rem;
+    }
+    
+    tbody td {
+        padding: 0.75rem;
     }
 }
 
@@ -1090,20 +1102,22 @@ footer {
 
 /* === HERO SECTION === */
 .hero {
-    text-align: center;
     padding: 4rem 2rem;
     max-width: 900px;
     margin: 0 auto;
+    text-align: center;
 }
 
 .hero h1 {
     margin-bottom: 1.5rem;
+    text-align: center;
 }
 
 .hero p {
     font-size: 1.25rem;
     margin-bottom: 2rem;
     color: var(--text-secondary);
+    text-align: center;
 }
 
 .hero-buttons {
