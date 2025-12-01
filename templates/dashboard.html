@@ -2,6 +2,14 @@
 
 {% block title %}Dashboard - Don't Panic{% endblock %}
 
+{% block extra_css %}
+<style>
+    .dashboard-card p {
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <h1>Welcome, {{ user.username }}! 👋</h1>
 

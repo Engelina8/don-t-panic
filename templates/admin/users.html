@@ -290,20 +290,36 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(async response => {
+                let payload = null;
+                try {
+                    payload = await response.json();
+                } catch (e) {
+                    const txt = await response.text();
+                    throw new Error(txt || `HTTP ${response.status}`);
+                }
+
+                if (!response.ok) {
+                    throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
+                }
+
+                return payload;
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     alert('✅ User deleted successfully');
                     location.reload();
                 } else {
-                    alert('❌ Error deleting user: ' + (data.error || 'Unknown error'));
+                    alert('❌ Error deleting user: ' + (data && data.error ? data.error : 'Unknown error'));
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('❌ Error deleting user');
+                console.error('Error deleting user:', error);
+                alert('❌ Error deleting user: ' + (error.message || error));
             });
         }
     }
