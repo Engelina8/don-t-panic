@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+
+{% block title %}{% if scenario %}Edit{% else %}Create{% endif %} Scenario - Don't Panic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .form-content {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .form-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        background: var(--bg-hover);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-group select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d4ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        padding-right: 35px;
+    }
+
+    .form-hint {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-top: 6px;
+    }
+
+    .json-editor {
+        background: var(--bg-hover);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 16px;
+        margin-top: 12px;
+    }
+
+    .json-editor-label {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .json-editor textarea {
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin-bottom: 8px;
+    }
+
+    .json-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-small {
+        padding: 8px 12px;
+        border: 1px solid var(--primary-color);
+        border-radius: var(--border-radius-sm);
+        background: transparent;
+        color: var(--primary-color);
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-small:hover {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .btn-small.warning {
+        border-color: var(--danger-color);
+        color: var(--danger-color);
+    }
+
+    .btn-small.warning:hover {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .sidebar-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 20px;
+    }
+
+    .sidebar-section h3 {
+        color: var(--primary-color);
+        font-size: 0.95rem;
+        margin: 0 0 12px 0;
+        font-weight: 600;
+    }
+
+    .sidebar-section p {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin: 0 0 12px 0;
+    }
+
+    .sidebar-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-section li {
+        padding: 6px 0;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-section li:last-child {
+        border-bottom: none;
+    }
+
+    .sidebar-section code {
+        background: var(--bg-hover);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        color: var(--primary-color);
+        font-family: 'Roboto Mono', monospace;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn-submit {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+        padding: 12px 24px;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn-submit:hover {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 12px 24px;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        border-color: var(--text-primary);
+        background: var(--bg-hover);
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: var(--border-radius-sm);
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .alert-error {
+        background: rgba(255, 51, 102, 0.1);
+        border: 1px solid var(--danger-color);
+        color: var(--danger-color);
+    }
+
+    .alert-success {
+        background: rgba(0, 212, 255, 0.1);
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .difficulty-preview {
+        display: flex;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .star {
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .star:hover {
+        transform: scale(1.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>{% if scenario %}✏️ Edit Scenario{% else %}➕ Create New Scenario{% endif %}</h1>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {% if category == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.style.display='none'" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: inherit;">×</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="form-content">
+        <!-- Main Form -->
+        <form method="POST" id="scenarioForm">
+            <div class="form-card">
+                <!-- Basic Info -->
+                <div class="form-group">
+                    <label for="title">Scenario Title *</label>
+                    <input type="text" id="title" name="title" value="{{ scenario.title if scenario else '' }}" required placeholder="e.g., Ransomware Attack Response">
+                    <div class="form-hint">A descriptive name for your scenario</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" required placeholder="Briefly describe the scenario...">{{ scenario.description if scenario else '' }}</textarea>
+                    <div class="form-hint">What will trainees be learning in this scenario?</div>
+                </div>
+
+                <!-- Metadata -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label for="incident_type">Incident Type *</label>
+                        <select id="incident_type" name="incident_type" required>
+                            <option value="">Select type...</option>
+                            <option value="ransomware" {% if scenario and scenario.incident_type == 'ransomware' %}selected{% endif %}>Ransomware</option>
+                            <option value="data_breach" {% if scenario and scenario.incident_type == 'data_breach' %}selected{% endif %}>Data Breach</option>
+                            <option value="ddos" {% if scenario and scenario.incident_type == 'ddos' %}selected{% endif %}>DDoS Attack</option>
+                            <option value="phishing" {% if scenario and scenario.incident_type == 'phishing' %}selected{% endif %}>Phishing</option>
+                            <option value="insider_threat" {% if scenario and scenario.incident_type == 'insider_threat' %}selected{% endif %}>Insider Threat</option>
+                            <option value="malware" {% if scenario and scenario.incident_type == 'malware' %}selected{% endif %}>Malware</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="difficulty">Difficulty Level *</label>
+                        <select id="difficulty" name="difficulty_level" required>
+                            <option value="1" {% if scenario and scenario.difficulty_level == 1 %}selected{% endif %}>1 - Beginner</option>
+                            <option value="2" {% if scenario and scenario.difficulty_level == 2 %}selected{% endif %}>2 - Easy</option>
+                            <option value="3" {% if scenario and scenario.difficulty_level == 3 %}selected{% endif %}>3 - Medium</option>
+                            <option value="4" {% if scenario and scenario.difficulty_level == 4 %}selected{% endif %}>4 - Hard</option>
+                            <option value="5" {% if scenario and scenario.difficulty_level == 5 %}selected{% endif %}>5 - Expert</option>
+                        </select>
+                        <div class="difficulty-preview" id="difficultyPreview">
+                            {% for i in range((scenario.difficulty_level if scenario else 3)) %}★{% endfor %}
+                            {% for i in range(5 - (scenario.difficulty_level if scenario else 3)) %}☆{% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="estimated_time">Estimated Time (minutes) *</label>
+                    <input type="number" id="estimated_time" name="estimated_time" value="{{ scenario.estimated_time if scenario else 30 }}" min="5" max="180" required>
+                    <div class="form-hint">How long should this scenario take?</div>
+                </div>
+
+                <!-- JSON Content Editor -->
+                <div class="form-group">
+                    <label>Scenario Content (JSON) *</label>
+                    <div class="json-editor">
+                        <label class="json-editor-label">📝 Story & Decisions</label>
+                        <textarea id="scenario_content" name="scenario_content" required>{{ scenario.scenario_content if scenario else '{"intro": "...", "stages": []}' }}</textarea>
+                        <div class="json-buttons">
+                            <button type="button" class="btn-small" onclick="formatJSON()">Format JSON</button>
+                            <button type="button" class="btn-small" onclick="validateJSON()">Validate</button>
+                            <button type="button" class="btn-small" onclick="loadTemplate()">Load Template</button>
+                        </div>
+                    </div>
+                    <div class="form-hint" style="color: var(--text-secondary); margin-top: 12px;">
+                        JSON must contain <code>"intro"</code> and <code>"stages"</code> array
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">✓ {% if scenario %}Update Scenario{% else %}Create Scenario{% endif %}</button>
+                    <a href="{{ url_for('admin.manage_scenarios') }}" class="btn-cancel">Cancel</a>
+                </div>
+            </div>
+        </form>
+
+        <!-- Sidebar Help -->
+        <div>
+            <div class="sidebar-section" style="margin-bottom: 24px;">
+                <h3>📚 JSON Format Guide</h3>
+                <p>Your scenario content should follow this structure:</p>
+                <code style="display: block; padding: 12px; background: var(--bg-hover); border-radius: 4px; overflow-x: auto; margin: 12px 0; font-size: 0.75rem; line-height: 1.4;">
+{<br/>
+&nbsp;&nbsp;"intro": "Incident description",<br/>
+&nbsp;&nbsp;"stages": [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"stage": "stage_name",<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"question": "What do you do?",<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"options": [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"text": "Action text",<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"points": 20<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;]<br/>
+}
+                </code>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>✨ Tips</h3>
+                <ul>
+                    <li><strong>Intro:</strong> Keep it concise but descriptive</li>
+                    <li><strong>Stages:</strong> Break scenarios into logical stages</li>
+                    <li><strong>Points:</strong> Positive for good decisions, negative for poor ones</li>
+                    <li><strong>Range:</strong> Use -30 to +30 for point values</li>
+                    <li><strong>Options:</strong> Provide 3-5 realistic choices per stage</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📋 Common Incident Types</h3>
+                <ul>
+                    <li>Ransomware</li>
+                    <li>Data Breach</li>
+                    <li>DDoS Attack</li>
+                    <li>Phishing</li>
+                    <li>Insider Threat</li>
+                    <li>Malware</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Update difficulty preview
+    document.getElementById('difficulty').addEventListener('change', function() {
+        const level = parseInt(this.value);
+        let stars = '';
+        for (let i = 0; i < level; i++) stars += '★';
+        for (let i = level; i < 5; i++) stars += '☆';
+        document.getElementById('difficultyPreview').textContent = stars;
+    });
+
+    // Format JSON
+    function formatJSON() {
+        const textarea = document.getElementById('scenario_content');
+        try {
+            const parsed = JSON.parse(textarea.value);
+            textarea.value = JSON.stringify(parsed, null, 2);
+            alert('✅ JSON formatted');
+        } catch (e) {
+            alert('❌ Invalid JSON: ' + e.message);
+        }
+    }
+
+    // Validate JSON
+    function validateJSON() {
+        const textarea = document.getElementById('scenario_content');
+        try {
+            const parsed = JSON.parse(textarea.value);
+            if (!parsed.intro || !parsed.stages) {
+                alert('❌ Missing required fields: "intro" and/or "stages"');
+                return;
+            }
+            if (!Array.isArray(parsed.stages)) {
+                alert('❌ "stages" must be an array');
+                return;
+            }
+            alert('✅ JSON is valid!');
+        } catch (e) {
+            alert('❌ Invalid JSON: ' + e.message);
+        }
+    }
+
+    // Load template
+    function loadTemplate() {
+        const template = {
+            "intro": "Your company's systems have been compromised. You are the incident response lead. What do you do?",
+            "stages": [
+                {
+                    "stage": "detection",
+                    "question": "What is your first action?",
+                    "options": [
+                        {"text": "Escalate to Security Team immediately", "points": 25},
+                        {"text": "Investigate on your own first", "points": 15},
+                        {"text": "Ignore it and continue work", "points": -30}
+                    ]
+                },
+                {
+                    "stage": "containment",
+                    "question": "How do you contain the threat?",
+                    "options": [
+                        {"text": "Isolate affected systems from network", "points": 30},
+                        {"text": "Shut down all systems", "points": 10},
+                        {"text": "Just monitor the situation", "points": -20}
+                    ]
+                }
+            ]
+        };
+        document.getElementById('scenario_content').value = JSON.stringify(template, null, 2);
+        alert('✅ Template loaded');
+    }
+
+    // Form submission
+    document.getElementById('scenarioForm').addEventListener('submit', function(e) {
+        const textarea = document.getElementById('scenario_content');
+        try {
+            JSON.parse(textarea.value);
+        } catch (e) {
+            e.preventDefault();
+            alert('❌ Invalid JSON in scenario content: ' + e.message);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Don't Panic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .manage-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .btn-primary-custom {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+        padding: 12px 24px;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary-custom:hover {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .search-box {
+        background: var(--bg-card);
+        padding: 16px;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 12px;
+        background: var(--bg-hover);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+
+    .search-box input::placeholder {
+        color: var(--text-secondary);
+    }
+
+    .users-table {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+
+    .table-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 150px 100px;
+        gap: 16px;
+        padding: 16px;
+        background: var(--bg-hover);
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 0.9rem;
+    }
+
+    .table-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 150px 100px;
+        gap: 16px;
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .table-row:hover {
+        background: var(--bg-hover);
+    }
+
+    .table-row:last-child {
+        border-bottom: none;
+    }
+
+    .user-name {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .user-email {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .stat-value {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .user-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.85rem;
+    }
+
+    .status-active {
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--primary-color);
+    }
+
+    .status-inactive {
+        background: rgba(255, 51, 102, 0.1);
+        color: var(--danger-color);
+    }
+
+    .user-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-icon {
+        padding: 6px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .btn-danger:hover {
+        border-color: var(--danger-color);
+        color: var(--danger-color);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-state h2 {
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+
+    @media (max-width: 1024px) {
+        .table-header,
+        .table-row {
+            grid-template-columns: 1fr 1fr 100px;
+        }
+
+        .user-email {
+            display: none;
+        }
+
+        .stat-label {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="manage-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1>👥 Manage Users</h1>
+        </div>
+        <div>
+            <span style="color: var(--text-secondary); margin-right: 16px;">{{ users|length }} trainees</span>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="background: {% if category == 'success' %}rgba(0, 212, 255, 0.1){% else %}rgba(255, 51, 102, 0.1){% endif %}; border: 1px solid {% if category == 'success' %}var(--primary-color){% else %}var(--danger-color){% endif %}; color: {% if category == 'success' %}var(--primary-color){% else %}var(--danger-color){% endif %}; padding: 16px; border-radius: var(--border-radius-sm); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.style.display='none'" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: inherit;">×</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Search Box -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by username or email..." onkeyup="filterTable()">
+    </div>
+
+    <!-- Users Table -->
+    {% if users %}
+        <div class="users-table">
+            <div class="table-header">
+                <div>Username</div>
+                <div>Email</div>
+                <div>Progress</div>
+                <div>Status</div>
+                <div>Actions</div>
+            </div>
+
+            {% for user in users %}
+                <div class="table-row" data-search="{{ user.username }} {{ user.email }}">
+                    <div>
+                        <div class="user-name">{{ user.username }}</div>
+                    </div>
+                    <div>
+                        <div class="user-email">{{ user.email }}</div>
+                    </div>
+                    <div>
+                        <div class="stat-value">{{ user.get_completed_scenarios_count() }}/{{ user.training_sessions.count() }}</div>
+                        <div class="stat-label">Completed/Started</div>
+                    </div>
+                    <div>
+                        <span class="user-status {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if user.is_active %}● Active{% else %}● Inactive{% endif %}
+                        </span>
+                    </div>
+                    <div class="user-actions">
+                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn-icon">View</a>
+                        <button onclick="deleteUser({{ user.id }}, '{{ user.username }}')" class="btn-icon btn-danger">Delete</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h2>No trainees yet</h2>
+            <p>Trainees will appear here once they create accounts</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function filterTable() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll('.table-row');
+
+        rows.forEach(row => {
+            const text = row.dataset.search;
+            if (text.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function deleteUser(userId, username) {
+        if (confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) {
+            fetch(`/admin/users/${userId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ User deleted successfully');
+                    location.reload();
+                } else {
+                    alert('❌ Error deleting user: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error deleting user');
+            });
+        }
+    }
+</script>
+{% endblock %}

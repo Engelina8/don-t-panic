@@ -57,7 +57,7 @@ def dashboard():
 @instructor_required
 def users():
     """Manage users"""
-    all_users = User.query.filter_by(role='trainee').all()
+    all_users = User.query.filter_by(role='trainee').order_by(User.created_at.desc()).all()
     return render_template('admin/users.html', users=all_users)
 
 @admin_bp.route('/users/<int:user_id>')
@@ -88,12 +88,28 @@ def user_detail(user_id):
                          sessions=sessions,
                          stats=user_stats)
 
+@admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@instructor_required
+def delete_user(user_id):
+    """Delete a user"""
+    user = User.query.get_or_404(user_id)
+    username = user.username
+    
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'User "{username}" deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @admin_bp.route('/scenarios/manage')
 @login_required
 @instructor_required
 def manage_scenarios():
     """Manage scenarios"""
-    scenarios = Scenario.query.all()
+    scenarios = Scenario.query.order_by(Scenario.created_at.desc()).all()
     return render_template('admin/scenarios.html', scenarios=scenarios)
 
 @admin_bp.route('/scenarios/create', methods=['GET', 'POST'])
@@ -105,32 +121,98 @@ def create_scenario():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
-        difficulty = request.form.get('difficulty_level', 1)
-        content = request.form.get('content', '{}')  # JSON string
+        incident_type = request.form.get('incident_type', 'ransomware')
+        difficulty = request.form.get('difficulty_level', 3)
+        estimated_time = request.form.get('estimated_time', 30)
+        scenario_content = request.form.get('scenario_content', '{}')
         
-        if not title or not description:
-            flash('Title and description are required', 'error')
+        # Validation
+        if not title or not description or not scenario_content:
+            flash('Title, description, and scenario content are required', 'error')
             return render_template('admin/create_scenario.html')
         
-        new_scenario = Scenario(
-            title=title,
-            description=description,
-            difficulty_level=int(difficulty),
-            scenario_content=content,
-            created_by=current_user.id
-        )
-        
         try:
+            # Validate JSON
+            import json
+            json.loads(scenario_content)
+            
+            new_scenario = Scenario(
+                title=title,
+                description=description,
+                incident_type=incident_type,
+                difficulty_level=int(difficulty),
+                estimated_time=int(estimated_time),
+                scenario_content=scenario_content,
+                created_by=current_user.id
+            )
+            
             db.session.add(new_scenario)
             db.session.commit()
-            flash(f'Scenario "{title}" created successfully!', 'success')
+            flash(f'✅ Scenario "{title}" created successfully!', 'success')
             return redirect(url_for('admin.manage_scenarios'))
+            
+        except json.JSONDecodeError as e:
+            flash(f'❌ Invalid JSON in scenario content: {str(e)}', 'error')
+            return render_template('admin/create_scenario.html', 
+                                 scenario=request.form)
         except Exception as e:
             db.session.rollback()
-            flash('Failed to create scenario', 'error')
+            flash(f'❌ Failed to create scenario: {str(e)}', 'error')
             print(f"Error creating scenario: {e}")
     
     return render_template('admin/create_scenario.html')
+
+@admin_bp.route('/scenarios/<int:scenario_id>/edit', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def edit_scenario(scenario_id):
+    """Edit an existing scenario"""
+    scenario = Scenario.query.get_or_404(scenario_id)
+    
+    if request.method == 'POST':
+        scenario.title = request.form.get('title', scenario.title)
+        scenario.description = request.form.get('description', scenario.description)
+        scenario.incident_type = request.form.get('incident_type', scenario.incident_type)
+        scenario.difficulty_level = int(request.form.get('difficulty_level', scenario.difficulty_level))
+        scenario.estimated_time = int(request.form.get('estimated_time', scenario.estimated_time))
+        scenario.scenario_content = request.form.get('scenario_content', scenario.scenario_content)
+        scenario.updated_at = datetime.utcnow()
+        
+        try:
+            # Validate JSON
+            import json
+            json.loads(scenario.scenario_content)
+            
+            db.session.commit()
+            flash(f'✅ Scenario "{scenario.title}" updated successfully!', 'success')
+            return redirect(url_for('admin.manage_scenarios'))
+            
+        except json.JSONDecodeError as e:
+            db.session.rollback()
+            flash(f'❌ Invalid JSON in scenario content: {str(e)}', 'error')
+            return render_template('admin/create_scenario.html', scenario=scenario)
+        except Exception as e:
+            db.session.rollback()
+            flash(f'❌ Failed to update scenario: {str(e)}', 'error')
+            return render_template('admin/create_scenario.html', scenario=scenario)
+    
+    return render_template('admin/create_scenario.html', scenario=scenario)
+
+@admin_bp.route('/scenarios/<int:scenario_id>/delete', methods=['POST'])
+@login_required
+@instructor_required
+def delete_scenario(scenario_id):
+    """Delete a scenario"""
+    scenario = Scenario.query.get_or_404(scenario_id)
+    title = scenario.title
+    
+    try:
+        db.session.delete(scenario)
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'Scenario "{title}" deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @admin_bp.route('/reports')
 @login_required

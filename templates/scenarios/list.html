@@ -2,30 +2,178 @@
 
 {% block title %}Scenarios - Don't Panic{% endblock %}
 
-{% block content %}
-<h1>Training Scenarios 🎯</h1>
+{% block extra_css %}
+<style>
+    .scenarios-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
 
-<div class="scenarios-grid">
-    {% for scenario in scenarios %}
-    <div class="scenario-card">
-        <h3>{{ scenario.title }}</h3>
-        <p>{{ scenario.description }}</p>
-        <p class="difficulty">Difficulty: {{ '⭐' * scenario.difficulty_level }}</p>
-        
-        {% if scenario.id in completed_ids %}
-            <span class="badge completed">✅ Completed</span>
-        {% endif %}
-        
-        <div class="card-actions">
-            <a href="{{ url_for('scenarios.detail', scenario_id=scenario.id) }}" class="btn btn-secondary">Details</a>
+    .scenarios-header {
+        margin-bottom: 40px;
+    }
+
+    .scenarios-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+    }
+
+    .scenarios-header p {
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+    }
+
+    .scenarios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .scenario-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .scenario-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        transform: translateY(-4px);
+    }
+
+    .scenario-card h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+    }
+
+    .scenario-card p {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+        flex-grow: 1;
+        line-height: 1.5;
+    }
+
+    .difficulty {
+        color: var(--warning-color) !important;
+        font-weight: 500;
+        margin-bottom: 16px;
+    }
+
+    .badge {
+        display: inline-block;
+        background: var(--success-color);
+        color: var(--bg-primary);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: auto;
+    }
+
+    .card-actions form {
+        flex: 1;
+    }
+
+    .card-actions button,
+    .card-actions a {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .btn-primary:hover {
+        background: #00b8d4;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+    }
+
+    .btn-secondary {
+        background: var(--bg-hover);
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .no-scenarios {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .no-scenarios p {
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scenarios-container">
+    <div class="scenarios-header">
+        <h1>🎯 Training Scenarios</h1>
+        <p>Sharpen your incident response skills with realistic cybersecurity scenarios</p>
+    </div>
+
+    {% if scenarios %}
+    <div class="scenarios-grid">
+        {% for scenario in scenarios %}
+        <div class="scenario-card">
+            <h3>{{ scenario.title }}</h3>
+            <p>{{ scenario.description }}</p>
+            <p class="difficulty">Difficulty: {{ '⭐' * scenario.difficulty_level }}</p>
             
-            <form method="POST" action="{{ url_for('scenarios.start', scenario_id=scenario.id) }}" style="display: inline;">
-                <button type="submit" class="btn btn-primary">Start</button>
-            </form>
+            {% if scenario.id in completed_ids %}
+                <span class="badge">✅ Completed</span>
+            {% endif %}
+            
+            <div class="card-actions">
+                <a href="{{ url_for('scenarios.detail', scenario_id=scenario.id) }}" class="btn-secondary">View Details</a>
+                
+                <form method="POST" action="{{ url_for('scenarios.start', scenario_id=scenario.id) }}">
+                    <button type="submit" class="btn-primary">Start Now</button>
+                </form>
+            </div>
         </div>
+        {% endfor %}
     </div>
     {% else %}
-    <p>No scenarios available yet. Check back soon!</p>
-    {% endfor %}
+    <div class="no-scenarios">
+        <p>No scenarios available yet. Check back soon! 🔍</p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

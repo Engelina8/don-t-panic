@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block title %}Playing {{ scenario.title }} - Don't Panic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .play-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .play-row {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+        .play-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .scenario-card {
+        background: var(--bg-card);
+        border: 2px solid var(--danger-color);
+        border-radius: var(--border-radius);
+        box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .scenario-header {
+        background: var(--danger-color);
+        color: white;
+        padding: 20px;
+    }
+
+    .scenario-header h4 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.3rem;
+    }
+
+    .scenario-body {
+        padding: 24px;
+    }
+
+    .scenario-body p {
+        margin-bottom: 12px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .story-content {
+        background: var(--bg-hover);
+        padding: 16px;
+        border-radius: var(--border-radius-sm);
+        border-left: 4px solid var(--primary-color);
+        color: var(--text-primary);
+    }
+
+    .decisions-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .decisions-header {
+        background: var(--bg-hover);
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .decisions-header h5 {
+        margin: 0;
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .decisions-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .decision-btn {
+        background: var(--bg-hover);
+        border: 1.5px solid var(--primary-color);
+        border-radius: var(--border-radius-sm);
+        padding: 16px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        min-height: 70px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .decision-btn strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .decision-btn small {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .decision-btn:hover {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        transform: translateX(4px);
+    }
+
+    .decision-btn:hover strong,
+    .decision-btn:hover small {
+        color: var(--bg-primary);
+    }
+
+    .sidebar-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 20px;
+    }
+
+    .sidebar-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+    }
+
+    #timer {
+        font-family: 'Roboto Mono', monospace;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    .metric-label {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+
+    .metric-item {
+        margin-bottom: 12px;
+    }
+
+    .progress-bar {
+        height: 6px;
+        background: var(--bg-hover);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary-color);
+        width: 0%;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .session-info {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .session-info strong {
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="play-container">
+    <div class="play-row">
+        <!-- Main Scenario Content -->
+        <div>
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <h4>⚠️ {{ scenario.title }}</h4>
+                </div>
+                <div class="scenario-body" id="scenario-content">
+                    <p>{{ scenario.description }}</p>
+                    <div class="story-content" id="story-content">
+                        <!-- Content will be parsed from JSON -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Buttons -->
+            <div class="decisions-card">
+                <div class="decisions-header">
+                    <h5 id="question-text">What do you do?</h5>
+                </div>
+                <div class="decisions-body" id="decisions-body">
+                    <button type="button" class="decision-btn" data-decision="escalate">
+                        <strong>🚨 Escalate to Security Team</strong>
+                        <small>Inform your security team immediately</small>
+                    </button>
+                    <button type="button" class="decision-btn" data-decision="contain">
+                        <strong>🔒 Contain the Threat</strong>
+                        <small>Isolate affected systems from the network</small>
+                    </button>
+                    <button type="button" class="decision-btn" data-decision="investigate">
+                        <strong>🔍 Investigate First</strong>
+                        <small>Gather more information before taking action</small>
+                    </button>
+                    <button type="button" class="decision-btn" data-decision="backup">
+                        <strong>💾 Create Backups</strong>
+                        <small>Secure your data before taking further action</small>
+                    </button>
+                    <button type="button" class="decision-btn" data-decision="communicate">
+                        <strong>📢 Notify Stakeholders</strong>
+                        <small>Inform management and customers</small>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div>
+            <!-- Timer -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Time Elapsed</div>
+                <div id="timer">00:00</div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Performance Metrics</div>
+                
+                <div class="metric-item">
+                    <div class="metric-label">Detection</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="detection-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-label">Containment</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="containment-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-label">Eradication</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="eradication-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-label">Recovery</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="recovery-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-label">Communication</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="communication-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Info -->
+            <div class="sidebar-section">
+                <div class="session-info">
+                    <p><strong>Session ID:</strong> {{ session.id }}</p>
+                    <p><strong>Scenario:</strong> {{ scenario.title }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const sessionId = {{ session.id }};
+    let startTime = Date.now();
+    let decisionCount = 0;
+    let currentStageIndex = 0;
+    let scenarioData = null;
+    
+    let metrics = {
+        detection: 0,
+        containment: 0,
+        eradication: 0,
+        recovery: 0,
+        communication: 0
+    };
+
+    // Parse and initialize scenario
+    function initializeScenario() {
+        try {
+            scenarioData = JSON.parse(`{{ scenario.scenario_content | safe }}`);
+            displayStory();
+        } catch (e) {
+            console.error('Error parsing scenario:', e);
+            // Fallback if not JSON
+            document.getElementById('story-content').innerHTML = '<p>{{ scenario.scenario_content }}</p>';
+        }
+    }
+
+    function displayStory() {
+        if (!scenarioData) return;
+        
+        const storyElement = document.getElementById('story-content');
+        
+        // Display intro
+        if (scenarioData.intro) {
+            storyElement.innerHTML = `<p><strong>Incident Report:</strong> ${scenarioData.intro}</p>`;
+        }
+        
+        // Display current stage
+        if (scenarioData.stages && scenarioData.stages.length > 0) {
+            const currentStage = scenarioData.stages[currentStageIndex];
+            if (currentStage) {
+                storyElement.innerHTML += `<p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);"><em>${currentStage.question || ''}</em></p>`;
+                
+                // Update question text
+                document.getElementById('question-text').textContent = currentStage.question || 'What do you do?';
+                
+                // If stage has options, display them as decisions
+                if (currentStage.options && currentStage.options.length > 0) {
+                    displayStageOptions(currentStage.options);
+                }
+            }
+        }
+    }
+
+    function displayStageOptions(options) {
+        const decisionsBody = document.getElementById('decisions-body');
+        decisionsBody.innerHTML = '';
+        
+        options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'decision-btn';
+            button.textContent = option.text;
+            button.dataset.points = option.points || 0;
+            button.dataset.index = index;
+            button.addEventListener('click', function() {
+                handleDecision(option, this);
+            });
+            decisionsBody.appendChild(button);
+        });
+    }
+
+    // Update timer every second
+    setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+
+    // Decision handler
+    function handleDecision(option, buttonElement) {
+        decisionCount++;
+        const points = parseInt(option.points) || 0;
+        
+        // Update metrics based on points
+        updateMetricsFromPoints(points);
+        
+        // Move to next stage
+        if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
+            currentStageIndex++;
+            displayStory();
+            showFeedback(option.text);
+        } else {
+            showFeedback(option.text);
+            setTimeout(completeScenario, 2000);
+        }
+        
+        // Disable button
+        buttonElement.disabled = true;
+        buttonElement.style.opacity = '0.5';
+    }
+
+    function updateMetricsFromPoints(points) {
+        const increase = Math.abs(points);
+        if (points > 0) {
+            metrics.detection += increase * 0.2;
+            metrics.containment += increase * 0.2;
+            metrics.eradication += increase * 0.2;
+            metrics.recovery += increase * 0.2;
+            metrics.communication += increase * 0.2;
+        }
+
+        // Update progress bars
+        document.getElementById('detection-bar').style.width = Math.min(metrics.detection, 100) + '%';
+        document.getElementById('containment-bar').style.width = Math.min(metrics.containment, 100) + '%';
+        document.getElementById('eradication-bar').style.width = Math.min(metrics.eradication, 100) + '%';
+        document.getElementById('recovery-bar').style.width = Math.min(metrics.recovery, 100) + '%';
+        document.getElementById('communication-bar').style.width = Math.min(metrics.communication, 100) + '%';
+
+        if (Object.values(metrics).every(v => v >= 80)) {
+            setTimeout(completeScenario, 1500);
+        }
+    }
+
+    function showFeedback(decision) {
+        alert('✅ Decision recorded: ' + decision);
+    }
+
+    function completeScenario() {
+        const finalScore = Math.round(
+            (Object.values(metrics).reduce((a, b) => a + b) / (5 * 100)) * 100
+        );
+
+        fetch(`/scenarios/session/{{ session.id }}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ score: finalScore })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            }
+        });
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializeScenario);
+</script>
+{% endblock %}

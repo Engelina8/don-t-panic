@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Session Results - Don't Panic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .results-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .results-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .results-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .results-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .results-header p {
+        font-size: 1.1rem;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .score-display {
+        text-align: center;
+        padding: 40px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .score-number {
+        font-size: 4rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+    }
+
+    .score-label {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+
+    .performance-section {
+        padding: 30px;
+    }
+
+    .performance-section h5 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+    }
+
+    .metric-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+
+    .metric-label {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        font-weight: 500;
+        min-width: 120px;
+    }
+
+    .metric-bar {
+        flex: 1;
+        height: 8px;
+        background: var(--bg-hover);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .metric-fill {
+        height: 100%;
+        background: var(--primary-color);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+
+    .metric-value {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        min-width: 50px;
+        text-align: right;
+    }
+
+    .session-details {
+        padding: 30px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .session-details h5 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .detail-item {
+        background: var(--bg-hover);
+        padding: 12px;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .detail-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 24px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .btn-primary:hover {
+        background: #00b8d4;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn-secondary {
+        background: var(--bg-hover);
+        color: var(--primary-color);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--border-color);
+        border-color: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .results-header h1 {
+            font-size: 2rem;
+        }
+
+        .score-number {
+            font-size: 3rem;
+        }
+
+        .metric-row {
+            flex-wrap: wrap;
+        }
+
+        .metric-bar {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <div class="results-card">
+        <div class="results-header">
+            {% if session.score >= 80 %}
+                <h1>🎉 Excellent!</h1>
+                <p>You handled this crisis very well.</p>
+            {% elif session.score >= 60 %}
+                <h1>👍 Good Job!</h1>
+                <p>You made some solid decisions, but there's room for improvement.</p>
+            {% else %}
+                <h1>⚠️ Needs Improvement</h1>
+                <p>This scenario required better decision-making. Try again to improve!</p>
+            {% endif %}
+        </div>
+
+        <div class="score-display">
+            <h2 class="score-number">{{ session.score }}<span style="font-size: 2rem;">/100</span></h2>
+            <p class="score-label">
+                {% if session.outcome %}
+                    <strong>Outcome:</strong> {{ session.outcome }}
+                {% else %}
+                    Final Score
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="performance-section">
+            <h5>📊 Performance Breakdown</h5>
+            {% set performance = session.get_performance_breakdown() %}
+            
+            <div class="metric-row">
+                <div class="metric-label">Detection</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: {{ performance.detection }}%"></div>
+                </div>
+                <div class="metric-value">{{ performance.detection }}/100</div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label">Containment</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: {{ performance.containment }}%"></div>
+                </div>
+                <div class="metric-value">{{ performance.containment }}/100</div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label">Eradication</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: {{ performance.eradication }}%"></div>
+                </div>
+                <div class="metric-value">{{ performance.eradication }}/100</div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label">Recovery</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: {{ performance.recovery }}%"></div>
+                </div>
+                <div class="metric-value">{{ performance.recovery }}/100</div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label">Communication</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: {{ performance.communication }}%"></div>
+                </div>
+                <div class="metric-value">{{ performance.communication }}/100</div>
+            </div>
+        </div>
+
+        <div class="session-details">
+            <h5>📋 Session Details</h5>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Scenario</div>
+                    <div class="detail-value">{{ session.scenario.title }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Started</div>
+                    <div class="detail-value">{{ session.started_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Duration</div>
+                    <div class="detail-value">{{ session.get_duration_minutes() }} minutes</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Completed</div>
+                    <div class="detail-value">{{ session.completed_at.strftime('%Y-%m-%d %H:%M') if session.completed_at else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ url_for('scenarios.list') }}" class="btn btn-secondary">
+                ← Back to Scenarios
+            </a>
+            <form method="POST" action="{{ url_for('scenarios.start', scenario_id=session.scenario_id) }}" style="margin: 0;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    ↻ Try Again
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

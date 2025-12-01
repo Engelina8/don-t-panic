@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scenario.title }} - Don't Panic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+        .detail-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .detail-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .detail-header {
+        background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        padding: 24px;
+        color: white;
+    }
+
+    .detail-header h1, .detail-header h5 {
+        color: white;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .detail-body {
+        padding: 24px;
+    }
+
+    .detail-body h5 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 12px;
+        margin-top: 0;
+    }
+
+    .detail-body ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .detail-body li {
+        padding: 10px 0;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .detail-body li:last-child {
+        border-bottom: none;
+    }
+
+    .sidebar-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+    }
+
+    .sidebar-header {
+        background: var(--bg-hover);
+        color: var(--primary-color);
+        padding: 12px 16px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-body {
+        padding: 16px;
+    }
+
+    .btn-lg {
+        padding: 12px 24px;
+        font-size: 1rem;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        width: 100%;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .btn-lg:hover {
+        background: #00b8d4;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .previous-attempts {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .previous-attempts li {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .previous-attempts li:last-child {
+        border-bottom: none;
+    }
+
+    .attempt-date {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .attempt-info {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .badge-success {
+        background: var(--success-color);
+        color: var(--bg-primary);
+    }
+
+    .badge-warning {
+        background: var(--warning-color);
+        color: var(--bg-primary);
+    }
+
+    .badge-secondary {
+        background: var(--text-muted);
+        color: var(--bg-primary);
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-row">
+        <!-- Main Scenario Content -->
+        <div>
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h1>{{ scenario.title }}</h1>
+                </div>
+                <div class="detail-body">
+                    <p>{{ scenario.description }}</p>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h5>Scenario Information</h5>
+                </div>
+                <div class="detail-body">
+                    <ul>
+                        <li><strong>Difficulty Level:</strong> {{ '⭐' * scenario.difficulty_level }}</li>
+                        <li><strong>Estimated Time:</strong> {{ scenario.estimated_time }} minutes</li>
+                        <li><strong>Times Played:</strong> {{ scenario.times_played }}</li>
+                        <li><strong>Average Score:</strong> {{ "%.1f"|format(scenario.average_score) }}/100</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h5>Scenario Content</h5>
+                </div>
+                <div class="detail-body">
+                    <p>{{ scenario.scenario_content }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <div class="sidebar-card">
+                <div class="sidebar-header">Start Training</div>
+                <div class="sidebar-body">
+                    <p style="color: var(--text-secondary); margin-bottom: 16px; text-align: center;">Ready to test your incident response skills?</p>
+                    <form method="POST" action="{{ url_for('scenarios.start', scenario_id=scenario.id) }}">
+                        <button type="submit" class="btn-lg">
+                            <i class="fas fa-play"></i> Start Scenario
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {% if previous_sessions %}
+            <div class="sidebar-card">
+                <div class="sidebar-header">Your Previous Attempts</div>
+                <div class="sidebar-body">
+                    <ul class="previous-attempts">
+                        {% for session in previous_sessions %}
+                        <li>
+                            <div class="attempt-date">{{ session.started_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            <div class="attempt-info">
+                                {% if session.status == 'completed' %}
+                                    Score: {{ session.score }}/100
+                                    <span class="badge badge-success">✓ Completed</span>
+                                {% elif session.status == 'in_progress' %}
+                                    <span class="badge badge-warning">In Progress</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Abandoned</span>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
