@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Scenarios - Don't Panic{% endblock %}
+
+{% block content %}
+<h1>Training Scenarios 🎯</h1>
+
+<div class="scenarios-grid">
+    {% for scenario in scenarios %}
+    <div class="scenario-card">
+        <h3>{{ scenario.title }}</h3>
+        <p>{{ scenario.description }}</p>
+        <p class="difficulty">Difficulty: {{ '⭐' * scenario.difficulty_level }}</p>
+        
+        {% if scenario.id in completed_ids %}
+            <span class="badge completed">✅ Completed</span>
+        {% endif %}
+        
+        <div class="card-actions">
+            <a href="{{ url_for('scenarios.detail', scenario_id=scenario.id) }}" class="btn btn-secondary">Details</a>
+            
+            <form method="POST" action="{{ url_for('scenarios.start', scenario_id=scenario.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-primary">Start</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p>No scenarios available yet. Check back soon!</p>
+    {% endfor %}
+</div>
+{% endblock %}
