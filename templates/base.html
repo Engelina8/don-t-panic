@@ -31,11 +31,12 @@
                     <li><a href="{{ url_for('index') }}">Home</a></li>
                     
                     {% if current_user.is_authenticated %}
-                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                        <li><a href="{{ url_for('scenarios.list') }}">Scenarios</a></li>
-                        
-                        {% if current_user.role == 'instructor' %}
-                            <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+                        {% if current_user.role in ['instructor', 'admin'] %}
+                            <li><a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a></li>
+                            <li><a href="{{ url_for('scenarios.list') }}">Scenarios</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                            <li><a href="{{ url_for('scenarios.list') }}">Scenarios</a></li>
                         {% endif %}
                         
                         <li class="nav-user">

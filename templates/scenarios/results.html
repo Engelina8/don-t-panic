@@ -212,20 +212,21 @@
 <div class="results-container">
     <div class="results-card">
         <div class="results-header">
-            {% if session.score >= 80 %}
-                <h1>🎉 Excellent!</h1>
-                <p>You handled this crisis very well.</p>
-            {% elif session.score >= 60 %}
-                <h1>👍 Good Job!</h1>
-                <p>You made some solid decisions, but there's room for improvement.</p>
-            {% else %}
-                <h1>⚠️ Needs Improvement</h1>
-                <p>This scenario required better decision-making. Try again to improve!</p>
-            {% endif %}
+            {% set percent = (session.score / scenario.max_points * 100) if scenario.max_points else 0 %}
+            {% if percent >= 80 %}
+                    <h1>🎉 Excellent!</h1>
+                    <p>You handled this crisis very well.</p>
+                {% elif percent >= 60 %}
+                    <h1>👍 Good Job!</h1>
+                    <p>You made some solid decisions, but there's room for improvement.</p>
+                {% else %}
+                    <h1>⚠️ Needs Improvement</h1>
+                    <p>This scenario required better decision-making. Try again to improve!</p>
+                {% endif %}
         </div>
 
         <div class="score-display">
-            <h2 class="score-number">{{ session.score }}<span style="font-size: 2rem;">/100</span></h2>
+            <h2 class="score-number">{{ session.score }}<span style="font-size: 1.2rem;">/{{ scenario.max_points }}</span></h2>
             <p class="score-label">
                 {% if session.outcome %}
                     <strong>Outcome:</strong> {{ session.outcome }}

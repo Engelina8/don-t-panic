@@ -92,6 +92,9 @@ class Scenario(db.Model):
     estimated_time = db.Column(db.Integer, nullable=False, default=30)
     # Time in minutes
     
+    # Maximum points for the scenario (used to scale final score)
+    max_points = db.Column(db.Integer, nullable=False, default=100)
+    
     # Scenario content (JSON stored as text)
     scenario_content = db.Column(db.Text, nullable=False)
     # This will store the decision tree/story branches as JSON

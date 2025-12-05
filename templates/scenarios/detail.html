@@ -39,6 +39,10 @@
 
     .detail-header h1, .detail-header h5 {
         color: white;
+        -webkit-text-fill-color: white; /* override global gradient text fill */
+        background: none; /* remove background-clip gradient inherited from global h1 */
+        -webkit-background-clip: border-box;
+        background-clip: border-box;
         margin: 0;
         font-weight: 600;
     }

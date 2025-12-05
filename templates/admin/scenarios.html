@@ -220,6 +220,7 @@
                             <option value="5">5 - Expert</option>
                         </select>
                         <input type="number" id="qc_time" name="estimated_time" value="30" min="5" max="180" style="padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">
+                        <input type="number" id="qc_max_points" name="max_points" value="100" min="1" max="10000" style="padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); width:120px;" title="Maximum points for this scenario">
                         <label style="display:flex; align-items:center; gap:6px; color:var(--text-secondary);">
                             <input type="checkbox" id="advancedToggle"> Advanced (JSON)
                         </label>
@@ -317,6 +318,8 @@
                 // Build scenario_content if advanced not used
                 const advanced = document.getElementById('advancedToggle').checked;
                 const hiddenInput = document.getElementById('scenario_content_hidden');
+                const maxPointsInput = document.getElementById('qc_max_points');
+                const maxPoints = maxPointsInput ? parseInt(maxPointsInput.value) || 100 : 100;
                 if (!advanced) {
                     const intro = document.getElementById('qc_description').value || '';
                     const content = { intro: intro, stages: [] };
@@ -325,6 +328,16 @@
                     const visible = document.getElementById('scenario_content_visible').value || '';
                     hiddenInput.value = visible;
                 }
+                // attach max points as a hidden input if not already present
+                let mp = document.getElementById('qc_max_points_hidden');
+                if (!mp) {
+                    mp = document.createElement('input');
+                    mp.type = 'hidden';
+                    mp.id = 'qc_max_points_hidden';
+                    mp.name = 'max_points';
+                    qcForm.appendChild(mp);
+                }
+                mp.value = String(maxPoints);
                 // allow submit to continue
             });
         }

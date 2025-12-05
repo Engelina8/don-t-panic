@@ -301,15 +301,28 @@
         communication: 0
     };
 
-    // Parse and initialize scenario
+    // Parse and initialize scenario using safe JSON rendering
     function initializeScenario() {
         try {
-            scenarioData = JSON.parse(`{{ scenario.scenario_content | safe }}`);
+            // Render the stored JSON directly as a JavaScript object.
+            // Using the `tojson` filter ensures proper JSON encoding for JS.
+            scenarioData = {{ scenario.scenario_content | tojson | safe }};
+
+            // If scenarioData is a string (older format), try parse it
+            if (typeof scenarioData === 'string') {
+                try {
+                    scenarioData = JSON.parse(scenarioData);
+                } catch (e) {
+                    console.error('Error parsing scenario string:', e);
+                    document.getElementById('story-content').innerHTML = '<pre class="mono">' + scenarioData + '</pre>';
+                    return;
+                }
+            }
+
             displayStory();
         } catch (e) {
-            console.error('Error parsing scenario:', e);
-            // Fallback if not JSON
-            document.getElementById('story-content').innerHTML = '<p>{{ scenario.scenario_content }}</p>';
+            console.error('Error initializing scenario:', e);
+            document.getElementById('story-content').innerHTML = '<pre class="mono">Unable to load scenario content.</pre>';
         }
     }
 
@@ -317,17 +330,33 @@
         if (!scenarioData) return;
         
         const storyElement = document.getElementById('story-content');
+        let html = '';
         
-        // Display intro
-        if (scenarioData.intro) {
-            storyElement.innerHTML = `<p><strong>Incident Report:</strong> ${scenarioData.intro}</p>`;
+        // Display intro only on first stage (index 0)
+        if (currentStageIndex === 0 && scenarioData.intro) {
+            html += `<p><strong>Incident Report:</strong> ${scenarioData.intro}</p>`;
         }
         
-        // Display current stage
+        // Display current stage content and question
         if (scenarioData.stages && scenarioData.stages.length > 0) {
             const currentStage = scenarioData.stages[currentStageIndex];
             if (currentStage) {
-                storyElement.innerHTML += `<p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);"><em>${currentStage.question || ''}</em></p>`;
+                // Add separator if not first stage
+                if (currentStageIndex > 0) {
+                    html += `<div style="margin: 12px 0; padding: 12px 0; border-top: 1px solid var(--border-color);"></div>`;
+                }
+                
+                // Display stage content (chapter text) if available
+                if (currentStage.content) {
+                    html += `<p style="margin-top: 12px; line-height: 1.6;">${currentStage.content}</p>`;
+                }
+                
+                // Display question
+                if (currentStage.question) {
+                    html += `<p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-style: italic; font-weight: 500;">${currentStage.question}</p>`;
+                }
+                
+                storyElement.innerHTML = html;
                 
                 // Update question text
                 document.getElementById('question-text').textContent = currentStage.question || 'What do you do?';
@@ -375,14 +404,59 @@
         // Update metrics based on points
         updateMetricsFromPoints(points);
         
-        // Move to next stage
-        if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
-            currentStageIndex++;
-            displayStory();
-            showFeedback(option.text);
+        // Branching: if option.next is provided, follow it. Otherwise default sequential behavior.
+        const nextTarget = option.next;
+        if (nextTarget !== undefined && nextTarget !== null && nextTarget !== '') {
+            // Special END marker
+            if (nextTarget === 'END') {
+                showFeedback(option.text);
+                setTimeout(completeScenario, 1200);
+            } else if (typeof nextTarget === 'number' || !isNaN(parseInt(nextTarget))) {
+                const targetIndex = parseInt(nextTarget);
+                if (scenarioData.stages && targetIndex >= 0 && targetIndex < scenarioData.stages.length) {
+                    currentStageIndex = targetIndex;
+                    displayStory();
+                    showFeedback(option.text);
+                } else {
+                    // Invalid index: fallback to sequential
+                    if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
+                        currentStageIndex++;
+                        displayStory();
+                        showFeedback(option.text);
+                    } else {
+                        showFeedback(option.text);
+                        setTimeout(completeScenario, 1200);
+                    }
+                }
+            } else if (typeof nextTarget === 'string') {
+                // Try to find stage by name
+                const idx = scenarioData.stages.findIndex(s => s.stage === nextTarget);
+                if (idx !== -1) {
+                    currentStageIndex = idx;
+                    displayStory();
+                    showFeedback(option.text);
+                } else {
+                    // fallback sequential
+                    if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
+                        currentStageIndex++;
+                        displayStory();
+                        showFeedback(option.text);
+                    } else {
+                        showFeedback(option.text);
+                        setTimeout(completeScenario, 1200);
+                    }
+                }
+            }
         } else {
-            showFeedback(option.text);
-            setTimeout(completeScenario, 2000);
+            // Default sequential behavior
+            if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
+                currentStageIndex++;
+                displayStory();
+                showFeedback(option.text);
+            } else {
+                showFeedback(option.text);
+                setTimeout(completeScenario, 2000);
+            }
         }
         
         // Disable button
@@ -417,22 +491,36 @@
     }
 
     function completeScenario() {
-        const finalScore = Math.round(
-            (Object.values(metrics).reduce((a, b) => a + b) / (5 * 100)) * 100
-        );
+        // Normalize each metric to 0-100 and compute average as final score
+        const caps = {};
+        Object.keys(metrics).forEach(k => {
+            let v = Math.round(metrics[k]);
+            if (isNaN(v) || v < 0) v = 0;
+            if (v > 100) v = 100;
+            caps[k] = v;
+        });
 
+        const metricValues = Object.values(caps);
+        const sum = metricValues.reduce((a, b) => a + b, 0);
+        const finalScore = metricValues.length ? Math.round(sum / metricValues.length) : 0;
+
+        // Send both final score and breakdown to server so results show properly
         fetch(`/scenarios/session/{{ session.id }}/complete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ score: finalScore })
+            body: JSON.stringify({ score: finalScore, metrics: caps })
         })
         .then(response => response.json())
         .then(data => {
             if (data.redirect) {
                 window.location.href = data.redirect;
             }
+        })
+        .catch(err => {
+            console.error('Error completing scenario:', err);
+            alert('Failed to submit results. Please try again.');
         });
     }
 

@@ -127,15 +127,34 @@ def complete(session_id):
     if session.user_id != current_user.id:
         return jsonify({'error': 'Access denied'}), 403
     
-    # Get final score
-    data = request.get_json()
+    # Get final score and optional metrics breakdown
+    data = request.get_json() or {}
     final_score = data.get('score', 0)
-    
-    # Update session
+    metrics = data.get('metrics', {})
+
+    # Update session fields
     session.status = 'completed'
     session.completed_at = datetime.utcnow()
-    session.score = final_score
-    
+    try:
+        session.score = int(final_score)
+    except Exception:
+        session.score = 0
+
+    # Save breakdown metrics if provided (default to 0)
+    session.detection_score = int(metrics.get('detection', session.detection_score or 0))
+    session.containment_score = int(metrics.get('containment', session.containment_score or 0))
+    session.eradication_score = int(metrics.get('eradication', session.eradication_score or 0))
+    session.recovery_score = int(metrics.get('recovery', session.recovery_score or 0))
+    session.communication_score = int(metrics.get('communication', session.communication_score or 0))
+
+    # Derive simple outcome label
+    if session.score >= 80:
+        session.outcome = 'success'
+    elif session.score >= 60:
+        session.outcome = 'partial_success'
+    else:
+        session.outcome = 'failure'
+
     try:
         db.session.commit()
         return jsonify({
@@ -144,6 +163,7 @@ def complete(session_id):
         })
     except Exception as e:
         db.session.rollback()
+        print(f"Error completing session: {e}")
         return jsonify({'error': 'Failed to complete session'}), 500
 
 @scenario_bp.route('/session/<int:session_id>/results')

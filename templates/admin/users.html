@@ -70,6 +70,9 @@
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius);
         overflow: hidden;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
     }
 
     .table-header {
@@ -82,6 +85,12 @@
         font-weight: 600;
         color: var(--primary-color);
         font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .table-body {
+        overflow-y: auto;
+        flex: 1;
     }
 
     .table-row {
@@ -236,29 +245,31 @@
                 <div>Actions</div>
             </div>
 
-            {% for user in users %}
-                <div class="table-row" data-search="{{ user.username }} {{ user.email }}">
-                    <div>
-                        <div class="user-name">{{ user.username }}</div>
+            <div class="table-body">
+                {% for user in users %}
+                    <div class="table-row" data-search="{{ user.username }} {{ user.email }}">
+                        <div>
+                            <div class="user-name">{{ user.username }}</div>
+                        </div>
+                        <div>
+                            <div class="user-email">{{ user.email }}</div>
+                        </div>
+                        <div>
+                            <div class="stat-value">{{ user.get_completed_scenarios_count() }}/{{ user.training_sessions.count() }}</div>
+                            <div class="stat-label">Completed/Started</div>
+                        </div>
+                        <div>
+                            <span class="user-status {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                {% if user.is_active %}● Active{% else %}● Inactive{% endif %}
+                            </span>
+                        </div>
+                        <div class="user-actions">
+                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn-icon">View</a>
+                            <button onclick="deleteUser({{ user.id }}, '{{ user.username }}')" class="btn-icon btn-danger">Delete</button>
+                        </div>
                     </div>
-                    <div>
-                        <div class="user-email">{{ user.email }}</div>
-                    </div>
-                    <div>
-                        <div class="stat-value">{{ user.get_completed_scenarios_count() }}/{{ user.training_sessions.count() }}</div>
-                        <div class="stat-label">Completed/Started</div>
-                    </div>
-                    <div>
-                        <span class="user-status {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
-                            {% if user.is_active %}● Active{% else %}● Inactive{% endif %}
-                        </span>
-                    </div>
-                    <div class="user-actions">
-                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn-icon">View</a>
-                        <button onclick="deleteUser({{ user.id }}, '{{ user.username }}')" class="btn-icon btn-danger">Delete</button>
-                    </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     {% else %}
         <div class="empty-state">

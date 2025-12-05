@@ -7,6 +7,7 @@ from models import db, User, Scenario, TrainingSession
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 from . import admin_bp
+from types import SimpleNamespace
 
 def instructor_required(f):
     """Decorator to require instructor role"""
@@ -16,7 +17,8 @@ def instructor_required(f):
             flash('Please log in', 'error')
             return redirect(url_for('auth.login'))
         
-        if current_user.role != 'instructor':
+        # Allow both 'instructor' and 'admin' roles to access instructor routes
+        if current_user.role not in ('instructor', 'admin'):
             flash('Access denied: Instructor access required', 'error')
             return redirect(url_for('dashboard'))
         
@@ -124,12 +126,14 @@ def create_scenario():
         incident_type = request.form.get('incident_type', 'ransomware')
         difficulty = request.form.get('difficulty_level', 3)
         estimated_time = request.form.get('estimated_time', 30)
+        max_points = request.form.get('max_points', 100)
         scenario_content = request.form.get('scenario_content', '{}')
         
         # Validation
         if not title or not description or not scenario_content:
             flash('Title, description, and scenario content are required', 'error')
-            return render_template('admin/create_scenario.html')
+            # Re-render the form with submitted values so the template has `scenario` defined
+            return render_template('admin/create_scenario.html', scenario=request.form)
         
         try:
             # Validate JSON
@@ -142,6 +146,7 @@ def create_scenario():
                 incident_type=incident_type,
                 difficulty_level=int(difficulty),
                 estimated_time=int(estimated_time),
+                max_points=int(max_points),
                 scenario_content=scenario_content,
                 created_by=current_user.id
             )
@@ -159,8 +164,21 @@ def create_scenario():
             db.session.rollback()
             flash(f'❌ Failed to create scenario: {str(e)}', 'error')
             print(f"Error creating scenario: {e}")
+            return render_template('admin/create_scenario.html', scenario=request.form)
     
-    return render_template('admin/create_scenario.html')
+    # Provide a safe default `scenario` object for the template so attribute
+    # access like `scenario.scenario_content` does not raise UndefinedError
+    default_scenario = SimpleNamespace(
+        scenario_content='{}',
+        title='',
+        description='',
+        incident_type='ransomware',
+        difficulty_level=3,
+        estimated_time=30,
+        max_points=100
+    )
+
+    return render_template('admin/create_scenario.html', scenario=default_scenario)
 
 @admin_bp.route('/scenarios/<int:scenario_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -175,6 +193,7 @@ def edit_scenario(scenario_id):
         scenario.incident_type = request.form.get('incident_type', scenario.incident_type)
         scenario.difficulty_level = int(request.form.get('difficulty_level', scenario.difficulty_level))
         scenario.estimated_time = int(request.form.get('estimated_time', scenario.estimated_time))
+        scenario.max_points = int(request.form.get('max_points', scenario.max_points or 100))
         scenario.scenario_content = request.form.get('scenario_content', scenario.scenario_content)
         scenario.updated_at = datetime.utcnow()
         

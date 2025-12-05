@@ -354,6 +354,12 @@
                     <div class="form-hint">How long should this scenario take?</div>
                 </div>
 
+                <div class="form-group">
+                    <label for="max_points">Maximum Points *</label>
+                    <input type="number" id="max_points" name="max_points" value="{{ scenario.max_points if scenario else 100 }}" min="1" max="10000" required>
+                    <div class="form-hint">Total points awarded for a perfect run (default 100)</div>
+                </div>
+
                 <!-- Scenario Builder (friendly UI) -->
                 <div class="form-group">
                     <label>Scenario Builder</label>
@@ -403,31 +409,34 @@
             <div class="sidebar-section" style="margin-bottom: 24px;">
                 <h3>📚 JSON Format Guide</h3>
                 <p>Your scenario content should follow this structure:</p>
-                <code style="display: block; padding: 12px; background: var(--bg-hover); border-radius: 4px; overflow-x: auto; margin: 12px 0; font-size: 0.75rem; line-height: 1.4;">
-{<br/>
-&nbsp;&nbsp;"intro": "Incident description",<br/>
-&nbsp;&nbsp;"stages": [<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"stage": "stage_name",<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"question": "What do you do?",<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"options": [<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"text": "Action text",<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"points": 20<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
-&nbsp;&nbsp;]<br/>
-}
-                </code>
+                                <code style="display: block; padding: 12px; background: var(--bg-hover); border-radius: 4px; overflow-x: auto; margin: 12px 0; font-size: 0.75rem; line-height: 1.4;">
+            {<br/>
+            &nbsp;&nbsp;"intro": "Initial incident summary",<br/>
+            &nbsp;&nbsp;"stages": [<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"stage": "chapter_name",<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"content": "Detailed chapter/story text",<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"question": "What do you do?",<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"options": [<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"text": "Action text",<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"points": 20,<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"next": 2  <span style="color:#9aa">// optional: index of next stage, or &quot;END&quot; to finish</span><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+            &nbsp;&nbsp;]<br/>
+            }
+                                </code>
             </div>
 
             <div class="sidebar-section">
                 <h3>✨ Tips</h3>
                 <ul>
-                    <li><strong>Intro:</strong> Keep it concise but descriptive</li>
-                    <li><strong>Stages:</strong> Break scenarios into logical stages</li>
-                    <li><strong>Points:</strong> Positive for good decisions, negative for poor ones</li>
+                    <li><strong>Intro:</strong> Brief incident summary (shows only at start)</li>
+                    <li><strong>Content:</strong> Detailed chapter text that updates at each stage</li>
+                    <li><strong>Question:</strong> Decision prompt for the user</li>
+                    <li><strong>Points:</strong> Positive for good, negative for poor choices</li>
                     <li><strong>Range:</strong> Use -30 to +30 for point values</li>
                     <li><strong>Options:</strong> Provide 3-5 realistic choices per stage</li>
                 </ul>
@@ -481,6 +490,17 @@ function createOptionRow(stageIndex, optionIndex, option) {
     pointsInput.style.width = '90px';
     pointsInput.addEventListener('input', () => syncFromDOM());
 
+    // Next-stage selector: optional branching target
+    const nextSelect = document.createElement('select');
+    nextSelect.style.width = '160px';
+    nextSelect.addEventListener('change', () => syncFromDOM());
+    populateNextOptions(nextSelect, stageIndex);
+    // if option already has next defined, set it
+    if (option && option.next !== undefined && option.next !== null && option.next !== '') {
+        if (option.next === 'END') nextSelect.value = 'END';
+        else nextSelect.value = String(option.next);
+    }
+
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'btn-small warning';
@@ -489,8 +509,41 @@ function createOptionRow(stageIndex, optionIndex, option) {
 
     row.appendChild(textInput);
     row.appendChild(pointsInput);
+    row.appendChild(nextSelect);
     row.appendChild(removeBtn);
     return row;
+}
+
+// Populate a "next" select with available stage targets plus default/end
+function populateNextOptions(selectEl, currentStageIndex) {
+    // preserve previous selection if any
+    const prev = selectEl.value;
+    selectEl.innerHTML = '';
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = 'Next (default)';
+    selectEl.appendChild(defaultOpt);
+
+    const endOpt = document.createElement('option');
+    endOpt.value = 'END';
+    endOpt.textContent = 'End Scenario';
+    selectEl.appendChild(endOpt);
+
+    // list stages by index and name
+    builder.stages.forEach((st, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `Go to ${idx + 1}: ${st.stage || '(no name)'}`;
+        selectEl.appendChild(opt);
+    });
+
+    // try restore previous value
+    if (prev !== undefined && prev !== null && prev !== '') {
+        // if numeric string, ensure option exists
+        const restore = String(prev);
+        const exists = Array.from(selectEl.options).some(o => String(o.value) === restore);
+        if (exists) selectEl.value = restore;
+    }
 }
 
 function renderStage(stage, index) {
@@ -526,6 +579,14 @@ function renderStage(stage, index) {
     nameInput.style.marginBottom = '6px';
     nameInput.addEventListener('input', () => syncFromDOM());
 
+    const contentInput = document.createElement('textarea');
+    contentInput.placeholder = 'Chapter content / story text for this stage';
+    contentInput.value = stage.content || '';
+    contentInput.style.width = '100%';
+    contentInput.style.marginBottom = '6px';
+    contentInput.style.minHeight = '80px';
+    contentInput.addEventListener('input', () => syncFromDOM());
+
     const questionInput = document.createElement('textarea');
     questionInput.placeholder = 'Question / prompt for this stage';
     questionInput.value = stage.question || '';
@@ -552,6 +613,7 @@ function renderStage(stage, index) {
 
     container.appendChild(header);
     container.appendChild(nameInput);
+    container.appendChild(contentInput);
     container.appendChild(questionInput);
     container.appendChild(optionsLabel);
     container.appendChild(optionsContainer);
@@ -559,6 +621,7 @@ function renderStage(stage, index) {
 
     // store references for sync
     container._nameInput = nameInput;
+    container._contentInput = contentInput;
     container._questionInput = questionInput;
     container._optionsContainer = optionsContainer;
 
@@ -573,6 +636,9 @@ function renderBuilder() {
         const el = renderStage(stage, idx);
         builderDiv.appendChild(el);
     });
+    // After render, repopulate next-selects for all option rows (in case stages changed)
+    const selects = builderDiv.querySelectorAll('select');
+    selects.forEach(s => populateNextOptions(s));
 }
 
 function addStage(stageObj) {
@@ -606,16 +672,33 @@ function syncFromDOM() {
     const children = Array.from(builderDiv.children).filter(n => n && n._nameInput);
     const newStages = children.map((child) => {
         const stageName = child._nameInput.value;
+        const content = child._contentInput.value;
         const question = child._questionInput.value;
         const opts = [];
-        const optionRows = Array.from(child._optionsContainer.children);
-        optionRows.forEach((row) => {
-            const inputs = row.querySelectorAll('input');
-            if (inputs.length >= 2) {
-                opts.push({ text: inputs[0].value, points: parseInt(inputs[1].value) || 0 });
-            }
-        });
-        return { stage: stageName, question: question, options: opts };
+            const optionRows = Array.from(child._optionsContainer.children);
+            optionRows.forEach((row) => {
+                // include select for next target in addition to inputs
+                const inputs = row.querySelectorAll('input, select');
+                if (inputs.length >= 2) {
+                    const text = inputs[0].value;
+                    const points = parseInt(inputs[1].value) || 0;
+                    let next = null;
+                    if (inputs.length >= 3) {
+                        const sel = inputs[2];
+                        // treat empty string as null, 'END' as special end marker, numeric strings as indices
+                        if (sel && sel.value !== '') {
+                            if (sel.value === 'END') next = 'END';
+                            else if (!isNaN(parseInt(sel.value))) next = parseInt(sel.value);
+                            else next = sel.value;
+                        }
+                    }
+                    const optObj = { text: text, points: points };
+                    if (next !== null) optObj.next = next;
+                    opts.push(optObj);
+                }
+            });
+        const stageObj = { stage: stageName, content: content, question: question, options: opts };
+        return stageObj;
     });
     builder.stages = newStages;
     // update intro
@@ -668,10 +751,11 @@ function validateJSON() {
 
 function loadTemplate() {
     const template = {
-        "intro": "Your company's systems have been compromised. You are the incident response lead. What do you do?",
+        "intro": "Your company's systems have been compromised. You are the incident response lead.",
         "stages": [
             {
                 "stage": "detection",
+                "content": "The Security Operations Center (SOC) team has detected suspicious login attempts from an unfamiliar IP address. Your monitoring systems show unusual outbound traffic to known malicious domains. The incident timeline shows the attack began 2 hours ago.",
                 "question": "What is your first action?",
                 "options": [
                     {"text": "Escalate to Security Team immediately", "points": 25},
@@ -681,6 +765,7 @@ function loadTemplate() {
             },
             {
                 "stage": "containment",
+                "content": "Your team confirms the attacker has gained access to sensitive data servers. They are actively exfiltrating customer information. Network logs show 500 GB of data transfer to the external IP address over the past 30 minutes.",
                 "question": "How do you contain the threat?",
                 "options": [
                     {"text": "Isolate affected systems from network", "points": 30},
