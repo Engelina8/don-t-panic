@@ -288,6 +288,7 @@
 
 <script>
     const sessionId = {{ session.id }};
+    const maxPoints = {{ scenario.max_points or 100 }};
     let startTime = Date.now();
     let decisionCount = 0;
     let currentStageIndex = 0;
@@ -317,6 +318,15 @@
                     document.getElementById('story-content').innerHTML = '<pre class="mono">' + scenarioData + '</pre>';
                     return;
                 }
+            }
+
+            console.log('Scenario data loaded:', scenarioData);
+            if (scenarioData.stages) {
+                scenarioData.stages.forEach((stage, idx) => {
+                    console.log(`Stage ${idx}: "${stage.stage}"`, {
+                        options: stage.options
+                    });
+                });
             }
 
             displayStory();
@@ -380,6 +390,13 @@
             button.textContent = option.text;
             button.dataset.points = option.points || 0;
             button.dataset.index = index;
+            
+            console.log(`Creating button for option ${index}:`, {
+                text: option.text,
+                points: option.points,
+                dataPointsAttribute: button.dataset.points
+            });
+            
             button.addEventListener('click', function() {
                 handleDecision(option, this);
             });
@@ -399,32 +416,42 @@
     // Decision handler
     function handleDecision(option, buttonElement) {
         decisionCount++;
-        const points = parseInt(option.points) || 0;
+        // Get points from button's data-points attribute (this is the source of truth in DOM)
+        let points = parseInt(buttonElement.dataset.points) || 0;
+        
+        // Fall back to option.points if dataset doesn't have it
+        if (points === 0 && option.points !== undefined) {
+            points = parseInt(option.points) || 0;
+        }
+        
+        console.log(`DECISION #${decisionCount}: Option "${option.text}" selected`);
+        console.log(`  dataPointsAttribute: ${buttonElement.dataset.points}`);
+        console.log(`  optionPointsProperty: ${option.points}`);
+        console.log(`  finalPoints: ${points}`);
+        console.log(`  metrics before: ${JSON.stringify(metrics)}`);
         
         // Update metrics based on points
         updateMetricsFromPoints(points);
+        
+        console.log(`  metrics after: ${JSON.stringify(metrics)}`);
         
         // Branching: if option.next is provided, follow it. Otherwise default sequential behavior.
         const nextTarget = option.next;
         if (nextTarget !== undefined && nextTarget !== null && nextTarget !== '') {
             // Special END marker
             if (nextTarget === 'END') {
-                showFeedback(option.text);
                 setTimeout(completeScenario, 1200);
             } else if (typeof nextTarget === 'number' || !isNaN(parseInt(nextTarget))) {
                 const targetIndex = parseInt(nextTarget);
                 if (scenarioData.stages && targetIndex >= 0 && targetIndex < scenarioData.stages.length) {
                     currentStageIndex = targetIndex;
                     displayStory();
-                    showFeedback(option.text);
                 } else {
                     // Invalid index: fallback to sequential
                     if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
                         currentStageIndex++;
                         displayStory();
-                        showFeedback(option.text);
                     } else {
-                        showFeedback(option.text);
                         setTimeout(completeScenario, 1200);
                     }
                 }
@@ -434,15 +461,12 @@
                 if (idx !== -1) {
                     currentStageIndex = idx;
                     displayStory();
-                    showFeedback(option.text);
                 } else {
                     // fallback sequential
                     if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
                         currentStageIndex++;
                         displayStory();
-                        showFeedback(option.text);
                     } else {
-                        showFeedback(option.text);
                         setTimeout(completeScenario, 1200);
                     }
                 }
@@ -452,9 +476,7 @@
             if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
                 currentStageIndex++;
                 displayStory();
-                showFeedback(option.text);
             } else {
-                showFeedback(option.text);
                 setTimeout(completeScenario, 2000);
             }
         }
@@ -467,11 +489,13 @@
     function updateMetricsFromPoints(points) {
         const increase = Math.abs(points);
         if (points > 0) {
-            metrics.detection += increase * 0.2;
-            metrics.containment += increase * 0.2;
-            metrics.eradication += increase * 0.2;
-            metrics.recovery += increase * 0.2;
-            metrics.communication += increase * 0.2;
+            // Distribute points evenly across all 5 metrics (20% each)
+            const perMetric = increase / 5;
+            metrics.detection += perMetric;
+            metrics.containment += perMetric;
+            metrics.eradication += perMetric;
+            metrics.recovery += perMetric;
+            metrics.communication += perMetric;
         }
 
         // Update progress bars
@@ -486,23 +510,23 @@
         }
     }
 
-    function showFeedback(decision) {
-        alert('✅ Decision recorded: ' + decision);
-    }
-
     function completeScenario() {
-        // Normalize each metric to 0-100 and compute average as final score
+        // Metrics are accumulated in POINTS, not percentages
+        // Sum all metrics to get total points earned, cap at maxPoints
+        const metricValues = Object.values(metrics);
+        const totalPoints = metricValues.reduce((a, b) => a + b, 0);
+        const finalScore = Math.round(Math.min(totalPoints, maxPoints));
+        
+        console.log('DEBUG completeScenario - Raw metrics:', metrics);
+        console.log('DEBUG completeScenario - Total points:', totalPoints);
+        console.log('DEBUG completeScenario - Max points:', maxPoints);
+        console.log('DEBUG completeScenario - Final score:', finalScore);
+
+        // For server, send both the final score and the capped metric values
         const caps = {};
         Object.keys(metrics).forEach(k => {
-            let v = Math.round(metrics[k]);
-            if (isNaN(v) || v < 0) v = 0;
-            if (v > 100) v = 100;
-            caps[k] = v;
+            caps[k] = Math.round(Math.min(metrics[k], maxPoints));
         });
-
-        const metricValues = Object.values(caps);
-        const sum = metricValues.reduce((a, b) => a + b, 0);
-        const finalScore = metricValues.length ? Math.round(sum / metricValues.length) : 0;
 
         // Send both final score and breakdown to server so results show properly
         fetch(`/scenarios/session/{{ session.id }}/complete`, {
@@ -514,6 +538,7 @@
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Server response:', data);
             if (data.redirect) {
                 window.location.href = data.redirect;
             }

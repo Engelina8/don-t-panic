@@ -355,9 +355,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="max_points">Maximum Points *</label>
-                    <input type="number" id="max_points" name="max_points" value="{{ scenario.max_points if scenario else 100 }}" min="1" max="10000" required>
-                    <div class="form-hint">Total points awarded for a perfect run (default 100)</div>
+                    <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                        <input type="checkbox" id="auto_max_points" name="auto_max_points" checked style="width:18px; height:18px; cursor:pointer;">
+                        <span>Auto-calculate maximum points</span>
+                    </label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="number" id="max_points" name="max_points" value="{{ scenario.max_points if scenario else 100 }}" min="1" max="10000" disabled style="flex:1;">
+                        <button type="button" id="calcMaxPointsBtn" class="btn-small" style="white-space:nowrap;">Calculate</button>
+                    </div>
+                    <div class="form-hint">
+                        <span id="max_points_hint">✓ Auto mode: Total points = sum of all answer points</span>
+                    </div>
                 </div>
 
                 <!-- Scenario Builder (friendly UI) -->
@@ -846,6 +854,78 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('❌ Invalid JSON in scenario content: ' + err.message);
         }
     });
+
+    // Auto max points functionality
+    const autoCheckbox = document.getElementById('auto_max_points');
+    const maxPointsInput = document.getElementById('max_points');
+    const calcBtn = document.getElementById('calcMaxPointsBtn');
+    const hint = document.getElementById('max_points_hint');
+
+    // Toggle input enabled/disabled based on checkbox
+    autoCheckbox.addEventListener('change', function() {
+        maxPointsInput.disabled = this.checked;
+        if (this.checked) {
+            hint.textContent = '✓ Auto mode: Total points = sum of all answer points';
+            calculateMaxPointsFromScenario();
+        } else {
+            hint.textContent = '✎ Manual mode: Set points yourself';
+        }
+    });
+
+    // Manual calculate button
+    calcBtn.addEventListener('click', function() {
+        calculateMaxPointsFromScenario();
+    });
+
+    // Function to calculate max points from scenario
+    function calculateMaxPointsFromScenario() {
+        try {
+            // Get current scenario from textarea
+            const contentText = document.getElementById('scenario_content').value;
+            const scenario = JSON.parse(contentText);
+            
+            if (!scenario.stages || scenario.stages.length === 0) {
+                maxPointsInput.value = 100;
+                return;
+            }
+
+            // Sum all points from all options in all stages
+            let totalPoints = 0;
+            scenario.stages.forEach(stage => {
+                // Get the HIGHEST points from each stage (best answer path)
+                if (stage.options && stage.options.length > 0) {
+                    let maxStagePoints = 0;
+                    stage.options.forEach(option => {
+                        const points = parseInt(option.points) || 0;
+                        if (points > maxStagePoints) {
+                            maxStagePoints = points;
+                        }
+                    });
+                    totalPoints += maxStagePoints;
+                }
+            });
+
+            // Set calculated value to actual sum, or 100 if no points
+            const calculatedPoints = totalPoints > 0 ? totalPoints : 100;
+            maxPointsInput.value = calculatedPoints;
+            
+            if (autoCheckbox.checked) {
+                hint.textContent = `✓ Auto calculated: ${calculatedPoints} points (sum of best answers per stage)`;
+            }
+        } catch (err) {
+            console.error('Error calculating max points:', err);
+            alert('Could not calculate max points. Please ensure scenario JSON is valid.');
+        }
+    }
+
+    // Auto-calculate when builder updates
+    const originalUpdateTextarea = updateTextareaFromBuilder;
+    updateTextareaFromBuilder = function() {
+        originalUpdateTextarea.call(this);
+        if (autoCheckbox.checked) {
+            calculateMaxPointsFromScenario();
+        }
+    };
 });
 </script>
 {% endblock %}

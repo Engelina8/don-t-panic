@@ -24,17 +24,22 @@
         color: white;
         padding: 40px;
         text-align: center;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .results-header h1 {
         font-size: 2.5rem;
         margin-bottom: 10px;
+        color: white !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .results-header p {
         font-size: 1.1rem;
         margin: 0;
-        opacity: 0.9;
+        opacity: 1;
+        color: white;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     .score-display {
@@ -214,14 +219,14 @@
         <div class="results-header">
             {% set percent = (session.score / scenario.max_points * 100) if scenario.max_points else 0 %}
             {% if percent >= 80 %}
-                    <h1>🎉 Excellent!</h1>
-                    <p>You handled this crisis very well.</p>
+                    <h1 style="color: white;">🎉 Excellent!</h1>
+                    <p style="color: white;">You handled this crisis very well.</p>
                 {% elif percent >= 60 %}
-                    <h1>👍 Good Job!</h1>
-                    <p>You made some solid decisions, but there's room for improvement.</p>
+                    <h1 style="color: white;">👍 Good Job!</h1>
+                    <p style="color: white;">You made some solid decisions, but there's room for improvement.</p>
                 {% else %}
-                    <h1>⚠️ Needs Improvement</h1>
-                    <p>This scenario required better decision-making. Try again to improve!</p>
+                    <h1 style="color: white;">⚠️ Needs Improvement</h1>
+                    <p style="color: white;">This scenario required better decision-making. Try again to improve!</p>
                 {% endif %}
         </div>
 

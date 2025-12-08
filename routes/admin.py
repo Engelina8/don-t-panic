@@ -127,6 +127,7 @@ def create_scenario():
         difficulty = request.form.get('difficulty_level', 3)
         estimated_time = request.form.get('estimated_time', 30)
         max_points = request.form.get('max_points', 100)
+        auto_max_points = request.form.get('auto_max_points') == 'on'
         scenario_content = request.form.get('scenario_content', '{}')
         
         # Validation
@@ -138,7 +139,22 @@ def create_scenario():
         try:
             # Validate JSON
             import json
-            json.loads(scenario_content)
+            scenario_data = json.loads(scenario_content)
+            
+            # Calculate max_points if auto is enabled
+            if auto_max_points:
+                total_points = 0
+                if 'stages' in scenario_data:
+                    for stage in scenario_data['stages']:
+                        # Sum the HIGHEST points from each stage (best answer path)
+                        if 'options' in stage:
+                            max_stage_points = 0
+                            for option in stage['options']:
+                                points = int(option.get('points', 0))
+                                if points > max_stage_points:
+                                    max_stage_points = points
+                            total_points += max_stage_points
+                max_points = total_points if total_points > 0 else 100
             
             new_scenario = Scenario(
                 title=title,
@@ -153,7 +169,7 @@ def create_scenario():
             
             db.session.add(new_scenario)
             db.session.commit()
-            flash(f'✅ Scenario "{title}" created successfully!', 'success')
+            flash(f'✅ Scenario "{title}" created successfully! (Max Points: {max_points})', 'success')
             return redirect(url_for('admin.manage_scenarios'))
             
         except json.JSONDecodeError as e:
@@ -193,17 +209,34 @@ def edit_scenario(scenario_id):
         scenario.incident_type = request.form.get('incident_type', scenario.incident_type)
         scenario.difficulty_level = int(request.form.get('difficulty_level', scenario.difficulty_level))
         scenario.estimated_time = int(request.form.get('estimated_time', scenario.estimated_time))
-        scenario.max_points = int(request.form.get('max_points', scenario.max_points or 100))
+        auto_max_points = request.form.get('auto_max_points') == 'on'
         scenario.scenario_content = request.form.get('scenario_content', scenario.scenario_content)
         scenario.updated_at = datetime.utcnow()
         
         try:
             # Validate JSON
             import json
-            json.loads(scenario.scenario_content)
+            scenario_data = json.loads(scenario.scenario_content)
+            
+            # Calculate max_points if auto is enabled
+            if auto_max_points:
+                total_points = 0
+                if 'stages' in scenario_data:
+                    for stage in scenario_data['stages']:
+                        # Sum the HIGHEST points from each stage (best answer path)
+                        if 'options' in stage:
+                            max_stage_points = 0
+                            for option in stage['options']:
+                                points = int(option.get('points', 0))
+                                if points > max_stage_points:
+                                    max_stage_points = points
+                            total_points += max_stage_points
+                scenario.max_points = total_points if total_points > 0 else 100
+            else:
+                scenario.max_points = int(request.form.get('max_points', scenario.max_points or 100))
             
             db.session.commit()
-            flash(f'✅ Scenario "{scenario.title}" updated successfully!', 'success')
+            flash(f'✅ Scenario "{scenario.title}" updated successfully! (Max Points: {scenario.max_points})', 'success')
             return redirect(url_for('admin.manage_scenarios'))
             
         except json.JSONDecodeError as e:

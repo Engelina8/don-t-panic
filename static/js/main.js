@@ -1,5 +1,53 @@
 // DON'T PANIC - Main JavaScript
 
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/js/service-worker.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker registration failed:', err));
+    });
+}
+
+// PWA Install Button Handler
+let deferredPrompt;
+const installContainer = document.getElementById('install-app-container');
+const installBtn = document.getElementById('install-app-btn');
+
+// Listen for the beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show the install button
+    if (installContainer) {
+        installContainer.style.display = 'block';
+    }
+});
+
+// Handle install button click
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+            if (installContainer) {
+                installContainer.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Hide install button if already installed
+window.addEventListener('appinstalled', () => {
+    console.log('App installed successfully');
+    if (installContainer) {
+        installContainer.style.display = 'none';
+    }
+    deferredPrompt = null;
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-dismiss flash messages

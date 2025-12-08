@@ -236,7 +236,7 @@ header .container {
 
 /* Logo icon effect */
 .logo::before {
-    content: '🔒';
+    content: '';
     font-size: 1.5rem;
     animation: pulse 2s ease-in-out infinite;
 }
@@ -271,7 +271,7 @@ nav ul li {
 nav ul li a {
     color: var(--text-primary);
     text-decoration: none;
-    padding: 0.625rem 1.25rem;
+    padding: 0.75rem 1.5rem;
     border-radius: var(--border-radius-sm);
     font-weight: 500;
     font-size: 0.95rem;
@@ -279,6 +279,10 @@ nav ul li a {
     display: inline-block;
     position: relative;
     overflow: hidden;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Nav link hover effect */
@@ -342,6 +346,44 @@ nav ul li a.active {
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Nav box buttons (login, logout, install) */
+.nav-box {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+}
+
+.nav-box:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--bg-hover);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* Install button styling */
+.install-btn {
+    background: linear-gradient(135deg, var(--primary-color), #0099ff);
+    border: none;
+    color: var(--bg-primary);
+    font-weight: 600;
+}
+
+.install-btn:hover {
+    box-shadow: 0 0 20px var(--primary-glow);
+    transform: translateY(-2px);
 }
 
 /* === MAIN CONTAINER === */
@@ -476,6 +518,73 @@ main .container {
 .btn-sm {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
+}
+
+/* Bootstrap button overrides for light blue theme */
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-primary:hover {
+    color: var(--bg-primary) !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 15px var(--primary-glow) !important;
+}
+
+.btn-outline-success {
+    color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-success:hover {
+    color: var(--bg-primary) !important;
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 159, 0.5) !important;
+}
+
+.btn-outline-info {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-info:hover {
+    color: var(--bg-primary) !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 15px var(--primary-glow) !important;
+}
+
+.btn-outline-secondary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-secondary:hover {
+    color: var(--bg-primary) !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 15px var(--primary-glow) !important;
+}
+
+/* Table links styling for admin dashboard */
+.table a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.table a:hover {
+    color: #00ffff;
+    text-decoration: underline;
+    text-shadow: 0 0 10px var(--primary-glow);
+}
 }
 
 .btn-lg {
