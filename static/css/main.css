@@ -585,7 +585,6 @@ main .container {
     text-decoration: underline;
     text-shadow: 0 0 10px var(--primary-glow);
 }
-}
 
 .btn-lg {
     padding: 1.125rem 2.25rem;

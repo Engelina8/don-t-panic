@@ -59,8 +59,62 @@ def dashboard():
 @instructor_required
 def users():
     """Manage users"""
-    all_users = User.query.filter_by(role='trainee').order_by(User.created_at.desc()).all()
+    all_users = User.query.filter(User.role.in_(['trainee', 'instructor'])).order_by(User.created_at.desc()).all()
     return render_template('admin/users.html', users=all_users)
+
+@admin_bp.route('/users/add', methods=['POST'])
+@login_required
+@instructor_required
+def add_user():
+    """Add a new user directly"""
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '').strip()
+    role = request.form.get('role', 'trainee')
+    
+    # Validation
+    if not username or not email or not password:
+        flash('Username, email, and password are required', 'error')
+        return redirect(url_for('admin.users'))
+    
+    if len(password) < 6:
+        flash('Password must be at least 6 characters long', 'error')
+        return redirect(url_for('admin.users'))
+    
+    # Check if user already exists
+    if User.query.filter_by(username=username).first():
+        flash(f'Username "{username}" already exists', 'error')
+        return redirect(url_for('admin.users'))
+    
+    if User.query.filter_by(email=email).first():
+        flash(f'Email "{email}" already registered', 'error')
+        return redirect(url_for('admin.users'))
+    
+    # Validate role
+    if role not in ['trainee', 'instructor']:
+        flash('Invalid role selected', 'error')
+        return redirect(url_for('admin.users'))
+    
+    try:
+        # Create new user
+        new_user = User(
+            username=username,
+            email=email,
+            role=role,
+            is_active=True
+        )
+        new_user.set_password(password)
+        
+        db.session.add(new_user)
+        db.session.commit()
+        
+        role_display = 'Instructor' if role == 'instructor' else 'Trainee'
+        flash(f'✅ User "{username}" created successfully as {role_display}!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'❌ Error creating user: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.users'))
 
 @admin_bp.route('/users/<int:user_id>')
 @login_required

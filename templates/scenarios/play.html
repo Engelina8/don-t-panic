@@ -430,8 +430,8 @@
         console.log(`  finalPoints: ${points}`);
         console.log(`  metrics before: ${JSON.stringify(metrics)}`);
         
-        // Update metrics based on points
-        updateMetricsFromPoints(points);
+        // Update metrics based on points and option metrics weights
+        updateMetricsFromPoints(points, option.metrics);
         
         console.log(`  metrics after: ${JSON.stringify(metrics)}`);
         
@@ -486,16 +486,36 @@
         buttonElement.style.opacity = '0.5';
     }
 
-    function updateMetricsFromPoints(points) {
+    function updateMetricsFromPoints(points, metricsWeights) {
         const increase = Math.abs(points);
         if (points > 0) {
-            // Distribute points evenly across all 5 metrics (20% each)
-            const perMetric = increase / 5;
-            metrics.detection += perMetric;
-            metrics.containment += perMetric;
-            metrics.eradication += perMetric;
-            metrics.recovery += perMetric;
-            metrics.communication += perMetric;
+            // If metrics weights are specified, use them
+            if (metricsWeights && Object.keys(metricsWeights).length > 0) {
+                // Distribute points according to specified weights
+                const metricNames = ['detection', 'containment', 'eradication', 'recovery', 'communication'];
+                const totalWeight = Object.values(metricsWeights).reduce((a, b) => a + b, 0);
+                
+                if (totalWeight > 0) {
+                    metricNames.forEach(metric => {
+                        const weight = (metricsWeights[metric] || 0) / totalWeight;
+                        metrics[metric] += increase * weight;
+                    });
+                } else {
+                    // Fallback: distribute evenly if weights sum to 0
+                    const perMetric = increase / 5;
+                    metricNames.forEach(metric => {
+                        metrics[metric] += perMetric;
+                    });
+                }
+            } else {
+                // No metrics specified: distribute evenly across all 5 metrics
+                const perMetric = increase / 5;
+                metrics.detection += perMetric;
+                metrics.containment += perMetric;
+                metrics.eradication += perMetric;
+                metrics.recovery += perMetric;
+                metrics.communication += perMetric;
+            }
         }
 
         // Update progress bars

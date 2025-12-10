@@ -429,6 +429,10 @@
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"text": "Action text",<br/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"points": 20,<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"metrics": {<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"detection": 50,<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"containment": 50<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"next": 2  <span style="color:#9aa">// optional: index of next stage, or &quot;END&quot; to finish</span><br/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
@@ -446,6 +450,7 @@
                     <li><strong>Question:</strong> Decision prompt for the user</li>
                     <li><strong>Points:</strong> Positive for good, negative for poor choices</li>
                     <li><strong>Range:</strong> Use -30 to +30 for point values</li>
+                    <li><strong>Metrics (optional):</strong> Assign % to detection, containment, eradication, recovery, communication (use 📊 Metrics button)</li>
                     <li><strong>Options:</strong> Provide 3-5 realistic choices per stage</li>
                 </ul>
             </div>
@@ -484,12 +489,14 @@ function createOptionRow(stageIndex, optionIndex, option) {
     row.style.display = 'flex';
     row.style.gap = '8px';
     row.style.marginBottom = '6px';
+    row.style.flexWrap = 'wrap';
 
     const textInput = document.createElement('input');
     textInput.type = 'text';
     textInput.placeholder = 'Option text';
     textInput.value = option.text || '';
     textInput.style.flex = '1';
+    textInput.style.minWidth = '200px';
     textInput.addEventListener('input', () => syncFromDOM());
 
     const pointsInput = document.createElement('input');
@@ -515,9 +522,20 @@ function createOptionRow(stageIndex, optionIndex, option) {
     removeBtn.textContent = 'Remove';
     removeBtn.addEventListener('click', () => { removeOption(stageIndex, optionIndex); });
 
+    // Metrics button to open metric distribution editor
+    const metricsBtn = document.createElement('button');
+    metricsBtn.type = 'button';
+    metricsBtn.className = 'btn-small';
+    metricsBtn.textContent = '📊 Metrics';
+    metricsBtn.style.minWidth = '100px';
+    metricsBtn.addEventListener('click', () => {
+        openMetricsEditor(stageIndex, optionIndex, option);
+    });
+
     row.appendChild(textInput);
     row.appendChild(pointsInput);
     row.appendChild(nextSelect);
+    row.appendChild(metricsBtn);
     row.appendChild(removeBtn);
     return row;
 }
@@ -674,17 +692,81 @@ function removeOption(stageIndex, optionIndex) {
     renderBuilder();
 }
 
+// Metrics editor modal
+function openMetricsEditor(stageIndex, optionIndex, option) {
+    const metrics = ['detection', 'containment', 'eradication', 'recovery', 'communication'];
+    const metricsObj = option.metrics || {};
+    
+    let html = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" id="metricsEditorModal">';
+    html += '<div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; max-width: 400px; width: 90%;">';
+    html += '<h3 style="color: var(--primary-color); margin-bottom: 20px;">Assign Metrics for: "' + (option.text || 'Option') + '"</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Distribute points to which metrics does this option impact?</p>';
+    
+    let totalWeight = 0;
+    metrics.forEach(metric => {
+        const weight = metricsObj[metric] || 0;
+        totalWeight += weight;
+        html += `<div style="margin-bottom: 16px;">`;
+        html += `<label style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary); margin-bottom: 8px;">`;
+        html += `<input type="range" min="0" max="100" value="${weight}" class="metric-slider" data-metric="${metric}" style="flex: 1; cursor: pointer;">`;
+        html += `<span style="min-width: 40px; text-align: right; color: var(--primary-color); font-weight: 600;" class="metric-value">${weight}%</span>`;
+        html += `</label>`;
+        html += `<div style="text-align: center; font-size: 0.85rem; color: var(--text-muted); text-transform: capitalize;">${metric}</div>`;
+        html += `</div>`;
+    });
+    
+    html += '<div style="background: var(--bg-hover); padding: 12px; border-radius: 6px; margin-bottom: 20px; color: var(--text-secondary); text-align: center; font-size: 0.9rem;">';
+    html += '<span id="totalPercentage">Total: 0%</span>';
+    html += '</div>';
+    html += '<div style="display: flex; gap: 12px; justify-content: flex-end;">';
+    html += '<button onclick="document.getElementById(\'metricsEditorModal\').remove()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); cursor: pointer;">Cancel</button>';
+    html += '<button onclick="saveMetrics(' + stageIndex + ', ' + optionIndex + ')" style="padding: 10px 20px; background: var(--primary-color); color: var(--bg-primary); border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save</button>';
+    html += '</div>';
+    html += '</div></div>';
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    
+    // Add event listeners to sliders
+    document.querySelectorAll('.metric-slider').forEach(slider => {
+        slider.addEventListener('input', function() {
+            const metricValues = Array.from(document.querySelectorAll('.metric-slider')).map(s => parseInt(s.value));
+            const total = metricValues.reduce((a, b) => a + b, 0);
+            document.getElementById('totalPercentage').textContent = 'Total: ' + total + '%';
+            
+            // Update the display value next to slider
+            const valueSpan = this.parentElement.querySelector('.metric-value');
+            valueSpan.textContent = this.value + '%';
+        });
+    });
+}
+
+function saveMetrics(stageIndex, optionIndex) {
+    const metrics = {};
+    document.querySelectorAll('.metric-slider').forEach(slider => {
+        const metric = slider.dataset.metric;
+        const value = parseInt(slider.value);
+        if (value > 0) {
+            metrics[metric] = value;
+        }
+    });
+    
+    builder.stages[stageIndex].options[optionIndex].metrics = metrics;
+    updateTextareaFromBuilder();
+    document.getElementById('metricsEditorModal').remove();
+    syncFromDOM();
+}
+
 // Read the DOM values into builder model
 function syncFromDOM() {
     const builderDiv = document.getElementById('stageBuilder');
     const children = Array.from(builderDiv.children).filter(n => n && n._nameInput);
-    const newStages = children.map((child) => {
+    const newStages = children.map((child, stageIdx) => {
         const stageName = child._nameInput.value;
         const content = child._contentInput.value;
         const question = child._questionInput.value;
         const opts = [];
             const optionRows = Array.from(child._optionsContainer.children);
-            optionRows.forEach((row) => {
+            optionRows.forEach((row, optIdx) => {
                 // include select for next target in addition to inputs
                 const inputs = row.querySelectorAll('input, select');
                 if (inputs.length >= 2) {
@@ -702,6 +784,15 @@ function syncFromDOM() {
                     }
                     const optObj = { text: text, points: points };
                     if (next !== null) optObj.next = next;
+                    
+                    // Preserve metrics from previous builder state if they exist
+                    if (builder.stages && builder.stages[stageIdx] && 
+                        builder.stages[stageIdx].options && 
+                        builder.stages[stageIdx].options[optIdx] && 
+                        builder.stages[stageIdx].options[optIdx].metrics) {
+                        optObj.metrics = builder.stages[stageIdx].options[optIdx].metrics;
+                    }
+                    
                     opts.push(optObj);
                 }
             });

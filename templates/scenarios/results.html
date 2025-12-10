@@ -245,6 +245,7 @@
             <h5>📊 Performance Breakdown</h5>
             {% set performance = session.get_performance_breakdown() %}
             
+            {% if performance.detection > 0 %}
             <div class="metric-row">
                 <div class="metric-label">Detection</div>
                 <div class="metric-bar">
@@ -252,7 +253,9 @@
                 </div>
                 <div class="metric-value">{{ performance.detection }}/100</div>
             </div>
+            {% endif %}
 
+            {% if performance.containment > 0 %}
             <div class="metric-row">
                 <div class="metric-label">Containment</div>
                 <div class="metric-bar">
@@ -260,7 +263,9 @@
                 </div>
                 <div class="metric-value">{{ performance.containment }}/100</div>
             </div>
+            {% endif %}
 
+            {% if performance.eradication > 0 %}
             <div class="metric-row">
                 <div class="metric-label">Eradication</div>
                 <div class="metric-bar">
@@ -268,7 +273,9 @@
                 </div>
                 <div class="metric-value">{{ performance.eradication }}/100</div>
             </div>
+            {% endif %}
 
+            {% if performance.recovery > 0 %}
             <div class="metric-row">
                 <div class="metric-label">Recovery</div>
                 <div class="metric-bar">
@@ -276,7 +283,10 @@
                 </div>
                 <div class="metric-value">{{ performance.recovery }}/100</div>
             </div>
+            </div>
+            {% endif %}
 
+            {% if performance.communication > 0 %}
             <div class="metric-row">
                 <div class="metric-label">Communication</div>
                 <div class="metric-bar">
@@ -284,6 +294,7 @@
                 </div>
                 <div class="metric-value">{{ performance.communication }}/100</div>
             </div>
+            {% endif %}
         </div>
 
         <div class="session-details">
