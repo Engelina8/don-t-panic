@@ -22,7 +22,10 @@ class User(UserMixin, db.Model):
     
     # User role
     role = db.Column(db.String(20), nullable=False, default='trainee')
-    # Options: 'trainee' or 'instructor'
+    # Options: 'trainee', 'instructor', or 'admin'
+    
+    # Group membership (for trainee and instructor)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=True)
     
     # Metadata
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -52,6 +55,14 @@ class User(UserMixin, db.Model):
         """Check if user is an instructor"""
         return self.role == 'instructor'
     
+    def is_admin(self):
+        """Check if user is an admin"""
+        return self.role == 'admin'
+    
+    def is_instructor_or_admin(self):
+        """Check if user is an instructor or admin"""
+        return self.role in ('instructor', 'admin')
+    
     def get_completed_scenarios_count(self):
         """Get number of completed scenarios"""
         return self.training_sessions.filter_by(status='completed').count()
@@ -69,7 +80,60 @@ class User(UserMixin, db.Model):
 
 
 # ========================
-# 2. SCENARIOS TABLE
+# 2. GROUPS TABLE
+# ========================
+class Group(db.Model):
+    """Training groups/organizations"""
+    __tablename__ = 'groups'
+    
+    # Primary key
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Group info
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    
+    # Admin who created this group
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    
+    # Relationships
+    members = db.relationship('User', 
+                            backref='group', 
+                            lazy='dynamic',
+                            foreign_keys='User.group_id')
+    
+    admin = db.relationship('User',
+                           foreign_keys=[created_by],
+                           backref='created_groups')
+    
+    def get_instructors(self):
+        """Get all instructors in this group"""
+        return self.members.filter_by(role='instructor').all()
+    
+    def get_trainees(self):
+        """Get all trainees in this group"""
+        return self.members.filter_by(role='trainee').all()
+    
+    def get_member_count(self):
+        """Get total member count"""
+        return self.members.count()
+    
+    def get_instructor_count(self):
+        """Get instructor count"""
+        return self.members.filter_by(role='instructor').count()
+    
+    def get_trainee_count(self):
+        """Get trainee count"""
+        return self.members.filter_by(role='trainee').count()
+    
+    def __repr__(self):
+        return f'<Group {self.name}>'
+
+
+# ========================
+# 3. SCENARIOS TABLE
 # ========================
 class Scenario(db.Model):
     """Training scenarios/exercises"""
@@ -142,7 +206,7 @@ class Scenario(db.Model):
 
 
 # ========================
-# 3. TRAINING SESSIONS TABLE
+# 4. TRAINING SESSIONS TABLE
 # ========================
 class TrainingSession(db.Model):
     """Individual training session records"""
@@ -231,19 +295,19 @@ def init_db(app):
         db.create_all()
         print("✅ Database tables created successfully!")
         
-        # Create default instructor if none exists
-        if User.query.filter_by(role='instructor').first() is None:
-            create_default_instructor()
+        # Create default admin if none exists
+        if User.query.filter_by(role='admin').first() is None:
+            create_default_admin()
 
-def create_default_instructor():
-    """Create a default instructor account for testing"""
-    instructor = User(
+def create_default_admin():
+    """Create a default admin account for testing"""
+    admin = User(
         username='admin',
         email='admin@dontpanic.com',
-        role='instructor'
+        role='admin'
     )
-    instructor.set_password('admin123')  # Change this in production!
+    admin.set_password('admin123')  # Change this in production!
     
-    db.session.add(instructor)
+    db.session.add(admin)
     db.session.commit()
-    print("✅ Default instructor created: username='admin', password='admin123'")
+    print("✅ Default admin created: username='admin', password='admin123'")

@@ -3,7 +3,7 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
-from models import db, User, Scenario, TrainingSession
+from models import db, User, Scenario, TrainingSession, Group
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 from . import admin_bp
@@ -20,6 +20,21 @@ def instructor_required(f):
         # Allow both 'instructor' and 'admin' roles to access instructor routes
         if current_user.role not in ('instructor', 'admin'):
             flash('Access denied: Instructor access required', 'error')
+            return redirect(url_for('dashboard'))
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    """Decorator to require admin role"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Please log in', 'error')
+            return redirect(url_for('auth.login'))
+        
+        if current_user.role != 'admin':
+            flash('Access denied: Admin access required', 'error')
             return redirect(url_for('dashboard'))
         
         return f(*args, **kwargs)
@@ -59,7 +74,19 @@ def dashboard():
 @instructor_required
 def users():
     """Manage users"""
-    all_users = User.query.filter(User.role.in_(['trainee', 'instructor'])).order_by(User.created_at.desc()).all()
+    # Show all users for admins, only their group members for instructors
+    if current_user.is_admin():
+        all_users = User.query.order_by(User.created_at.desc()).all()
+    else:
+        # Instructors can only see users in their group
+        if current_user.group_id:
+            all_users = User.query.filter(
+                User.group_id == current_user.group_id,
+                User.role.in_(['trainee', 'instructor'])
+            ).order_by(User.created_at.desc()).all()
+        else:
+            # Instructor not in a group sees no users
+            all_users = []
     return render_template('admin/users.html', users=all_users)
 
 @admin_bp.route('/users/add', methods=['POST'])
@@ -90,9 +117,18 @@ def add_user():
         flash(f'Email "{email}" already registered', 'error')
         return redirect(url_for('admin.users'))
     
-    # Validate role
-    if role not in ['trainee', 'instructor']:
+    # Validate role - only admins can create admin users
+    valid_roles = ['trainee', 'instructor']
+    if current_user.is_admin():
+        valid_roles.append('admin')
+    
+    if role not in valid_roles:
         flash('Invalid role selected', 'error')
+        return redirect(url_for('admin.users'))
+    
+    # Only admins can create other admins
+    if role == 'admin' and not current_user.is_admin():
+        flash('Only administrators can create admin users', 'error')
         return redirect(url_for('admin.users'))
     
     try:
@@ -105,11 +141,16 @@ def add_user():
         )
         new_user.set_password(password)
         
+        # Auto-assign to instructor's group if created by an instructor
+        if current_user.role == 'instructor' and current_user.group_id:
+            new_user.group_id = current_user.group_id
+        
         db.session.add(new_user)
         db.session.commit()
         
-        role_display = 'Instructor' if role == 'instructor' else 'Trainee'
-        flash(f'✅ User "{username}" created successfully as {role_display}!', 'success')
+        role_display = 'Admin' if role == 'admin' else ('Instructor' if role == 'instructor' else 'Trainee')
+        group_msg = f' and added to your group' if current_user.role == 'instructor' and current_user.group_id else ''
+        flash(f'✅ User "{username}" created successfully as {role_display}{group_msg}!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'❌ Error creating user: {str(e)}', 'error')
@@ -210,6 +251,17 @@ def create_scenario():
                             total_points += max_stage_points
                 max_points = total_points if total_points > 0 else 100
             
+            # Inject metadata into scenario_data
+            scenario_data['title'] = title
+            scenario_data['description'] = description
+            scenario_data['incident_type'] = incident_type
+            scenario_data['difficulty_level'] = int(difficulty)
+            scenario_data['estimated_time'] = int(estimated_time)
+            scenario_data['max_points'] = int(max_points)
+            
+            # Convert back to JSON string
+            scenario_content = json.dumps(scenario_data, indent=2)
+            
             new_scenario = Scenario(
                 title=title,
                 description=description,
@@ -289,6 +341,17 @@ def edit_scenario(scenario_id):
             else:
                 scenario.max_points = int(request.form.get('max_points', scenario.max_points or 100))
             
+            # Inject metadata into scenario_data
+            scenario_data['title'] = scenario.title
+            scenario_data['description'] = scenario.description
+            scenario_data['incident_type'] = scenario.incident_type
+            scenario_data['difficulty_level'] = scenario.difficulty_level
+            scenario_data['estimated_time'] = scenario.estimated_time
+            scenario_data['max_points'] = scenario.max_points
+            
+            # Convert back to JSON string
+            scenario.scenario_content = json.dumps(scenario_data, indent=2)
+            
             db.session.commit()
             flash(f'✅ Scenario "{scenario.title}" updated successfully! (Max Points: {scenario.max_points})', 'success')
             return redirect(url_for('admin.manage_scenarios'))
@@ -315,7 +378,8 @@ def delete_scenario(scenario_id):
     try:
         db.session.delete(scenario)
         db.session.commit()
-        return jsonify({'success': True, 'message': f'Scenario "{title}" deleted'})
+        flash(f'Scenario "{title}" has been deleted', 'success')
+        return jsonify({'success': True, 'redirect': url_for('admin.manage_scenarios')})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -342,3 +406,139 @@ def reports():
     return render_template('admin/reports.html',
                          completed_sessions=completed_sessions,
                          scenario_stats=scenario_stats)
+
+
+# ========================
+# GROUP MANAGEMENT ROUTES (Admin only)
+# ========================
+
+@admin_bp.route('/groups')
+@login_required
+@admin_required
+def groups():
+    """Manage groups (admin only)"""
+    all_groups = Group.query.order_by(Group.created_at.desc()).all()
+    return render_template('admin/groups.html', groups=all_groups)
+
+@admin_bp.route('/groups/add', methods=['POST'])
+@login_required
+@admin_required
+def add_group():
+    """Create a new group"""
+    name = request.form.get('name', '').strip()
+    description = request.form.get('description', '').strip()
+    
+    if not name:
+        flash('Group name is required', 'error')
+        return redirect(url_for('admin.groups'))
+    
+    # Check if group already exists
+    if Group.query.filter_by(name=name).first():
+        flash(f'Group "{name}" already exists', 'error')
+        return redirect(url_for('admin.groups'))
+    
+    try:
+        new_group = Group(
+            name=name,
+            description=description,
+            created_by=current_user.id
+        )
+        db.session.add(new_group)
+        db.session.commit()
+        flash(f'Group "{name}" created successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating group: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.groups'))
+
+@admin_bp.route('/groups/<int:id>')
+@login_required
+@admin_required
+def view_group(id):
+    """View group details and manage members"""
+    group = Group.query.get_or_404(id)
+    
+    # Get all users not in this group (including those with no group)
+    from sqlalchemy import or_
+    available_users = User.query.filter(
+        or_(User.group_id == None, User.group_id != id),
+        User.role.in_(['trainee', 'instructor'])
+    ).order_by(User.username).all()
+    
+    return render_template('admin/group_detail.html', 
+                         group=group,
+                         available_users=available_users)
+
+@admin_bp.route('/groups/<int:id>/add-member', methods=['POST'])
+@login_required
+@admin_required
+def add_group_member(id):
+    """Add a member to a group"""
+    group = Group.query.get_or_404(id)
+    user_id = request.form.get('user_id', type=int)
+    
+    if not user_id:
+        flash('Please select a user', 'error')
+        return redirect(url_for('admin.view_group', id=id))
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Check if user already in a group
+    if user.group_id:
+        flash(f'{user.username} is already in a group', 'error')
+        return redirect(url_for('admin.view_group', id=id))
+    
+    try:
+        user.group_id = id
+        db.session.commit()
+        flash(f'{user.username} added to {group.name}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error adding member: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.view_group', id=id))
+
+@admin_bp.route('/groups/<int:group_id>/remove-member/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def remove_group_member(group_id, user_id):
+    """Remove a member from a group"""
+    group = Group.query.get_or_404(group_id)
+    user = User.query.get_or_404(user_id)
+    
+    if user.group_id != group_id:
+        flash('User is not in this group', 'error')
+        return redirect(url_for('admin.view_group', id=group_id))
+    
+    try:
+        user.group_id = None
+        db.session.commit()
+        flash(f'{user.username} removed from {group.name}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error removing member: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.view_group', id=group_id))
+
+@admin_bp.route('/groups/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_group(id):
+    """Delete a group"""
+    group = Group.query.get_or_404(id)
+    
+    # Remove group association from all members
+    members = group.members.all()
+    for member in members:
+        member.group_id = None
+    
+    try:
+        db.session.delete(group)
+        db.session.commit()
+        flash(f'Group "{group.name}" deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting group: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.groups'))

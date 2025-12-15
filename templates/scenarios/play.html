@@ -293,8 +293,26 @@
     let decisionCount = 0;
     let currentStageIndex = 0;
     let scenarioData = null;
+    let pathMaxPoints = 0; // Track maximum possible points from user's actual path
     
     let metrics = {
+        detection: 0,
+        containment: 0,
+        eradication: 0,
+        recovery: 0,
+        communication: 0
+    };
+    
+    let metricsMax = {
+        detection: 0,
+        containment: 0,
+        eradication: 0,
+        recovery: 0,
+        communication: 0
+    };
+    
+    // Track maximum available points per metric along the actual path
+    let metricsMaxPath = {
         detection: 0,
         containment: 0,
         eradication: 0,
@@ -383,6 +401,19 @@
         const decisionsBody = document.getElementById('decisions-body');
         decisionsBody.innerHTML = '';
         
+        // Get the current stage to read which metrics it tests
+        const currentStage = scenarioData.stages[currentStageIndex];
+        // metrics is now an array like ["detection", "communication"]
+        const questionsMetrics = currentStage.metrics || [];
+        
+        // Show which metrics are being tested in this question
+        if (questionsMetrics.length > 0) {
+            const metricsInfo = document.createElement('div');
+            metricsInfo.style.cssText = 'margin-bottom: 16px; padding: 12px; background: var(--bg-hover); border-left: 3px solid var(--primary-color); border-radius: var(--border-radius-sm);';
+            metricsInfo.innerHTML = `<small style="color: var(--text-secondary); font-weight: 600;">Metrics Tested: ${questionsMetrics.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</small>`;
+            decisionsBody.appendChild(metricsInfo);
+        }
+
         options.forEach((option, index) => {
             const button = document.createElement('button');
             button.type = 'button';
@@ -394,7 +425,13 @@
             console.log(`Creating button for option ${index}:`, {
                 text: option.text,
                 points: option.points,
-                dataPointsAttribute: button.dataset.points
+                metrics: {
+                    detection: option.detection,
+                    containment: option.containment,
+                    eradication: option.eradication,
+                    recovery: option.recovery,
+                    communication: option.communication
+                }
             });
             
             button.addEventListener('click', function() {
@@ -416,30 +453,54 @@
     // Decision handler
     function handleDecision(option, buttonElement) {
         decisionCount++;
-        // Get points from button's data-points attribute (this is the source of truth in DOM)
-        let points = parseInt(buttonElement.dataset.points) || 0;
         
-        // Fall back to option.points if dataset doesn't have it
-        if (points === 0 && option.points !== undefined) {
-            points = parseInt(option.points) || 0;
-        }
+        // Get the current stage to read which QUESTION metrics it tests
+        const currentStage = scenarioData.stages[currentStageIndex];
+        // metrics is now an array like ["detection", "communication"]
+        const questionsMetrics = currentStage.metrics || [];
         
         console.log(`DECISION #${decisionCount}: Option "${option.text}" selected`);
-        console.log(`  dataPointsAttribute: ${buttonElement.dataset.points}`);
-        console.log(`  optionPointsProperty: ${option.points}`);
-        console.log(`  finalPoints: ${points}`);
-        console.log(`  metrics before: ${JSON.stringify(metrics)}`);
+        console.log(`  stage_index: ${currentStageIndex}, option_index: ${Array.from(document.querySelectorAll('.decision-btn')).indexOf(buttonElement)}`);
+        console.log(`  question metrics: ${JSON.stringify(questionsMetrics)}`);
+        console.log(`  option points: ${option.points}`);
+        console.log(`  option metric scores: detection=${option.detection}, containment=${option.containment}, eradication=${option.eradication}, recovery=${option.recovery}, communication=${option.communication}`);
         
-        // Update metrics based on points and option metrics weights
-        updateMetricsFromPoints(points, option.metrics);
+        // Submit decision to server for path tracking
+        const optionIndex = Array.from(buttonElement.parentElement.querySelectorAll('.decision-btn')).indexOf(buttonElement);
         
-        console.log(`  metrics after: ${JSON.stringify(metrics)}`);
+        console.log(`  Submitting to server: stage_index=${currentStageIndex}, option_index=${optionIndex}`);
         
-        // Branching: if option.next is provided, follow it. Otherwise default sequential behavior.
-        const nextTarget = option.next;
+        fetch(`/scenarios/session/{{ session.id }}/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                stage_index: currentStageIndex,
+                option_index: optionIndex
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Decision recorded on server:', data);
+        })
+        .catch(err => {
+            console.error('Error recording decision:', err);
+        });
+        
+        // Update local metrics tracking for display
+        updateMetricsFromOption(option);
+        
+        // Branching: if option.next_stage is provided, follow it. Otherwise default sequential behavior.
+        const nextTarget = option.next_stage;
         if (nextTarget !== undefined && nextTarget !== null && nextTarget !== '') {
-            // Special END marker
-            if (nextTarget === 'END') {
+            // Special END marker (-1)
+            if (nextTarget === -1) {
                 setTimeout(completeScenario, 1200);
             } else if (typeof nextTarget === 'number' || !isNaN(parseInt(nextTarget))) {
                 const targetIndex = parseInt(nextTarget);
@@ -486,86 +547,65 @@
         buttonElement.style.opacity = '0.5';
     }
 
-    function updateMetricsFromPoints(points, metricsWeights) {
-        const increase = Math.abs(points);
-        if (points > 0) {
-            // If metrics weights are specified, use them
-            if (metricsWeights && Object.keys(metricsWeights).length > 0) {
-                // Distribute points according to specified weights
-                const metricNames = ['detection', 'containment', 'eradication', 'recovery', 'communication'];
-                const totalWeight = Object.values(metricsWeights).reduce((a, b) => a + b, 0);
-                
-                if (totalWeight > 0) {
-                    metricNames.forEach(metric => {
-                        const weight = (metricsWeights[metric] || 0) / totalWeight;
-                        metrics[metric] += increase * weight;
-                    });
-                } else {
-                    // Fallback: distribute evenly if weights sum to 0
-                    const perMetric = increase / 5;
-                    metricNames.forEach(metric => {
-                        metrics[metric] += perMetric;
-                    });
-                }
-            } else {
-                // No metrics specified: distribute evenly across all 5 metrics
-                const perMetric = increase / 5;
-                metrics.detection += perMetric;
-                metrics.containment += perMetric;
-                metrics.eradication += perMetric;
-                metrics.recovery += perMetric;
-                metrics.communication += perMetric;
+    function updateMetricsFromOption(option) {
+        // NEW: option now contains individual metric values for this answer
+        // Example: option.detection = 10, option.containment = 5, etc.
+        
+        const metricsInOption = ['detection', 'containment', 'eradication', 'recovery', 'communication'];
+        
+        metricsInOption.forEach(metric => {
+            if (option.hasOwnProperty(metric)) {
+                const points = parseInt(option[metric]) || 0;
+                // Add points from this option to the running total
+                metrics[metric] = (metrics[metric] || 0) + points;
             }
-        }
+        });
 
         // Update progress bars
-        document.getElementById('detection-bar').style.width = Math.min(metrics.detection, 100) + '%';
-        document.getElementById('containment-bar').style.width = Math.min(metrics.containment, 100) + '%';
-        document.getElementById('eradication-bar').style.width = Math.min(metrics.eradication, 100) + '%';
-        document.getElementById('recovery-bar').style.width = Math.min(metrics.recovery, 100) + '%';
-        document.getElementById('communication-bar').style.width = Math.min(metrics.communication, 100) + '%';
-
-        if (Object.values(metrics).every(v => v >= 80)) {
-            setTimeout(completeScenario, 1500);
-        }
+        document.getElementById('detection-bar').style.width = Math.min(metrics.detection || 0, 100) + '%';
+        document.getElementById('containment-bar').style.width = Math.min(metrics.containment || 0, 100) + '%';
+        document.getElementById('eradication-bar').style.width = Math.min(metrics.eradication || 0, 100) + '%';
+        document.getElementById('recovery-bar').style.width = Math.min(metrics.recovery || 0, 100) + '%';
+        document.getElementById('communication-bar').style.width = Math.min(metrics.communication || 0, 100) + '%';
+        
+        console.log('Updated metrics:', metrics);
     }
 
     function completeScenario() {
-        // Metrics are accumulated in POINTS, not percentages
-        // Sum all metrics to get total points earned, cap at maxPoints
-        const metricValues = Object.values(metrics);
-        const totalPoints = metricValues.reduce((a, b) => a + b, 0);
-        const finalScore = Math.round(Math.min(totalPoints, maxPoints));
+        // Metrics have been accumulated as point totals
+        // Send them to the server for final calculation
         
-        console.log('DEBUG completeScenario - Raw metrics:', metrics);
-        console.log('DEBUG completeScenario - Total points:', totalPoints);
-        console.log('DEBUG completeScenario - Max points:', maxPoints);
-        console.log('DEBUG completeScenario - Final score:', finalScore);
-
-        // For server, send both the final score and the capped metric values
-        const caps = {};
-        Object.keys(metrics).forEach(k => {
-            caps[k] = Math.round(Math.min(metrics[k], maxPoints));
-        });
-
-        // Send both final score and breakdown to server so results show properly
+        console.log('=== COMPLETING SCENARIO ===');
+        console.log('Final metrics earned:', metrics);
+        console.log('Session ID:', {{ session.id }});
+        
+        // Send metrics and let server handle the rest
         fetch(`/scenarios/session/{{ session.id }}/complete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ score: finalScore, metrics: caps })
+            body: JSON.stringify({ 
+                metrics: metrics
+            })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             console.log('Server response:', data);
             if (data.redirect) {
                 window.location.href = data.redirect;
+            } else if (data.error) {
+                throw new Error(data.error);
             }
         })
         .catch(err => {
             console.error('Error completing scenario:', err);
-            alert('Failed to submit results. Please try again.');
+            alert('Failed to submit results. Please try again.\nError: ' + err.message);
         });
     }
 

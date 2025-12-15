@@ -31,6 +31,10 @@
         font-size: 2.5rem;
         margin-bottom: 10px;
         color: white !important;
+        -webkit-text-fill-color: white !important;
+        background: none !important;
+        background-clip: unset !important;
+        -webkit-background-clip: unset !important;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
@@ -214,10 +218,18 @@
 {% endblock %}
 
 {% block content %}
+<script>
+    console.log('=== RESULTS PAGE DEBUG ===');
+    console.log('session.score:', {{ session.score }});
+    console.log('path_total_available:', {{ path_total_available }});
+    console.log('metrics_max:', {{ metrics_max|tojson }});
+    console.log('path_metrics_earned:', {{ path_metrics_earned|tojson }});
+</script>
+
 <div class="results-container">
     <div class="results-card">
         <div class="results-header">
-            {% set percent = (session.score / scenario.max_points * 100) if scenario.max_points else 0 %}
+            {% set percent = session.score %}
             {% if percent >= 80 %}
                     <h1 style="color: white;">🎉 Excellent!</h1>
                     <p style="color: white;">You handled this crisis very well.</p>
@@ -231,7 +243,10 @@
         </div>
 
         <div class="score-display">
-            <h2 class="score-number">{{ session.score }}<span style="font-size: 1.2rem;">/{{ scenario.max_points }}</span></h2>
+            <h2 class="score-number">{{ "%.0f"|format(percent) }}<span style="font-size: 1.2rem;">%</span></h2>
+            <p class="score-label">
+                <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ "%.0f"|format(session.score / 100 * path_total_available if path_total_available else 0) }}/{{ path_total_available }} points</span>
+            </p>
             <p class="score-label">
                 {% if session.outcome %}
                     <strong>Outcome:</strong> {{ session.outcome }}
@@ -242,58 +257,83 @@
         </div>
 
         <div class="performance-section">
-            <h5>📊 Performance Breakdown</h5>
+            <h5>📊 Performance Breakdown (By Metric)</h5>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">
+                Your scores are calculated based on the metrics you encountered on YOUR path through the scenario.
+            </p>
+            
             {% set performance = session.get_performance_breakdown() %}
             
-            {% if performance.detection > 0 %}
-            <div class="metric-row">
-                <div class="metric-label">Detection</div>
-                <div class="metric-bar">
-                    <div class="metric-fill" style="width: {{ performance.detection }}%"></div>
+            <!-- Detection -->
+            {% if metrics_max.detection and metrics_max.detection > 0 %}
+                {% set detection_percent = (path_metrics_earned.detection / metrics_max.detection * 100) if metrics_max.detection > 0 else 0 %}
+                {% set detection_percent_capped = [detection_percent, 100]|min %}
+                <div class="metric-row">
+                    <div class="metric-label">Detection</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ detection_percent_capped }}%"></div>
+                    </div>
+                    <div class="metric-value">{{ path_metrics_earned.detection|int }}/{{ metrics_max.detection|int }}</div>
                 </div>
-                <div class="metric-value">{{ performance.detection }}/100</div>
-            </div>
             {% endif %}
 
-            {% if performance.containment > 0 %}
-            <div class="metric-row">
-                <div class="metric-label">Containment</div>
-                <div class="metric-bar">
-                    <div class="metric-fill" style="width: {{ performance.containment }}%"></div>
+            <!-- Containment -->
+            {% if metrics_max.containment and metrics_max.containment > 0 %}
+                {% set containment_percent = (path_metrics_earned.containment / metrics_max.containment * 100) if metrics_max.containment > 0 else 0 %}
+                {% set containment_percent_capped = [containment_percent, 100]|min %}
+                <div class="metric-row">
+                    <div class="metric-label">Containment</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ containment_percent_capped }}%"></div>
+                    </div>
+                    <div class="metric-value">{{ path_metrics_earned.containment|int }}/{{ metrics_max.containment|int }}</div>
                 </div>
-                <div class="metric-value">{{ performance.containment }}/100</div>
-            </div>
             {% endif %}
 
-            {% if performance.eradication > 0 %}
-            <div class="metric-row">
-                <div class="metric-label">Eradication</div>
-                <div class="metric-bar">
-                    <div class="metric-fill" style="width: {{ performance.eradication }}%"></div>
+            <!-- Eradication -->
+            {% if metrics_max.eradication and metrics_max.eradication > 0 %}
+                {% set eradication_percent = (path_metrics_earned.eradication / metrics_max.eradication * 100) if metrics_max.eradication > 0 else 0 %}
+                {% set eradication_percent_capped = [eradication_percent, 100]|min %}
+                <div class="metric-row">
+                    <div class="metric-label">Eradication</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ eradication_percent_capped }}%"></div>
+                    </div>
+                    <div class="metric-value">{{ path_metrics_earned.eradication|int }}/{{ metrics_max.eradication|int }}</div>
                 </div>
-                <div class="metric-value">{{ performance.eradication }}/100</div>
-            </div>
             {% endif %}
 
-            {% if performance.recovery > 0 %}
-            <div class="metric-row">
-                <div class="metric-label">Recovery</div>
-                <div class="metric-bar">
-                    <div class="metric-fill" style="width: {{ performance.recovery }}%"></div>
+            <!-- Recovery -->
+            {% if metrics_max.recovery and metrics_max.recovery > 0 %}
+                {% set recovery_percent = (path_metrics_earned.recovery / metrics_max.recovery * 100) if metrics_max.recovery > 0 else 0 %}
+                {% set recovery_percent_capped = [recovery_percent, 100]|min %}
+                <div class="metric-row">
+                    <div class="metric-label">Recovery</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ recovery_percent_capped }}%"></div>
+                    </div>
+                    <div class="metric-value">{{ path_metrics_earned.recovery|int }}/{{ metrics_max.recovery|int }}</div>
                 </div>
-                <div class="metric-value">{{ performance.recovery }}/100</div>
-            </div>
-            </div>
             {% endif %}
 
-            {% if performance.communication > 0 %}
-            <div class="metric-row">
-                <div class="metric-label">Communication</div>
-                <div class="metric-bar">
-                    <div class="metric-fill" style="width: {{ performance.communication }}%"></div>
+            <!-- Communication -->
+            {% if metrics_max.communication and metrics_max.communication > 0 %}
+                {% set communication_percent = (path_metrics_earned.communication / metrics_max.communication * 100) if metrics_max.communication > 0 else 0 %}
+                {% set communication_percent_capped = [communication_percent, 100]|min %}
+                <div class="metric-row">
+                    <div class="metric-label">Communication</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ communication_percent_capped }}%"></div>
+                    </div>
+                    <div class="metric-value">{{ path_metrics_earned.communication|int }}/{{ metrics_max.communication|int }}</div>
                 </div>
-                <div class="metric-value">{{ performance.communication }}/100</div>
-            </div>
+            {% endif %}
+            
+            <!-- Note if no metrics were tested -->
+            {% if not (metrics_max.detection and metrics_max.detection > 0) and not (metrics_max.containment and metrics_max.containment > 0) and not (metrics_max.eradication and metrics_max.eradication > 0) and not (metrics_max.recovery and metrics_max.recovery > 0) and not (metrics_max.communication and metrics_max.communication > 0) %}
+                <p style="color: var(--text-secondary); font-style: italic;">
+                    No metrics data available for this scenario.
+                </p>
             {% endif %}
         </div>
 

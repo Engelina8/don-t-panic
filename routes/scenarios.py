@@ -107,14 +107,103 @@ def submit_decision(session_id):
     
     # Get decision data
     data = request.get_json()
-    decision = data.get('decision')
+    stage_index = data.get('stage_index')
+    option_index = data.get('option_index')
     
-    # TODO: Process decision, update game state
-    # For now, just acknowledge
+    if stage_index is None or option_index is None:
+        return jsonify({'error': 'Invalid decision data'}), 400
+    
+    # Parse scenario content
+    import json
+    try:
+        scenario_data = json.loads(session.scenario.scenario_content)
+    except:
+        return jsonify({'error': 'Failed to parse scenario'}), 500
+    
+    # Get the selected option
+    if stage_index >= len(scenario_data.get('stages', [])):
+        return jsonify({'error': 'Invalid stage'}), 400
+    
+    stage = scenario_data['stages'][stage_index]
+    if option_index >= len(stage.get('options', [])):
+        return jsonify({'error': 'Invalid option'}), 400
+    
+    selected_option = stage['options'][option_index]
+    
+    # Initialize or get session_data
+    session_data_dict = {}
+    if session.session_data:
+        try:
+            session_data_dict = json.loads(session.session_data)
+        except:
+            session_data_dict = {}
+    
+    # Initialize path tracking if not present
+    if 'path' not in session_data_dict:
+        session_data_dict['path'] = []
+        session_data_dict['path_points'] = 0
+        session_data_dict['path_max_points'] = 0
+        session_data_dict['path_metrics'] = {
+            'detection': 0,
+            'containment': 0,
+            'eradication': 0,
+            'recovery': 0,
+            'communication': 0
+        }
+        session_data_dict['available_metrics'] = {
+            'detection': 0,
+            'containment': 0,
+            'eradication': 0,
+            'recovery': 0,
+            'communication': 0
+        }
+    
+    # Record the decision
+    session_data_dict['path'].append({
+        'stage_index': stage_index,
+        'stage_name': stage.get('stage', 'Unknown'),
+        'option_index': option_index,
+        'option_text': selected_option.get('text', ''),
+        'points': selected_option.get('points', 0)
+    })
+    
+    # Add points to path total
+    session_data_dict['path_points'] += selected_option.get('points', 0)
+    
+    # Calculate max points available at this stage
+    max_points_in_stage = max([opt.get('points', 0) for opt in stage.get('options', [])], default=0)
+    session_data_dict['path_max_points'] += max_points_in_stage
+    
+    # Update path metrics with earned points from this option
+    for metric in ['detection', 'containment', 'eradication', 'recovery', 'communication']:
+        earned = selected_option.get(metric, 0)
+        session_data_dict['path_metrics'][metric] += earned
+    
+    # Update available metrics from the question's metrics list
+    for metric in stage.get('metrics', []):
+        # Find max available for this metric in this stage
+        max_metric_in_stage = 0
+        for option in stage.get('options', []):
+            metric_value = option.get(metric, 0)
+            if metric_value > max_metric_in_stage:
+                max_metric_in_stage = metric_value
+        session_data_dict['available_metrics'][metric] += max_metric_in_stage
+    
+    # Save updated session data
+    session.session_data = json.dumps(session_data_dict)
+    
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving session data: {e}")
+        return jsonify({'error': 'Failed to save decision'}), 500
     
     return jsonify({
         'success': True,
-        'message': 'Decision recorded'
+        'message': 'Decision recorded',
+        'current_score': session_data_dict['path_points'],
+        'stage_complete': True
     })
 
 @scenario_bp.route('/session/<int:session_id>/complete', methods=['POST'])
@@ -127,34 +216,73 @@ def complete(session_id):
     if session.user_id != current_user.id:
         return jsonify({'error': 'Access denied'}), 403
     
-    # Get final score and optional metrics breakdown
-    data = request.get_json() or {}
-    final_score = data.get('score', 0)
-    metrics = data.get('metrics', {})
-
+    # Get session data with path information
+    import json
+    session_data_dict = {}
+    if session.session_data:
+        try:
+            session_data_dict = json.loads(session.session_data)
+        except Exception as e:
+            print(f"Error parsing session_data: {e}")
+            session_data_dict = {}
+    
+    # Get final score based on path taken
+    final_score = session_data_dict.get('path_points', 0)
+    path_metrics = session_data_dict.get('path_metrics', {
+        'detection': 0,
+        'containment': 0,
+        'eradication': 0,
+        'recovery': 0,
+        'communication': 0
+    })
+    available_metrics = session_data_dict.get('available_metrics', {
+        'detection': 0,
+        'containment': 0,
+        'eradication': 0,
+        'recovery': 0,
+        'communication': 0
+    })
+    
+    # Calculate outcome based on percentage of path maximum (not scenario maximum)
+    # path_max_points was calculated in submit_decision as we went through the path
+    path_total_available = session_data_dict.get('path_max_points', 0)
+    
+    if path_total_available > 0:
+        percentage = (final_score / path_total_available) * 100
+    else:
+        percentage = 0
+    
+    # Ensure percentage doesn't exceed 100
+    percentage = min(100, percentage)
+    
     # Update session fields
     session.status = 'completed'
     session.completed_at = datetime.utcnow()
-    try:
-        session.score = int(final_score)
-    except Exception:
-        session.score = 0
-
-    # Save breakdown metrics if provided (default to 0)
-    session.detection_score = int(metrics.get('detection', session.detection_score or 0))
-    session.containment_score = int(metrics.get('containment', session.containment_score or 0))
-    session.eradication_score = int(metrics.get('eradication', session.eradication_score or 0))
-    session.recovery_score = int(metrics.get('recovery', session.recovery_score or 0))
-    session.communication_score = int(metrics.get('communication', session.communication_score or 0))
-
-    # Derive simple outcome label
-    if session.score >= 80:
+    session.score = int(percentage) if isinstance(percentage, (int, float)) else 0
+    
+    # Save breakdown metrics based on path taken
+    session.detection_score = int(path_metrics.get('detection', 0))
+    session.containment_score = int(path_metrics.get('containment', 0))
+    session.eradication_score = int(path_metrics.get('eradication', 0))
+    session.recovery_score = int(path_metrics.get('recovery', 0))
+    session.communication_score = int(path_metrics.get('communication', 0))
+    
+    # Store important info in session_data
+    session_data_dict['path_max_points'] = session.scenario.max_points
+    session_data_dict['metrics_max'] = available_metrics
+    session_data_dict['path_metrics_earned'] = path_metrics
+    session_data_dict['path_total_available'] = path_total_available
+    session.session_data = json.dumps(session_data_dict)
+    
+    if percentage >= 80:
         session.outcome = 'success'
-    elif session.score >= 60:
+    elif percentage >= 60:
         session.outcome = 'partial_success'
+    elif percentage >= 40:
+        session.outcome = 'neutral'
     else:
         session.outcome = 'failure'
-
+    
     try:
         db.session.commit()
         return jsonify({
@@ -164,7 +292,7 @@ def complete(session_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error completing session: {e}")
-        return jsonify({'error': 'Failed to complete session'}), 500
+        return jsonify({'error': f'Failed to complete session: {str(e)}'}), 500
 
 @scenario_bp.route('/session/<int:session_id>/results')
 @login_required
@@ -181,6 +309,49 @@ def results(session_id):
         flash('Session not yet completed', 'warning')
         return redirect(url_for('scenarios.play', session_id=session_id))
     
+    # Extract metrics from session_data
+    path_metrics_earned = {}
+    metrics_max = {}
+    path_total_available = 0
+    path_points_earned = 0
+    
+    if session.session_data:
+        import json
+        try:
+            session_data_dict = json.loads(session.session_data)
+            path_metrics_earned = session_data_dict.get('path_metrics_earned', {})
+            metrics_max = session_data_dict.get('metrics_max', {})
+            # Use the score and path_total_available from complete() which was already calculated
+            path_points_earned = session_data_dict.get('path_points', 0)
+            path_total_available = session_data_dict.get('path_total_available', 0)
+        except:
+            pass
+    
+    # Fallback values
+    if not path_metrics_earned:
+        path_metrics_earned = {
+            'detection': session.detection_score or 0,
+            'containment': session.containment_score or 0,
+            'eradication': session.eradication_score or 0,
+            'recovery': session.recovery_score or 0,
+            'communication': session.communication_score or 0
+        }
+    
+    if not metrics_max:
+        metrics_max = {
+            'detection': 0,
+            'containment': 0,
+            'eradication': 0,
+            'recovery': 0,
+            'communication': 0
+        }
+    
+    if path_total_available == 0:
+        path_total_available = session.scenario.max_points
+    
     return render_template('scenarios/results.html',
                          session=session,
-                         scenario=session.scenario)
+                         scenario=session.scenario,
+                         path_metrics_earned=path_metrics_earned,
+                         metrics_max=metrics_max,
+                         path_total_available=path_total_available)

@@ -5,22 +5,31 @@
       "stage": "detection",
       "content": "The Security Operations Center (SOC) has sent you detailed logs. Suspicious login attempts started at 2:15 AM from IP address 203.45.67.89 (located in Eastern Europe). The attacker successfully authenticated using valid credentials for the 'dbadmin' account. Your monitoring systems show unusual outbound traffic to known malicious command-and-control (C2) servers. The database contains customer payment information for 50,000 users. Time is critical - every minute counts.",
       "question": "What is your first action?",
+      "metrics": ["detection", "communication"],
       "options": [
         {
           "text": "Immediately escalate to your Security Director and notify the entire incident response team",
-          "points": 30
+          "points": 30,
+          "detection": 10,
+          "communication": 10
         },
         {
           "text": "Take 15 minutes to investigate the breach yourself before alerting anyone",
-          "points": 5
+          "points": 5,
+          "detection": 5,
+          "communication": 0
         },
         {
           "text": "Disable the dbadmin account without further investigation",
-          "points": 15
+          "points": 15,
+          "detection": 10,
+          "communication": 0
         },
         {
           "text": "Check if the problem resolves itself",
-          "points": -40
+          "points": -40,
+          "detection": 0,
+          "communication": 0
         }
       ]
     },
@@ -28,22 +37,31 @@
       "stage": "containment",
       "content": "Your team has assembled in the crisis room. The attacker is still actively connected to the database server, downloading customer records at an alarming rate. You've confirmed that the dbadmin credentials were compromised through a phishing email sent yesterday. Network analysis shows data is being exfiltrated to a server in Russia at approximately 100 MB per minute. You have identified that the attacker gained access through a vulnerability in your remote access portal that was patched 3 months ago but this server wasn't updated.",
       "question": "How do you contain the threat immediately?",
+      "metrics": ["detection", "containment"],
       "options": [
         {
           "text": "Isolate the compromised database server from the network (cut all connections)",
-          "points": 35
+          "points": 35,
+          "detection": 5,
+          "containment": 15
         },
         {
           "text": "Shut down the entire database server to stop the attack",
-          "points": 20
+          "points": 20,
+          "detection": 0,
+          "containment": 10
         },
         {
           "text": "Block the attacker's IP at the firewall but leave the server running to monitor activity",
-          "points": 10
+          "points": 10,
+          "detection": 5,
+          "containment": 5
         },
         {
           "text": "Reset the dbadmin password and monitor the situation",
-          "points": -25
+          "points": -25,
+          "detection": 0,
+          "containment": 0
         }
       ]
     },
@@ -51,22 +69,31 @@
       "stage": "eradication",
       "content": "Good news: You've stopped the active exfiltration. However, preliminary forensic analysis reveals the attacker was in your system for approximately 8 hours before being detected. They may have installed backdoors or stolen additional data. You need to determine the full scope of the breach. The forensics team is examining the database server for any backdoor accounts, web shells, or persistence mechanisms. Your legal team is now involved and asking about notification requirements.",
       "question": "What is your approach to eradication?",
+      "metrics": ["detection", "eradication"],
       "options": [
         {
           "text": "Conduct full forensic analysis first, then rebuild the server from clean backups from before the attack",
-          "points": 35
+          "points": 35,
+          "detection": 10,
+          "eradication": 15
         },
         {
           "text": "Simply patch the vulnerability and restore the server from last night's backup",
-          "points": 5
+          "points": 5,
+          "detection": 0,
+          "eradication": 5
         },
         {
           "text": "Wipe and rebuild all potentially affected systems from scratch without detailed analysis",
-          "points": 25
+          "points": 25,
+          "detection": 0,
+          "eradication": 10
         },
         {
           "text": "Just apply a firewall rule and assume it won't happen again",
-          "points": -35
+          "points": -35,
+          "detection": 0,
+          "eradication": 0
         }
       ]
     },
@@ -74,22 +101,31 @@
       "stage": "recovery",
       "content": "After 4 hours of intensive forensic work, you've determined the attacker stole customer data for approximately 15,000 users, including names, emails, and encrypted payment information. No backdoors were found beyond the initial entry point. You've patched the vulnerability across all systems and rebuilt the compromised server from clean backups. Your team has verified system integrity. The customer notification deadline is in 6 hours according to your incident response plan. Leadership is asking about recovery timeline and communication strategy.",
       "question": "How do you proceed with recovery and customer notification?",
+      "metrics": ["recovery", "communication"],
       "options": [
         {
           "text": "Conduct final security validation, notify affected customers within SLA, provide credit monitoring services",
-          "points": 35
+          "points": 35,
+          "recovery": 15,
+          "communication": 10
         },
         {
           "text": "Quietly fix the issue and only notify customers if they complain",
-          "points": -40
+          "points": -40,
+          "recovery": 0,
+          "communication": 0
         },
         {
           "text": "Notify customers after 48 hours to have time to prepare messaging",
-          "points": 15
+          "points": 15,
+          "recovery": 5,
+          "communication": 5
         },
         {
           "text": "Restore services immediately without completing full validation",
-          "points": 5
+          "points": 5,
+          "recovery": 5,
+          "communication": 0
         }
       ]
     },
@@ -97,22 +133,27 @@
       "stage": "communication",
       "content": "The incident is now public knowledge after a customer posted about the breach on social media. Your press team needs a statement within 30 minutes. Media inquiries are flooding in. You have 15,000 affected customers waiting for information. Your Board of Directors wants to know about preventive measures. The incident has cost your company approximately $500,000 so far in incident response and potential fines. Regulators are requesting a full incident report.",
       "question": "How do you handle communications and stakeholder management?",
+      "metrics": ["communication"],
       "options": [
         {
           "text": "Issue transparent statement with facts, affected user count, steps taken, and preventive measures",
-          "points": 35
+          "points": 35,
+          "communication": 15
         },
         {
           "text": "Minimize the incident in public statements while preparing for regulatory consequences",
-          "points": -20
+          "points": -20,
+          "communication": 0
         },
         {
           "text": "Issue statement admitting the breach was our mistake and assume full liability",
-          "points": 10
+          "points": 10,
+          "communication": 5
         },
         {
           "text": "Blame a third-party vendor to shift responsibility",
-          "points": -40
+          "points": -40,
+          "communication": 0
         }
       ]
     },
@@ -120,22 +161,43 @@
       "stage": "final_assessment",
       "content": "Three weeks have passed. All affected customers have been notified. You've implemented all recommendations from the forensic report: patched all systems, deployed additional monitoring, upgraded your remote access controls, and implemented mandatory security awareness training. You've also completed the regulatory investigation with a substantial fine but no criminal charges. Your incident response plan has been updated based on lessons learned. The executive team has approved a $2M security infrastructure upgrade program.",
       "question": "What final steps do you take to strengthen future incident response?",
+      "metrics": ["detection", "containment", "eradication", "recovery", "communication"],
       "options": [
         {
           "text": "Document lessons learned, conduct team debriefing, implement preventive controls, update incident response plan",
-          "points": 40
+          "points": 40,
+          "detection": 8,
+          "containment": 8,
+          "eradication": 8,
+          "recovery": 8,
+          "communication": 8
         },
         {
           "text": "Move on to other projects - the incident is over and handled",
-          "points": -30
+          "points": -30,
+          "detection": 0,
+          "containment": 0,
+          "eradication": 0,
+          "recovery": 0,
+          "communication": 0
         },
         {
           "text": "Conduct training on what went wrong but don't make process changes",
-          "points": 5
+          "points": 5,
+          "detection": 0,
+          "containment": 0,
+          "eradication": 0,
+          "recovery": 0,
+          "communication": 2
         },
         {
           "text": "Blame the team members for the initial miss and make harsh policy changes",
-          "points": -25
+          "points": -25,
+          "detection": 0,
+          "containment": 0,
+          "eradication": 0,
+          "recovery": 0,
+          "communication": 0
         }
       ]
     }

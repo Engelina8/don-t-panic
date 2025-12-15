@@ -1,8 +1,10 @@
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_login import LoginManager, login_required, current_user
+from markupsafe import Markup
 from config import config
 from models import db, User
 import os
+import json
 
 def create_app(config_name=None):
     """Application factory pattern"""
@@ -38,15 +40,26 @@ def create_app(config_name=None):
         """Load user by ID for Flask-Login"""
         return User.query.get(int(user_id))
     
+    # Register custom Jinja filters
+    @app.template_filter('format_json')
+    def format_json(json_string):
+        """Format JSON string with proper indentation - mark as safe to prevent escaping"""
+        try:
+            parsed = json.loads(json_string)
+            formatted = json.dumps(parsed, indent=2)
+            return Markup(formatted)
+        except (json.JSONDecodeError, TypeError):
+            return Markup(json_string)
+    
     # Create database tables
     with app.app_context():
         db.create_all()
         
-        # Create default instructor if none exists
-        if User.query.filter_by(role='instructor').first() is None:
-            from models import create_default_instructor
-            create_default_instructor()
-            print("✅ Default instructor created")
+        # Create default admin if none exists
+        if User.query.filter_by(role='admin').first() is None:
+            from models import create_default_admin
+            create_default_admin()
+            print("✅ Default admin created")
     
     # Register blueprints
     register_blueprints(app)
@@ -64,7 +77,7 @@ def create_app(config_name=None):
     @login_required
     def dashboard():
         """User dashboard - redirects based on role"""
-        if current_user.role == 'instructor':
+        if current_user.role in ['instructor', 'admin']:
             return redirect(url_for('admin.dashboard'))
         return render_template('dashboard.html', user=current_user)
     

@@ -374,7 +374,7 @@
                     <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:12px; border-radius:6px;">
                         <div style="margin-bottom:8px;">
                             <label class="json-editor-label">📝 Intro</label>
-                            <textarea id="builder_intro" placeholder="Short intro/incident description" style="width:100%; padding:8px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">{{ (scenario.scenario_content|default('{}'))|safe }}</textarea>
+                            <textarea id="builder_intro" placeholder="Short intro/incident description" style="width:100%; padding:8px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);"></textarea>
                         </div>
 
                         <div id="stageBuilder" style="margin-bottom:12px;"></div>
@@ -391,7 +391,7 @@
 
                         <div id="rawJsonArea" style="display:none; margin-top:8px;">
                             <label class="json-editor-label">Raw JSON</label>
-                            <textarea id="scenario_content" name="scenario_content" required style="width:100%; min-height:200px; padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary);">{{ scenario.scenario_content if scenario else '{"intro": "...", "stages": []}' }}</textarea>
+                            <textarea id="scenario_content" name="scenario_content" required style="width:100%; min-height:200px; padding:10px; background:var(--bg-hover); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); font-family: 'Courier New', monospace;">{% if scenario %}{{ scenario.scenario_content|safe }}{% else %}{"intro": "...", "stages": []}{% endif %}</textarea>
                             <div class="json-buttons" style="margin-top:8px;">
                                 <button type="button" class="btn-small" onclick="formatJSON()">Format JSON</button>
                                 <button type="button" class="btn-small" onclick="validateJSON()">Validate</button>
@@ -415,56 +415,110 @@
         <!-- Sidebar Help -->
         <div>
             <div class="sidebar-section" style="margin-bottom: 24px;">
-                <h3>📚 JSON Format Guide</h3>
-                <p>Your scenario content should follow this structure:</p>
-                                <code style="display: block; padding: 12px; background: var(--bg-hover); border-radius: 4px; overflow-x: auto; margin: 12px 0; font-size: 0.75rem; line-height: 1.4;">
-            {<br/>
-            &nbsp;&nbsp;"intro": "Initial incident summary",<br/>
-            &nbsp;&nbsp;"stages": [<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;{<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"stage": "chapter_name",<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"content": "Detailed chapter/story text",<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"question": "What do you do?",<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"options": [<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"text": "Action text",<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"points": 20,<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"metrics": {<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"detection": 50,<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"containment": 50<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"next": 2  <span style="color:#9aa">// optional: index of next stage, or &quot;END&quot; to finish</span><br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
-            &nbsp;&nbsp;]<br/>
-            }
-                                </code>
+                <h3>📚 JSON Format Guide (For LLM)</h3>
+                <p>Complete scenario structure for generating with AI:</p>
+                <code style="display: block; padding: 16px; background: var(--bg-hover); border-radius: 4px; overflow-x: auto; margin: 12px 0; font-size: 0.75rem; line-height: 1.5; color: var(--text-primary);">
+{<br/>
+&nbsp;&nbsp;<span style="color: var(--primary-color);">"intro"</span>: <span style="color: #4a9;">"Brief incident report summary. Describe the initial situation and what just happened (1-2 sentences)"</span>,<br/>
+&nbsp;&nbsp;<span style="color: var(--primary-color);">"stages"</span>: [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"stage"</span>: <span style="color: #4a9;">"stage_name"</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"content"</span>: <span style="color: #4a9;">"Detailed narrative of this phase. Include observations, initial findings, or status updates"</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"question"</span>: <span style="color: #4a9;">"What is your next action?"</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"metrics"</span>: [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4a9;">"detection"</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4a9;">"communication"</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;],<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"options"</span>: [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"text"</span>: <span style="color: #4a9;">"Clear action description (e.g., 'Isolate affected servers from network')"</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"points"</span>: <span style="color: #f9a;">30</span>,&nbsp;<span style="color: #666;">// Total points for this option (0-100)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"detection"</span>: <span style="color: #f9a;">20</span>,&nbsp;<span style="color: #666;">// Points for this metric (0-100)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"containment"</span>: <span style="color: #f9a;">0</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"eradication"</span>: <span style="color: #f9a;">5</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"recovery"</span>: <span style="color: #f9a;">0</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"communication"</span>: <span style="color: #f9a;">15</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"next_stage"</span>: <span style="color: #f9a;">1</span>&nbsp;&nbsp;<span style="color: #666;">// Optional: stage index (0-based), -1 to finish, or omit for sequential</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"text"</span>: <span style="color: #4a9;">"Second action option"</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"points"</span>: <span style="color: #f9a;">15</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"detection"</span>: <span style="color: #f9a;">10</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"containment"</span>: <span style="color: #f9a;">0</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"eradication"</span>: <span style="color: #f9a;">0</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"recovery"</span>: <span style="color: #f9a;">0</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"communication"</span>: <span style="color: #f9a;">5</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;]<br/>
+}
+                </code>
             </div>
 
             <div class="sidebar-section">
-                <h3>✨ Tips</h3>
+                <h3>🎯 Field Descriptions</h3>
                 <ul>
-                    <li><strong>Intro:</strong> Brief incident summary (shows only at start)</li>
-                    <li><strong>Content:</strong> Detailed chapter text that updates at each stage</li>
-                    <li><strong>Question:</strong> Decision prompt for the user</li>
-                    <li><strong>Points:</strong> Positive for good, negative for poor choices</li>
-                    <li><strong>Range:</strong> Use -30 to +30 for point values</li>
-                    <li><strong>Metrics (optional):</strong> Assign % to detection, containment, eradication, recovery, communication (use 📊 Metrics button)</li>
-                    <li><strong>Options:</strong> Provide 3-5 realistic choices per stage</li>
+                    <li><strong>intro:</strong> Opening incident summary (shown only at start)</li>
+                    <li><strong>stage:</strong> Unique name for this phase (e.g., "initial_response", "threat_containment")</li>
+                    <li><strong>content:</strong> Narrative text for this stage - include findings, data, or status</li>
+                    <li><strong>question:</strong> Decision prompt (e.g., "What is your immediate action?")</li>
+                    <li><strong>metrics:</strong> Array of metric names this question tests (e.g., ["detection", "communication"])</li>
+                    <li><strong>text:</strong> Clear, concise action description (10-15 words)</li>
+                    <li><strong>points:</strong> Total points earned for choosing this option (0-100, can be negative for poor choices)</li>
+                    <li><strong>detection/containment/eradication/recovery/communication:</strong> Points awarded for this metric if this option is chosen (0-100)</li>
+                    <li><strong>next_stage:</strong> Override sequential flow: 0-N for stage index, -1 for finish, omit for next stage</li>
                 </ul>
             </div>
 
             <div class="sidebar-section">
-                <h3>📋 Common Incident Types</h3>
+                <h3>📊 Metric Categories</h3>
+                <p>Assign these to options to track incident response skills:</p>
                 <ul>
-                    <li>Ransomware</li>
+                    <li><strong>detection:</strong> Identifying and discovering the incident</li>
+                    <li><strong>containment:</strong> Stopping spread and limiting damage</li>
+                    <li><strong>eradication:</strong> Removing threat from systems</li>
+                    <li><strong>recovery:</strong> Restoring systems and data</li>
+                    <li><strong>communication:</strong> Notifying stakeholders and authorities</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>✨ Best Practices</h3>
+                <ul>
+                    <li><strong>3-4 options per stage:</strong> Provide realistic, distinct choices</li>
+                    <li><strong>2-4 stages:</strong> Keep scenario focused and completable in 5-10 minutes</li>
+                    <li><strong>Realistic scenarios:</strong> Base on actual incident response procedures</li>
+                    <li><strong>Point balance:</strong> Good choices +10-20, poor -10-20, average 0-5</li>
+                    <li><strong>Clear outcomes:</strong> Each choice should lead to a logical next phase</li>
+                    <li><strong>Variety in metrics:</strong> Use different combinations across options for learning</li>
+                    <li><strong>Branching paths:</strong> Use "next" field to create non-linear scenarios</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📋 Incident Type Examples</h3>
+                <ul>
+                    <li>Ransomware Attack</li>
                     <li>Data Breach</li>
                     <li>DDoS Attack</li>
-                    <li>Phishing</li>
+                    <li>Phishing Campaign</li>
                     <li>Insider Threat</li>
-                    <li>Malware</li>
+                    <li>Malware Infection</li>
+                    <li>Supply Chain Attack</li>
+                    <li>Zero-day Exploit</li>
                 </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>🤖 Prompt for LLM</h3>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                    "Create a cybersecurity incident response training scenario in the JSON format shown above. 
+                    The scenario should have 2-4 stages, 3-4 options per stage with realistic choices based on incident response best practices. 
+                    Each option needs: points (total points for this choice, 0-100), and points for each of the 5 metrics (detection, containment, eradication, recovery, communication).
+                    Use 0-100 for each metric. Good choices should award high points, poor choices should award low/negative points. 
+                    Include all 5 metrics across different options. Make it educational and challenging."
+                </p>
             </div>
         </div>
     </div>
@@ -499,10 +553,13 @@ function createOptionRow(stageIndex, optionIndex, option) {
     textInput.style.minWidth = '200px';
     textInput.addEventListener('input', () => syncFromDOM());
 
+    // Points input
     const pointsInput = document.createElement('input');
     pointsInput.type = 'number';
-    pointsInput.value = (option.points !== undefined) ? option.points : 0;
-    pointsInput.style.width = '90px';
+    pointsInput.placeholder = 'Points';
+    pointsInput.value = option.points || '0';
+    pointsInput.min = '0';
+    pointsInput.style.width = '80px';
     pointsInput.addEventListener('input', () => syncFromDOM());
 
     // Next-stage selector: optional branching target
@@ -510,10 +567,10 @@ function createOptionRow(stageIndex, optionIndex, option) {
     nextSelect.style.width = '160px';
     nextSelect.addEventListener('change', () => syncFromDOM());
     populateNextOptions(nextSelect, stageIndex);
-    // if option already has next defined, set it
-    if (option && option.next !== undefined && option.next !== null && option.next !== '') {
-        if (option.next === 'END') nextSelect.value = 'END';
-        else nextSelect.value = String(option.next);
+    // if option already has next_stage defined, set it
+    if (option && option.next_stage !== undefined && option.next_stage !== null && option.next_stage !== '') {
+        if (option.next_stage === -1) nextSelect.value = '-1';
+        else nextSelect.value = String(option.next_stage);
     }
 
     const removeBtn = document.createElement('button');
@@ -522,12 +579,12 @@ function createOptionRow(stageIndex, optionIndex, option) {
     removeBtn.textContent = 'Remove';
     removeBtn.addEventListener('click', () => { removeOption(stageIndex, optionIndex); });
 
-    // Metrics button to open metric distribution editor
+    // Metrics button to open metrics values editor
     const metricsBtn = document.createElement('button');
     metricsBtn.type = 'button';
     metricsBtn.className = 'btn-small';
     metricsBtn.textContent = '📊 Metrics';
-    metricsBtn.style.minWidth = '100px';
+    metricsBtn.style.minWidth = '120px';
     metricsBtn.addEventListener('click', () => {
         openMetricsEditor(stageIndex, optionIndex, option);
     });
@@ -551,7 +608,7 @@ function populateNextOptions(selectEl, currentStageIndex) {
     selectEl.appendChild(defaultOpt);
 
     const endOpt = document.createElement('option');
-    endOpt.value = 'END';
+    endOpt.value = '-1';
     endOpt.textContent = 'End Scenario';
     selectEl.appendChild(endOpt);
 
@@ -620,6 +677,16 @@ function renderStage(stage, index) {
     questionInput.style.marginBottom = '6px';
     questionInput.addEventListener('input', () => syncFromDOM());
 
+    // Add metrics button for this stage (question-level metrics)
+    const metricsButton = document.createElement('button');
+    metricsButton.type = 'button';
+    metricsButton.className = 'btn-small';
+    metricsButton.textContent = '🎯 Metrics for this question';
+    metricsButton.style.marginBottom = '6px';
+    metricsButton.addEventListener('click', () => {
+        openStageMetricsEditor(index);
+    });
+
     const optionsLabel = document.createElement('div');
     optionsLabel.textContent = 'Options';
     optionsLabel.style.marginBottom = '6px';
@@ -641,6 +708,7 @@ function renderStage(stage, index) {
     container.appendChild(nameInput);
     container.appendChild(contentInput);
     container.appendChild(questionInput);
+    container.appendChild(metricsButton);
     container.appendChild(optionsLabel);
     container.appendChild(optionsContainer);
     container.appendChild(addOptBtn);
@@ -668,7 +736,7 @@ function renderBuilder() {
 }
 
 function addStage(stageObj) {
-    const newStage = stageObj || { stage: '', question: '', options: [{ text: '', points: 0 }] };
+    const newStage = stageObj || { stage: '', question: '', content: '', metrics: [], options: [{ text: '', correctness: {} }] };
     builder.stages.push(newStage);
     renderBuilder();
 }
@@ -680,7 +748,15 @@ function removeStage(index) {
 
 function addOption(stageIndex, optionObj) {
     const opts = builder.stages[stageIndex].options || [];
-    opts.push(optionObj || { text: '', points: 0 });
+    opts.push(optionObj || { 
+        text: '', 
+        points: 0,
+        detection: 0,
+        containment: 0,
+        eradication: 0,
+        recovery: 0,
+        communication: 0
+    });
     builder.stages[stageIndex].options = opts;
     renderBuilder();
 }
@@ -692,33 +768,107 @@ function removeOption(stageIndex, optionIndex) {
     renderBuilder();
 }
 
-// Metrics editor modal
-function openMetricsEditor(stageIndex, optionIndex, option) {
+// Stage-level metrics editor - select which metrics this question tests
+function openStageMetricsEditor(stageIndex) {
     const metrics = ['detection', 'containment', 'eradication', 'recovery', 'communication'];
-    const metricsObj = option.metrics || {};
     
-    let html = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" id="metricsEditorModal">';
+    // First sync from DOM to ensure builder is up to date
+    syncFromDOM();
+    
+    // Get metrics array from builder stage
+    const metricsArray = (builder.stages[stageIndex] && builder.stages[stageIndex].metrics) || [];
+    
+    let html = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" id="stageMetricsEditorModal">';
     html += '<div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; max-width: 400px; width: 90%;">';
-    html += '<h3 style="color: var(--primary-color); margin-bottom: 20px;">Assign Metrics for: "' + (option.text || 'Option') + '"</h3>';
-    html += '<p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Distribute points to which metrics does this option impact?</p>';
+    html += '<h3 style="color: var(--primary-color); margin-bottom: 20px;">Select Metrics for Question</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Which metrics does this question test?</p>';
     
-    let totalWeight = 0;
     metrics.forEach(metric => {
-        const weight = metricsObj[metric] || 0;
-        totalWeight += weight;
-        html += `<div style="margin-bottom: 16px;">`;
-        html += `<label style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary); margin-bottom: 8px;">`;
-        html += `<input type="range" min="0" max="100" value="${weight}" class="metric-slider" data-metric="${metric}" style="flex: 1; cursor: pointer;">`;
-        html += `<span style="min-width: 40px; text-align: right; color: var(--primary-color); font-weight: 600;" class="metric-value">${weight}%</span>`;
+        const isChecked = metricsArray.includes(metric) ? 'checked' : '';
+        html += `<div style="margin-bottom: 12px;">`;
+        html += `<label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 2px solid ${isChecked ? 'var(--primary-color)' : 'transparent'};" class="stage-metric-checkbox-label">`;
+        html += `<input type="checkbox" ${isChecked} class="stage-metric-checkbox" data-metric="${metric}" style="width: 20px; height: 20px; cursor: pointer;">`;
+        html += `<span style="color: var(--text-primary); font-weight: 500; text-transform: capitalize; flex: 1;">${metric}</span>`;
         html += `</label>`;
-        html += `<div style="text-align: center; font-size: 0.85rem; color: var(--text-muted); text-transform: capitalize;">${metric}</div>`;
         html += `</div>`;
     });
     
-    html += '<div style="background: var(--bg-hover); padding: 12px; border-radius: 6px; margin-bottom: 20px; color: var(--text-secondary); text-align: center; font-size: 0.9rem;">';
-    html += '<span id="totalPercentage">Total: 0%</span>';
+    html += '<div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">';
+    html += '<button onclick="document.getElementById(\'stageMetricsEditorModal\').remove()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); cursor: pointer;">Cancel</button>';
+    html += '<button onclick="saveStageMetrics(' + stageIndex + ')" style="padding: 10px 20px; background: var(--primary-color); color: var(--bg-primary); border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save</button>';
     html += '</div>';
-    html += '<div style="display: flex; gap: 12px; justify-content: flex-end;">';
+    html += '</div></div>';
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    
+    // Add event listeners to checkboxes for visual feedback
+    document.querySelectorAll('.stage-metric-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const label = this.closest('.stage-metric-checkbox-label');
+            if (this.checked) {
+                label.style.borderColor = 'var(--primary-color)';
+            } else {
+                label.style.borderColor = 'transparent';
+            }
+        });
+    });
+}
+
+function saveStageMetrics(stageIndex) {
+    const metricsArray = [];
+    document.querySelectorAll('.stage-metric-checkbox').forEach(checkbox => {
+        if (checkbox.checked) {
+            metricsArray.push(checkbox.dataset.metric);
+        }
+    });
+    
+    // First sync from DOM to make sure builder is up to date
+    syncFromDOM();
+    
+    // Save metrics array to the stage
+    builder.stages[stageIndex].metrics = metricsArray;
+    
+    // Update the textarea
+    updateTextareaFromBuilder();
+    
+    // Remove the modal
+    document.getElementById('stageMetricsEditorModal').remove();
+}
+
+// Option-level metrics editor - set point values for each metric
+function openMetricsEditor(stageIndex, optionIndex, option) {
+    // First sync from DOM to ensure builder is up to date
+    syncFromDOM();
+    
+    // Get metrics from stage to know which ones to ask for
+    const stageMetrics = (builder.stages[stageIndex] && builder.stages[stageIndex].metrics) || [];
+    
+    if (stageMetrics.length === 0) {
+        alert('Please select metrics for this question first!');
+        return;
+    }
+    
+    // Get metric point values from builder option
+    const optionData = (builder.stages[stageIndex] && builder.stages[stageIndex].options[optionIndex]) || {};
+    
+    let html = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" id="metricsEditorModal">';
+    html += '<div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; max-width: 450px; width: 90%;">';
+    html += '<h3 style="color: var(--primary-color); margin-bottom: 12px;">Metrics for: "' + (option.text || 'Option') + '"</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Set point values (0-100) for each metric:</p>';
+    
+    stageMetrics.forEach(metric => {
+        const currentValue = optionData[metric] !== undefined ? optionData[metric] : 0;
+        html += `<div style="margin-bottom: 16px;">`;
+        html += `<label style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">`;
+        html += `<span style="color: var(--text-primary); font-weight: 500; text-transform: capitalize; min-width: 120px;">${metric}:</span>`;
+        html += `<input type="range" class="metric-slider" data-metric="${metric}" min="0" max="100" value="${currentValue}" style="flex: 1;">`;
+        html += `<span class="metric-value" style="color: var(--primary-color); font-weight: 600; min-width: 40px; text-align: right;">${currentValue}</span>`;
+        html += `</label>`;
+        html += `<input type="number" class="metric-number" data-metric="${metric}" min="0" max="100" value="${currentValue}" placeholder="0-100" style="width: 100%; padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">`;
+        html += `</div>`;
+    });
+    
+    html += '<div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">';
     html += '<button onclick="document.getElementById(\'metricsEditorModal\').remove()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); cursor: pointer;">Cancel</button>';
     html += '<button onclick="saveMetrics(' + stageIndex + ', ' + optionIndex + ')" style="padding: 10px 20px; background: var(--primary-color); color: var(--bg-primary); border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save</button>';
     html += '</div>';
@@ -726,34 +876,142 @@ function openMetricsEditor(stageIndex, optionIndex, option) {
     
     document.body.insertAdjacentHTML('beforeend', html);
     
-    // Add event listeners to sliders
+    // Sync between slider and number input
     document.querySelectorAll('.metric-slider').forEach(slider => {
         slider.addEventListener('input', function() {
-            const metricValues = Array.from(document.querySelectorAll('.metric-slider')).map(s => parseInt(s.value));
-            const total = metricValues.reduce((a, b) => a + b, 0);
-            document.getElementById('totalPercentage').textContent = 'Total: ' + total + '%';
-            
-            // Update the display value next to slider
-            const valueSpan = this.parentElement.querySelector('.metric-value');
-            valueSpan.textContent = this.value + '%';
+            const metric = this.dataset.metric;
+            const value = this.value;
+            document.querySelector(`.metric-value[data-metric="${metric}"]`).textContent = value;
+            document.querySelector(`.metric-number[data-metric="${metric}"]`).value = value;
+        });
+    });
+    
+    document.querySelectorAll('.metric-number').forEach(input => {
+        input.addEventListener('input', function() {
+            const metric = this.dataset.metric;
+            let value = parseInt(this.value) || 0;
+            // Clamp between 0-100
+            if (value < 0) value = 0;
+            if (value > 100) value = 100;
+            this.value = value;
+            document.querySelector(`.metric-slider[data-metric="${metric}"]`).value = value;
+            document.querySelector(`.metric-value[data-metric="${metric}"]`).textContent = value;
         });
     });
 }
 
 function saveMetrics(stageIndex, optionIndex) {
-    const metrics = {};
+    const metricsObj = {};
     document.querySelectorAll('.metric-slider').forEach(slider => {
         const metric = slider.dataset.metric;
-        const value = parseInt(slider.value);
-        if (value > 0) {
-            metrics[metric] = value;
-        }
+        const value = parseInt(slider.value) || 0;
+        metricsObj[metric] = Math.min(100, Math.max(0, value));
     });
     
-    builder.stages[stageIndex].options[optionIndex].metrics = metrics;
-    updateTextareaFromBuilder();
-    document.getElementById('metricsEditorModal').remove();
+    // First sync from DOM to make sure builder is up to date
     syncFromDOM();
+    
+    // Save metrics to the option
+    Object.keys(metricsObj).forEach(metric => {
+        builder.stages[stageIndex].options[optionIndex][metric] = metricsObj[metric];
+    });
+    
+    // Update the textarea
+    updateTextareaFromBuilder();
+    
+    // Remove the modal
+    document.getElementById('metricsEditorModal').remove();
+}
+
+// Option-level correctness editor - set percentage correctness for each metric
+function openCorrectnessEditor(stageIndex, optionIndex, option) {
+    // First sync from DOM to ensure builder is up to date
+    syncFromDOM();
+    
+    // Get metrics from stage to know which ones to ask for
+    const stageMetrics = (builder.stages[stageIndex] && builder.stages[stageIndex].metrics) || [];
+    
+    if (stageMetrics.length === 0) {
+        alert('Please select metrics for this question first!');
+        return;
+    }
+    
+    // Get correctness object from builder option
+    const correctnessObj = (builder.stages[stageIndex] && 
+                           builder.stages[stageIndex].options[optionIndex] && 
+                           builder.stages[stageIndex].options[optionIndex].correctness) || {};
+    
+    let html = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" id="correctnessEditorModal">';
+    html += '<div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; max-width: 450px; width: 90%;">';
+    html += '<h3 style="color: var(--primary-color); margin-bottom: 12px;">Correctness for: "' + (option.text || 'Option') + '"</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Set percentage correctness (0-100) for each metric:</p>';
+    
+    stageMetrics.forEach(metric => {
+        const currentValue = correctnessObj[metric] !== undefined ? correctnessObj[metric] : 50;
+        html += `<div style="margin-bottom: 16px;">`;
+        html += `<label style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">`;
+        html += `<span style="color: var(--text-primary); font-weight: 500; text-transform: capitalize; min-width: 120px;">${metric}:</span>`;
+        html += `<input type="range" class="correctness-slider" data-metric="${metric}" min="0" max="100" value="${currentValue}" style="flex: 1;">`;
+        html += `<span class="correctness-value" style="color: var(--primary-color); font-weight: 600; min-width: 40px; text-align: right;">${currentValue}%</span>`;
+        html += `</label>`;
+        html += `<input type="number" class="correctness-number" data-metric="${metric}" min="0" max="100" value="${currentValue}" placeholder="0-100" style="width: 100%; padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">`;
+        html += `</div>`;
+    });
+    
+    html += '<div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">';
+    html += '<button onclick="document.getElementById(\'correctnessEditorModal\').remove()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); cursor: pointer;">Cancel</button>';
+    html += '<button onclick="saveCorrectness(' + stageIndex + ', ' + optionIndex + ')" style="padding: 10px 20px; background: var(--primary-color); color: var(--bg-primary); border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save</button>';
+    html += '</div>';
+    html += '</div></div>';
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    
+    // Sync between slider and number input
+    document.querySelectorAll('.correctness-slider').forEach(slider => {
+        slider.addEventListener('input', function() {
+            const metric = this.dataset.metric;
+            const value = this.value;
+            document.querySelector(`.correctness-value[data-metric="${metric}"]`).textContent = value + '%';
+            document.querySelector(`.correctness-number[data-metric="${metric}"]`).value = value;
+        });
+    });
+    
+    document.querySelectorAll('.correctness-number').forEach(input => {
+        input.addEventListener('input', function() {
+            const metric = this.dataset.metric;
+            let value = parseInt(this.value) || 0;
+            // Clamp between 0-100
+            if (value < 0) value = 0;
+            if (value > 100) value = 100;
+            this.value = value;
+            document.querySelector(`.correctness-slider[data-metric="${metric}"]`).value = value;
+            document.querySelector(`.correctness-value[data-metric="${metric}"]`).textContent = value + '%';
+        });
+    });
+}
+
+function saveCorrectness(stageIndex, optionIndex) {
+    const correctnessObj = {};
+    document.querySelectorAll('.correctness-slider').forEach(slider => {
+        const metric = slider.dataset.metric;
+        const value = parseInt(slider.value) || 0;
+        correctnessObj[metric] = Math.min(100, Math.max(0, value));
+    });
+    
+    // First sync from DOM to make sure builder is up to date
+    syncFromDOM();
+    
+    // Save correctness to the option
+    if (!builder.stages[stageIndex].options[optionIndex].correctness) {
+        builder.stages[stageIndex].options[optionIndex].correctness = {};
+    }
+    builder.stages[stageIndex].options[optionIndex].correctness = correctnessObj;
+    
+    // Update the textarea
+    updateTextareaFromBuilder();
+    
+    // Remove the modal
+    document.getElementById('correctnessEditorModal').remove();
 }
 
 // Read the DOM values into builder model
@@ -767,36 +1025,50 @@ function syncFromDOM() {
         const opts = [];
             const optionRows = Array.from(child._optionsContainer.children);
             optionRows.forEach((row, optIdx) => {
-                // include select for next target in addition to inputs
+                // include select for next_stage target in addition to inputs
                 const inputs = row.querySelectorAll('input, select');
                 if (inputs.length >= 2) {
                     const text = inputs[0].value;
                     const points = parseInt(inputs[1].value) || 0;
-                    let next = null;
+                    let next_stage = null;
                     if (inputs.length >= 3) {
                         const sel = inputs[2];
-                        // treat empty string as null, 'END' as special end marker, numeric strings as indices
+                        // treat empty string as null, '-1' as end marker, numeric strings as indices
                         if (sel && sel.value !== '') {
-                            if (sel.value === 'END') next = 'END';
-                            else if (!isNaN(parseInt(sel.value))) next = parseInt(sel.value);
-                            else next = sel.value;
+                            if (sel.value === '-1') next_stage = -1;
+                            else if (!isNaN(parseInt(sel.value))) next_stage = parseInt(sel.value);
+                            else next_stage = sel.value;
                         }
                     }
                     const optObj = { text: text, points: points };
-                    if (next !== null) optObj.next = next;
+                    if (next_stage !== null) optObj.next_stage = next_stage;
                     
-                    // Preserve metrics from previous builder state if they exist
+                    // Preserve metric values from previous builder state if they exist
                     if (builder.stages && builder.stages[stageIdx] && 
                         builder.stages[stageIdx].options && 
-                        builder.stages[stageIdx].options[optIdx] && 
-                        builder.stages[stageIdx].options[optIdx].metrics) {
-                        optObj.metrics = builder.stages[stageIdx].options[optIdx].metrics;
+                        builder.stages[stageIdx].options[optIdx]) {
+                        const prevOption = builder.stages[stageIdx].options[optIdx];
+                        ['detection', 'containment', 'eradication', 'recovery', 'communication'].forEach(metric => {
+                            if (prevOption[metric] !== undefined) {
+                                optObj[metric] = prevOption[metric];
+                            }
+                        });
+                        // Also preserve old correctness field if it exists
+                        if (prevOption.correctness) {
+                            optObj.correctness = prevOption.correctness;
+                        }
                     }
                     
                     opts.push(optObj);
                 }
             });
         const stageObj = { stage: stageName, content: content, question: question, options: opts };
+        
+        // Preserve metrics array from previous builder state if it exists
+        if (builder.stages && builder.stages[stageIdx] && builder.stages[stageIdx].metrics) {
+            stageObj.metrics = builder.stages[stageIdx].metrics;
+        }
+        
         return stageObj;
     });
     builder.stages = newStages;
@@ -856,20 +1128,22 @@ function loadTemplate() {
                 "stage": "detection",
                 "content": "The Security Operations Center (SOC) team has detected suspicious login attempts from an unfamiliar IP address. Your monitoring systems show unusual outbound traffic to known malicious domains. The incident timeline shows the attack began 2 hours ago.",
                 "question": "What is your first action?",
+                "metrics": [],
                 "options": [
-                    {"text": "Escalate to Security Team immediately", "points": 25},
-                    {"text": "Investigate on your own first", "points": 15},
-                    {"text": "Ignore it and continue work", "points": -30}
+                    {"text": "Escalate to Security Team immediately", "correctness": {}},
+                    {"text": "Investigate on your own first", "correctness": {}},
+                    {"text": "Ignore it and continue work", "correctness": {}}
                 ]
             },
             {
                 "stage": "containment",
                 "content": "Your team confirms the attacker has gained access to sensitive data servers. They are actively exfiltrating customer information. Network logs show 500 GB of data transfer to the external IP address over the past 30 minutes.",
                 "question": "How do you contain the threat?",
+                "metrics": [],
                 "options": [
-                    {"text": "Isolate affected systems from network", "points": 30},
-                    {"text": "Shut down all systems", "points": 10},
-                    {"text": "Just monitor the situation", "points": -20}
+                    {"text": "Isolate affected systems from network", "correctness": {}},
+                    {"text": "Shut down all systems", "correctness": {}},
+                    {"text": "Just monitor the situation", "correctness": {}}
                 ]
             }
         ]
@@ -881,20 +1155,6 @@ function loadTemplate() {
     updateTextareaFromBuilder();
     alert('✅ Template loaded into builder');
 }
-
-// Toggle raw JSON view
-document.getElementById('showRawJSON').addEventListener('change', function() {
-    const area = document.getElementById('rawJsonArea');
-    if (this.checked) {
-        updateTextareaFromBuilder();
-        area.style.display = 'block';
-    } else {
-        area.style.display = 'none';
-    }
-});
-
-// Quick add stage button
-document.getElementById('addStageBtn').addEventListener('click', function() { addStage(); });
 
 // Initialize on load: try to parse existing scenario JSON and populate builder
 document.addEventListener('DOMContentLoaded', function() {
@@ -920,6 +1180,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const introEl = document.getElementById('builder_intro');
     if (introEl) introEl.value = builder.intro || '';
     renderBuilder();
+    
+    // Format the JSON in the raw area if editing
+    if ({{ 'true' if scenario else 'false' }}) {
+        const textarea = document.getElementById('scenario_content');
+        try {
+            const parsed = JSON.parse(textarea.value);
+            textarea.value = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+            // If parse fails, leave as is
+        }
+    }
 
     // wireup: whenever the builder loses focus, sync
     document.getElementById('stageBuilder').addEventListener('input', () => updateTextareaFromBuilder());
@@ -929,10 +1200,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // If raw JSON exists (editing scenario), ensure raw area hidden by default but up-to-date
     const rawArea = document.getElementById('rawJsonArea');
     if (rawArea) rawArea.style.display = 'none';
+    
+    // Ensure checkbox is unchecked by default
+    const showRawCheckbox = document.getElementById('showRawJSON');
+    if (showRawCheckbox) showRawCheckbox.checked = false;
+    
+    // Toggle raw JSON view - MOVED INSIDE DOMContentLoaded
+    if (showRawCheckbox) {
+        showRawCheckbox.addEventListener('change', function() {
+            const area = document.getElementById('rawJsonArea');
+            if (this.checked) {
+                updateTextareaFromBuilder();
+                area.style.display = 'block';
+            } else {
+                area.style.display = 'none';
+            }
+        });
+    }
+
+    // Quick add stage button - MOVED INSIDE DOMContentLoaded
+    const addStageBtn = document.getElementById('addStageBtn');
+    if (addStageBtn) {
+        addStageBtn.addEventListener('click', function() { addStage(); });
+    }
+    
     updateTextareaFromBuilder();
 
     // Form submission: ensure textarea has builder JSON if raw not shown
     document.getElementById('scenarioForm').addEventListener('submit', function(e) {
+        // Prevent double submission
+        if (this.hasAttribute('data-submitted')) {
+            e.preventDefault();
+            return false;
+        }
+        this.setAttribute('data-submitted', 'true');
+        
         const rawShown = document.getElementById('showRawJSON').checked;
         if (!rawShown) {
             updateTextareaFromBuilder();
@@ -942,7 +1244,42 @@ document.addEventListener('DOMContentLoaded', function() {
             JSON.parse(document.getElementById('scenario_content').value);
         } catch (err) {
             e.preventDefault();
+            this.removeAttribute('data-submitted');
             alert('❌ Invalid JSON in scenario content: ' + err.message);
+            return;
+        }
+        
+        // Validate that each metric has at least one answer with 100 points
+        try {
+            const scenario = JSON.parse(document.getElementById('scenario_content').value);
+            let validationError = '';
+            
+            scenario.stages.forEach((stage, stageIdx) => {
+                const metrics = stage.metrics || [];
+                
+                metrics.forEach(metric => {
+                    const hasMaxPoints = stage.options.some(option => {
+                        const metricPoints = option[metric] || 0;
+                        return metricPoints >= 100;
+                    });
+                    
+                    if (!hasMaxPoints) {
+                        validationError += `Stage ${stageIdx + 1} ("${stage.stage}"): Metric "${metric}" - at least one answer must have 100 points.\n`;
+                    }
+                });
+            });
+            
+            if (validationError) {
+                e.preventDefault();
+                this.removeAttribute('data-submitted');
+                alert('❌ Metric Validation Failed:\n\n' + validationError);
+                return;
+            }
+        } catch (err) {
+            e.preventDefault();
+            this.removeAttribute('data-submitted');
+            alert('❌ Error validating metrics: ' + err.message);
+            return;
         }
     });
 

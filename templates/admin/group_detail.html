@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} - Group Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .group-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .group-header {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .group-header h1 {
+        color: var(--primary-color);
+        margin: 0 0 12px 0;
+        font-size: 2rem;
+    }
+
+    .group-meta {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .meta-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .meta-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-header h2 {
+        color: var(--text-primary);
+        margin: 0;
+        font-size: 1.4rem;
+    }
+
+    .btn-add {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+        padding: 10px 20px;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-add:hover {
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+    }
+
+    .members-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .member-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .member-info {
+        flex: 1;
+    }
+
+    .member-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .member-email {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+    }
+
+    .role-instructor {
+        background: rgba(255, 105, 180, 0.2);
+        color: var(--secondary-color);
+        border: 1px solid var(--secondary-color);
+    }
+
+    .role-trainee {
+        background: rgba(0, 212, 255, 0.2);
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    .btn-remove {
+        background: rgba(255, 0, 111, 0.2);
+        color: var(--secondary-color);
+        border: 1px solid var(--secondary-color);
+        padding: 6px 12px;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-remove:hover {
+        background: var(--secondary-color);
+        color: white;
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-secondary);
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .modal-header {
+        margin-bottom: 24px;
+    }
+
+    .modal-header h2 {
+        color: var(--primary-color);
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .form-group select {
+        width: 100%;
+        padding: 12px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        padding: 10px 20px;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+        background: var(--bg-primary);
+    }
+
+    .btn-submit {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+        padding: 10px 20px;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn-submit:hover {
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+    }
+
+    .btn-back {
+        display: inline-block;
+        color: var(--primary-color);
+        text-decoration: none;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        border: 1px solid var(--primary-color);
+        border-radius: var(--border-radius-sm);
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(0, 212, 255, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="group-detail-container">
+    <a href="{{ url_for('admin.groups') }}" class="btn-back">← Back to Groups</a>
+
+    <div class="group-header">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+            <div>
+                <h1 style="margin-bottom: 8px;">{{ group.name }}</h1>
+                {% if group.description %}
+                <p style="color: var(--text-secondary); margin: 0;">{{ group.description }}</p>
+                {% endif %}
+            </div>
+            <button class="btn-add" onclick="toggleAddMemberModal()" style="font-size: 1rem; padding: 12px 24px;">
+                👥 Add Member
+            </button>
+        </div>
+
+        <div class="group-meta">
+            <div class="meta-item">
+                <span class="meta-label">Total Members</span>
+                <span class="meta-value">{{ group.get_member_count() }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Instructors</span>
+                <span class="meta-value">{{ group.get_instructor_count() }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Trainees</span>
+                <span class="meta-value">{{ group.get_trainee_count() }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Created By</span>
+                <span class="meta-value" style="font-size: 1rem;">{{ group.admin.username }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructors Section -->
+    <div class="section">
+        <div class="section-header">
+            <h2>👨‍🏫 Instructors ({{ group.get_instructor_count() }})</h2>
+        </div>
+        
+        {% set instructors = group.get_instructors() %}
+        {% if instructors %}
+        <div class="members-grid">
+            {% for instructor in instructors %}
+            <div class="member-card">
+                <div class="member-info">
+                    <div class="member-name">{{ instructor.username }}</div>
+                    <div class="member-email">{{ instructor.email }}</div>
+                    <span class="role-badge role-instructor">Instructor</span>
+                </div>
+                <form method="POST" action="{{ url_for('admin.remove_group_member', group_id=group.id, user_id=instructor.id) }}" style="display: inline;" onsubmit="return confirm('Remove {{ instructor.username }} from this group?')">
+                    <button type="submit" class="btn-remove">Remove</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-message">
+            <p>No instructors in this group yet</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Trainees Section -->
+    <div class="section">
+        <div class="section-header">
+            <h2>👥 Trainees ({{ group.get_trainee_count() }})</h2>
+        </div>
+        
+        {% set trainees = group.get_trainees() %}
+        {% if trainees %}
+        <div class="members-grid">
+            {% for trainee in trainees %}
+            <div class="member-card">
+                <div class="member-info">
+                    <div class="member-name">{{ trainee.username }}</div>
+                    <div class="member-email">{{ trainee.email }}</div>
+                    <span class="role-badge role-trainee">Trainee</span>
+                </div>
+                <form method="POST" action="{{ url_for('admin.remove_group_member', group_id=group.id, user_id=trainee.id) }}" style="display: inline;" onsubmit="return confirm('Remove {{ trainee.username }} from this group?')">
+                    <button type="submit" class="btn-remove">Remove</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-message">
+            <p>No trainees in this group yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div id="addMemberModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add Member to {{ group.name }}</h2>
+        </div>
+        
+        {% if available_users %}
+        <form method="POST" action="{{ url_for('admin.add_group_member', id=group.id) }}">
+            <div class="form-group">
+                <label for="user_id">Select User</label>
+                <select id="user_id" name="user_id" required>
+                    <option value="">Choose a user...</option>
+                    {% for user in available_users %}
+                    <option value="{{ user.id }}">{{ user.username }} ({{ user.email }}) - {{ user.role|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="toggleAddMemberModal()">Cancel</button>
+                <button type="submit" class="btn-submit">Add Member</button>
+            </div>
+        </form>
+        {% else %}
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">All users are already assigned to groups.</p>
+        <div class="form-actions">
+            <button type="button" class="btn-cancel" onclick="toggleAddMemberModal()">Close</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function toggleAddMemberModal() {
+        const modal = document.getElementById('addMemberModal');
+        modal.classList.toggle('active');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('addMemberModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            toggleAddMemberModal();
+        }
+    });
+</script>
+{% endblock %}

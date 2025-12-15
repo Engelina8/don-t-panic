@@ -191,10 +191,12 @@
     @media (max-width: 1024px) {
         .table-header,
         .table-row {
-            grid-template-columns: 1fr 1fr 100px;
+            grid-template-columns: 1fr 100px 100px;
         }
 
-        .user-email {
+        .user-email,
+        .user-progress,
+        .user-group {
             display: none;
         }
 
@@ -273,6 +275,7 @@
                 <div>Username</div>
                 <div>Email</div>
                 <div>Progress</div>
+                <div>Group</div>
                 <div>Role</div>
                 <div>Status</div>
                 <div>Actions</div>
@@ -292,8 +295,15 @@
                             <div class="stat-label">Completed/Started</div>
                         </div>
                         <div style="text-align: center;">
-                            <span style="background: {% if user.role == 'instructor' %}rgba(255, 105, 180, 0.2); color: var(--accent-color){% else %}rgba(0, 212, 255, 0.2); color: var(--primary-color){% endif %}; padding: 6px 12px; border-radius: var(--border-radius-sm); font-size: 0.85rem; font-weight: 500;">
-                                {{ 'Instructor' if user.role == 'instructor' else 'Trainee' }}
+                            {% if user.group %}
+                            <span style="color: var(--primary-color); font-size: 0.9rem;">{{ user.group.name }}</span>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-size: 0.85rem; font-style: italic;">No group</span>
+                            {% endif %}
+                        </div>
+                        <div style="text-align: center;">
+                            <span style="background: {% if user.role == 'admin' %}rgba(138, 43, 226, 0.2); color: #8B2BFF{% elif user.role == 'instructor' %}rgba(255, 105, 180, 0.2); color: var(--accent-color){% else %}rgba(0, 212, 255, 0.2); color: var(--primary-color){% endif %}; padding: 6px 12px; border-radius: var(--border-radius-sm); font-size: 0.85rem; font-weight: 500;">
+                                {{ 'Admin' if user.role == 'admin' else ('Instructor' if user.role == 'instructor' else 'Trainee') }}
                             </span>
                         </div>
                         <div>
