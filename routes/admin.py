@@ -46,16 +46,65 @@ def admin_required(f):
 def dashboard():
     """Instructor dashboard"""
     
-    # Get statistics
-    total_users = User.query.filter_by(role='trainee').count()
-    total_scenarios = Scenario.query.count()
-    total_sessions = TrainingSession.query.count()
-    completed_sessions = TrainingSession.query.filter_by(status='completed').count()
-    
-    # Get recent activity
-    recent_sessions = TrainingSession.query.order_by(
-        TrainingSession.started_at.desc()
-    ).limit(10).all()
+    # Get statistics and recent activity based on user hierarchy
+    if current_user.is_admin():
+        # ADMIN: Can see ALL users and sessions
+        total_users = User.query.filter_by(role='trainee').count()
+        total_scenarios = Scenario.query.count()
+        total_sessions = TrainingSession.query.count()
+        completed_sessions = TrainingSession.query.filter_by(status='completed').count()
+        
+        # Get all recent activity
+        recent_sessions = TrainingSession.query.order_by(
+            TrainingSession.started_at.desc()
+        ).limit(10).all()
+    else:
+        # INSTRUCTOR: Can see their own sessions + trainee sessions in their group (NO ADMINS)
+        if current_user.group_id:
+            # Count trainees in their group
+            total_users = User.query.filter(
+                User.group_id == current_user.group_id,
+                User.role == 'trainee'
+            ).count()
+            
+            # Total scenarios (available to all)
+            total_scenarios = Scenario.query.count()
+            
+            # Sessions from: trainees in their group OR their own
+            total_sessions = TrainingSession.query.join(User).filter(
+                ((User.group_id == current_user.group_id) & (User.role == 'trainee')) |
+                (User.id == current_user.id)
+            ).count()
+            
+            completed_sessions = TrainingSession.query.join(User).filter(
+                ((User.group_id == current_user.group_id) & (User.role == 'trainee')) |
+                (User.id == current_user.id),
+                TrainingSession.status == 'completed'
+            ).count()
+            
+            # Recent activity from: trainees in their group OR their own
+            recent_sessions = TrainingSession.query.join(User).filter(
+                ((User.group_id == current_user.group_id) & (User.role == 'trainee')) |
+                (User.id == current_user.id)
+            ).order_by(
+                TrainingSession.started_at.desc()
+            ).limit(10).all()
+        else:
+            # Instructor not in a group sees only their own data
+            total_users = 0
+            total_scenarios = Scenario.query.count()
+            total_sessions = TrainingSession.query.filter_by(user_id=current_user.id).count()
+            completed_sessions = TrainingSession.query.filter(
+                TrainingSession.user_id == current_user.id,
+                TrainingSession.status == 'completed'
+            ).count()
+            
+            # Recent activity from their own sessions
+            recent_sessions = TrainingSession.query.filter_by(
+                user_id=current_user.id
+            ).order_by(
+                TrainingSession.started_at.desc()
+            ).limit(10).all()
     
     stats = {
         'total_users': total_users,
