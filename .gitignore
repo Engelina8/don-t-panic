@@ -7,9 +7,14 @@ __pycache__/
 
 # Database
 instance/
+
+# Ignore ALL database files (no exceptions)
 *.db
 *.sqlite
 *.sqlite3
+
+# Scenarios folder is version-controlled (JSON files)
+# DO NOT ignore the scenarios/ folder - it contains scenario data
 
 # IDE
 .vscode/

@@ -58,14 +58,12 @@
                             <span class="nav-user-name">{{ current_user.username }}</span>
                             <span class="nav-user-role">{{ current_user.role }}</span>
                         </li>
+                        <li><a href="{{ url_for('auth.profile') }}" class="nav-box profile">👤 Profile</a></li>
                         <li><a href="{{ url_for('auth.logout') }}" class="nav-box logout">Logout</a></li>
                     {% else %}
                         <li><a href="{{ url_for('auth.login') }}" class="nav-box login">Login</a></li>
                         <li><a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary">Register</a></li>
                     {% endif %}
-                    <li id="install-app-container" style="display: none;">
-                        <button id="install-app-btn" class="nav-box install-btn">📥 Install App</button>
-                    </li>
                 </ul>
             </nav>
         </div>
@@ -106,7 +104,6 @@
                     <ul>
                         <li><a href="{{ url_for('index') }}">Home</a></li>
                         <li><a href="{{ url_for('scenarios.list') }}">Scenarios</a></li>
-                        <li><a href="#">Documentation</a></li>
                     </ul>
                 </div>
                 
@@ -114,7 +111,6 @@
                     <h4>Contact</h4>
                     <ul>
                         <li><a href="mailto:support@dontpanic.dev">support@dontpanic.dev</a></li>
-                        <li><a href="#">Report Bug</a></li>
                     </ul>
                 </div>
             </div>
@@ -127,6 +123,13 @@
 
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Chatbot Widget -->
+    {% if current_user.is_authenticated %}
+    <button class="chatbot-widget-btn" onclick="toggleChatbot()">💬</button>
+    {% include 'components/chatbot.html' %}
+    {% endif %}
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

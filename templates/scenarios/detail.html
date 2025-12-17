@@ -207,7 +207,13 @@
                         <li><strong>Difficulty Level:</strong> {{ '⭐' * scenario.difficulty_level }}</li>
                         <li><strong>Estimated Time:</strong> {{ scenario.estimated_time }} minutes</li>
                         <li><strong>Times Played:</strong> {{ scenario.times_played }}</li>
-                        <li><strong>Average Score:</strong> {{ "%.1f"|format(scenario.average_score) }}/100</li>
+                        <li><strong>Average Score:</strong> 
+                            {% if scenario.average_score is not none %}
+                                {{ "%.1f"|format(scenario.average_score) }}/100
+                            {% else %}
+                                — (no completions)
+                            {% endif %}
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -112,18 +112,26 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th></th>
                                 <th>User</th>
-                                <th>Scenario</th>
+                                <th>Latest Scenario</th>
                                 <th>Started</th>
                                 <th>Status</th>
                                 <th>Score</th>
-                                <th>Duration</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% if recent_sessions %}
                                 {% for session in recent_sessions %}
-                                <tr>
+                                {% set user_sessions = all_user_sessions | selectattr('user_id', 'equalto', session.user_id) | list %}
+                                <tr class="cursor-pointer" onclick="toggleUserSessions({{ session.user_id }})">
+                                    <td>
+                                        {% if user_sessions|length > 1 %}
+                                        <span id="expand-{{ session.user_id }}" style="color:var(--primary-color); font-weight:bold; cursor:pointer;">▶</span>
+                                        {% else %}
+                                        <span style="color:#ccc;">–</span>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         <a href="{{ url_for('admin.user_detail', user_id=session.user_id) }}">
                                             {{ session.user.username }}
@@ -131,12 +139,16 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-light text-dark">
-                                            {{ session.scenario.title }}
+                                            {% if scenarios_by_id.get(session.scenario_id|string) %}
+                                                {{ scenarios_by_id[session.scenario_id|string]['title'] }}
+                                            {% else %}
+                                                {{ session.scenario_id }}
+                                            {% endif %}
                                         </span>
                                     </td>
                                     <td>
                                         <small class="text-muted">
-                                            {{ session.started_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {{ session.get_local_started_at(timezone_offset).strftime('%Y-%m-%d %H:%M') }}
                                         </small>
                                     </td>
                                     <td>
@@ -155,14 +167,53 @@
                                             <span class="text-muted">—</span>
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        {% if session.time_taken %}
-                                            <small>{{ session.get_duration_minutes() }} min</small>
-                                        {% else %}
-                                            <span class="text-muted">—</span>
-                                        {% endif %}
-                                    </td>
                                 </tr>
+                                
+                                <!-- Expandable older sessions for this user -->
+                                {% if user_sessions|length > 1 %}
+                                    <tr id="row-{{ session.user_id }}" style="display:none;">
+                                        <td colspan="6" style="padding:0 !important; background:#f9f9f9;">
+                                            <table class="table table-sm mb-0" style="margin:0;">
+                                                <tbody>
+                                                    {% for older_session in user_sessions[1:] %}
+                                                    <tr style="padding:12px 16px !important;">
+                                                        <td style="padding:12px 32px !important; border:none;">
+                                                            <small class="text-muted">
+                                                                {{ older_session.get_local_started_at(timezone_offset).strftime('%Y-%m-%d %H:%M') }}
+                                                            </small>
+                                                        </td>
+                                                        <td style="padding:12px 0 !important; border:none;">
+                                                            <span class="badge bg-light text-dark">
+                                                                {% if scenarios_by_id.get(older_session.scenario_id|string) %}
+                                                                    {{ scenarios_by_id[older_session.scenario_id|string]['title'] }}
+                                                                {% else %}
+                                                                    {{ older_session.scenario_id }}
+                                                                {% endif %}
+                                                            </span>
+                                                        </td>
+                                                        <td style="padding:12px 0 !important; border:none;">
+                                                            {% if older_session.status == 'completed' %}
+                                                                <span class="badge bg-success">Completed</span>
+                                                            {% elif older_session.status == 'in_progress' %}
+                                                                <span class="badge bg-warning">In Progress</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">Abandoned</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td style="padding:12px 0 !important; border:none; text-align:right;">
+                                                            {% if older_session.score %}
+                                                                <strong>{{ older_session.score }}/100</strong>
+                                                            {% else %}
+                                                                <span class="text-muted">—</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                {% endif %}
                                 {% endfor %}
                             {% else %}
                                 <tr>
@@ -178,6 +229,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleUserSessions(userId) {
+        const row = document.getElementById('row-' + userId);
+        const expandIcon = document.getElementById('expand-' + userId);
+        
+        if (row) {
+            if (row.style.display === 'none') {
+                row.style.display = 'table-row';
+                if (expandIcon) expandIcon.textContent = '▼';
+            } else {
+                row.style.display = 'none';
+                if (expandIcon) expandIcon.textContent = '▶';
+            }
+        }
+    }
+</script>
 
 <style>
     .card {

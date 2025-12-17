@@ -224,6 +224,12 @@
     console.log('path_total_available:', {{ path_total_available }});
     console.log('metrics_max:', {{ metrics_max|tojson }});
     console.log('path_metrics_earned:', {{ path_metrics_earned|tojson }});
+    console.log('session.detection_score:', {{ session.detection_score }});
+    console.log('session.containment_score:', {{ session.containment_score }});
+    console.log('session.eradication_score:', {{ session.eradication_score }});
+    console.log('session.recovery_score:', {{ session.recovery_score }});
+    console.log('session.communication_score:', {{ session.communication_score }});
+    console.log('scenario.max_points:', {{ scenario.max_points if scenario else 'N/A' }});
 </script>
 
 <div class="results-container">
@@ -342,7 +348,7 @@
             <div class="detail-grid">
                 <div class="detail-item">
                     <div class="detail-label">Scenario</div>
-                    <div class="detail-value">{{ session.scenario.title }}</div>
+                    <div class="detail-value">{{ scenario.title if scenario else 'Unknown' }}</div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Started</div>

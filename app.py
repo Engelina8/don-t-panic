@@ -53,7 +53,7 @@ def create_app(config_name=None):
     
     # Create database tables
     with app.app_context():
-        db.create_all()
+        db.create_all()  # Creates tables in both databases based on __bind_key__
         
         # Create default admin if none exists
         if User.query.filter_by(role='admin').first() is None:
@@ -84,23 +84,27 @@ def create_app(config_name=None):
     # Context processor - makes variables available to all templates
     @app.context_processor
     def inject_user():
-        """Inject current user into all templates"""
-        return dict(current_user=current_user)
+        """Inject current user and config into all templates"""
+        return dict(
+            current_user=current_user,
+            timezone_offset=app.config.get('TIMEZONE_OFFSET', 1)
+        )
     
     return app
 
 def register_blueprints(app):
     """Register all blueprints"""
     
-    # Import blueprints (we'll create these files)
     try:
         from routes.auth import auth_bp
         from routes.scenarios import scenario_bp
         from routes.admin import admin_bp
+        from assistant.routes import assistant_bp
         
         app.register_blueprint(auth_bp)
         app.register_blueprint(scenario_bp)
         app.register_blueprint(admin_bp)
+        app.register_blueprint(assistant_bp)
         
         print("✅ Blueprints registered successfully")
     except ImportError as e:

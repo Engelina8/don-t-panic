@@ -240,10 +240,16 @@
                     {% if sessions %}
                         {% for session in sessions %}
                         <div class="session-item">
-                            <div class="session-title">{{ session.scenario.title }}</div>
+                            <div class="session-title">
+                                {% if scenarios_by_id.get(session.scenario_id|string) %}
+                                    {{ scenarios_by_id[session.scenario_id|string]['title'] }}
+                                {% else %}
+                                    {{ session.scenario_id }}
+                                {% endif %}
+                            </div>
                             <div class="session-meta">
                                 <div>
-                                    <strong>Started:</strong> {{ session.started_at.strftime('%Y-%m-%d %H:%M') }}
+                                    <strong>Started:</strong> {{ session.get_local_started_at(timezone_offset).strftime('%Y-%m-%d %H:%M') }}
                                 </div>
                                 <div>
                                     <span class="status-badge status-{{ session.status }}">
@@ -259,7 +265,8 @@
                             </div>
                             {% if session.score %}
                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);">
-                                <strong style="color: var(--primary-color);">Score: {{ session.score }}/{{ session.scenario.max_points or 100 }}</strong>
+                                {% set max_points = scenarios_by_id.get(session.scenario_id|string, {}).get('max_points', 100) %}
+                                <strong style="color: var(--primary-color);">Score: {{ session.score }}/{{ max_points }}</strong>
                             </div>
                             {% endif %}
                             {% if session.time_taken %}
@@ -327,9 +334,47 @@
                             <div class="stat-label">Avg Score</div>
                         </div>
                     </div>
+                    
+                    <!-- Actions -->
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                        <button onclick="resetUserLogs({{ user.id }}, '{{ user.username }}')" 
+                                class="btn-secondary" 
+                                style="width: 100%; padding: 10px; margin-top: 10px; background: #ff9800; color: white; border: none; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s ease;">
+                            🔄 Reset Logs
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function resetUserLogs(userId, username) {
+        if (confirm(`Are you sure you want to reset all training logs for "${username}"? This action cannot be undone.`)) {
+            fetch(`/admin/users/${userId}/reset-logs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                    // Reload the page to reflect changes
+                    location.reload();
+                } else {
+                    alert(`❌ Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Failed to reset logs');
+            });
+        }
+    }
+</script>
 {% endblock %}

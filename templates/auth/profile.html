@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <h1>👤 User Profile</h1>
+            <p class="subtitle">Manage your account settings</p>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-section">
+                <h3>Account Information</h3>
+                <div class="info-row">
+                    <label>Username:</label>
+                    <span>{{ user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <label>Email:</label>
+                    <span>{{ user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <label>Role:</label>
+                    <span class="role-badge role-{{ user.role }}">
+                        {% if user.role == 'admin' %}
+                            👑 Administrator
+                        {% elif user.role == 'instructor' %}
+                            📚 Instructor
+                        {% else %}
+                            📖 Trainee
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <label>Member Since:</label>
+                    <span>{{ user.created_at.strftime('%B %d, %Y') }}</span>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3>Security</h3>
+                <div class="security-options">
+                    <a href="{{ url_for('auth.change_password') }}" class="security-btn">
+                        <span class="icon">🔐</span>
+                        <div class="btn-content">
+                            <strong>Change Password</strong>
+                            <p>Update your password to keep your account secure</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            {% if user.is_instructor_or_admin() %}
+            <div class="profile-section">
+                <h3>Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">{{ user.get_completed_scenarios_count() }}</span>
+                        <span class="stat-label">Completed Scenarios</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ "%.1f"|format(user.get_average_score()) }}%</span>
+                        <span class="stat-label">Average Score</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="profile-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        padding: 30px 20px;
+        background: #1a1a1a;
+        min-height: calc(100vh - 80px);
+    }
+
+    .profile-card {
+        max-width: 700px;
+        margin: 0 auto;
+        background: #2d2d2d;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #0d47a1 100%);
+        color: #ffffff;
+        padding: 30px;
+        text-align: center;
+        border-bottom: 3px solid #2196F3;
+    }
+
+    .profile-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 32px;
+        color: #64B5F6;
+    }
+
+    .profile-header .subtitle {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 14px;
+        color: #b3e5fc;
+    }
+
+    .profile-content {
+        padding: 30px;
+    }
+
+    .profile-section {
+        margin-bottom: 30px;
+    }
+
+    .profile-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .profile-section h3 {
+        color: #64B5F6;
+        margin-top: 0;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #2196F3;
+        font-size: 18px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #404040;
+        color: #e0e0e0;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-row label {
+        font-weight: 600;
+        color: #90CAF9;
+        min-width: 120px;
+    }
+
+    .info-row span {
+        color: #b0bec5;
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .role-admin {
+        background: #b71c1c;
+        color: #ffcdd2;
+    }
+
+    .role-instructor {
+        background: #0d47a1;
+        color: #64B5F6;
+    }
+
+    .role-trainee {
+        background: #1b5e20;
+        color: #81c784;
+    }
+
+    .security-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .security-btn {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: #3d3d3d;
+        border: 2px solid #404040;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .security-btn:hover {
+        background: #424242;
+        border-color: #2196F3;
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        transform: translateX(5px);
+    }
+
+    .security-btn .icon {
+        font-size: 32px;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .security-btn .btn-content {
+        flex: 1;
+    }
+
+    .security-btn .btn-content strong {
+        display: block;
+        color: #64B5F6;
+        margin-bottom: 5px;
+    }
+
+    .security-btn .btn-content p {
+        margin: 0;
+        font-size: 13px;
+        color: #90caf9;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .stat-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+    }
+
+    .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #64B5F6;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        opacity: 0.9;
+        color: #b3e5fc;
+    }
+
+    .profile-actions {
+        padding: 20px 30px 30px 30px;
+        border-top: 1px solid #404040;
+        text-align: center;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 12px 30px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-secondary {
+        background: #2196F3;
+        color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+        background: #1976D2;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+    }
+
+    @media (max-width: 600px) {
+        .profile-container {
+            padding: 15px 10px;
+        }
+
+        .profile-card {
+            border-radius: 8px;
+        }
+
+        .profile-header {
+            padding: 20px;
+        }
+
+        .profile-header h1 {
+            font-size: 24px;
+        }
+
+        .profile-content {
+            padding: 20px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .security-btn {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .security-btn .icon {
+            min-width: auto;
+            font-size: 40px;
+        }
+    }
+</style>
+{% endblock %}

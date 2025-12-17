@@ -1,16 +1,10 @@
 import json
 from app import create_app
-from models import db, Scenario, User
+from scenario_manager import scenario_manager
 
 app = create_app()
 
 with app.app_context():
-    # Get the first admin user
-    admin = User.query.filter_by(role='admin').first()
-    if not admin:
-        print("No admin user found")
-        exit(1)
-    
     # Create test scenario JSON
     scenario_data = {
         "title": "Ransomware Outbreak Response",
@@ -165,30 +159,22 @@ with app.app_context():
     }
     
     # Check if test scenario already exists
-    existing = Scenario.query.filter_by(title="Ransomware Outbreak Response").first()
-    if existing:
-        print(f"Test scenario already exists (ID: {existing.id})")
-        print("URL: http://localhost:5000/scenarios/play/{0}".format(existing.id))
-        exit(0)
+    existing_scenarios = scenario_manager.get_all_scenarios()
+    for scenario_data in existing_scenarios:
+        if scenario_data.get('title') == "Ransomware Outbreak Response":
+            print(f"Test scenario already exists")
+            scenario_id = scenario_data.get('id')
+            print(f"Scenario ID: {scenario_id}")
+            exit(0)
     
-    # Create the scenario
-    scenario = Scenario(
-        title=scenario_data['title'],
-        description=scenario_data['description'],
-        incident_type=scenario_data['incident_type'],
-        difficulty_level=scenario_data['difficulty_level'],
-        estimated_time=scenario_data['estimated_time'],
-        max_points=scenario_data['max_points'],
-        scenario_content=json.dumps(scenario_data, indent=2),
-        created_by=admin.id
-    )
-    
-    db.session.add(scenario)
-    db.session.commit()
+    # Create the scenario file
+    scenario_manager.create_scenario(scenario_data)
     
     print("Test scenario created successfully!")
-    print("Scenario ID: {0}".format(scenario.id))
-    print("Title: {0}".format(scenario.title))
-    print("Max Points: {0}".format(scenario.max_points))
-    print("\nPlay URL: http://localhost:5000/scenarios/play/{0}".format(scenario.id))
-    print("Detail URL: http://localhost:5000/scenarios/{0}".format(scenario.id))
+    print("Title: {0}".format(scenario_data['title']))
+    print("Max Points: {0}".format(scenario_data['max_points']))
+    all_scenarios = scenario_manager.get_all_scenarios()
+    for scenario in all_scenarios:
+        if scenario.get('title') == scenario_data['title']:
+            scenario_id = scenario.get('id')
+            print("\nPlay URL: http://localhost:5000/scenarios/{0}".format(scenario_id))

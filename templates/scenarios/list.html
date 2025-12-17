@@ -26,6 +26,52 @@
         font-size: 1.05rem;
     }
 
+    .category-section {
+        margin-bottom: 50px;
+    }
+
+    .category-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--primary-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.3s ease;
+    }
+
+    .category-title:hover {
+        color: #00b8d4;
+        border-bottom-color: #00b8d4;
+    }
+
+    .category-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .category-toggle.collapsed {
+        transform: rotate(-90deg);
+    }
+
+    .category-icon {
+        font-size: 1.5rem;
+    }
+
+    .scenarios-grid.collapsed {
+        display: none;
+    }
+
     .scenarios-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -148,32 +194,54 @@
         <p>Sharpen your incident response skills with realistic cybersecurity scenarios</p>
     </div>
 
-    {% if scenarios %}
-    <div class="scenarios-grid">
-        {% for scenario in scenarios %}
-        <div class="scenario-card">
-            <h3>{{ scenario.title }}</h3>
-            <p>{{ scenario.description }}</p>
-            <p class="difficulty">Difficulty: {{ '⭐' * scenario.difficulty_level }}</p>
+    {% if scenarios_by_category %}
+        {% for category, scenarios in scenarios_by_category.items() | sort %}
+        <div class="category-section">
+            <div class="category-title" onclick="toggleCategory(this)">
+                <span class="category-toggle">▼</span>
+                <span class="category-icon">📁</span>
+                {{ category }}
+            </div>
             
-            {% if scenario.id in completed_ids %}
-                <span class="badge">✅ Completed</span>
-            {% endif %}
-            
-            <div class="card-actions">
-                <a href="{{ url_for('scenarios.detail', scenario_id=scenario.id) }}" class="btn-secondary">View Details</a>
-                
-                <form method="POST" action="{{ url_for('scenarios.start', scenario_id=scenario.id) }}">
-                    <button type="submit" class="btn-primary">Start Now</button>
-                </form>
+            <div class="scenarios-grid">
+                {% for scenario in scenarios %}
+                <div class="scenario-card">
+                    <h3>{{ scenario.title }}</h3>
+                    <p>{{ scenario.description }}</p>
+                    <p class="difficulty">Difficulty: {{ '⭐' * scenario.difficulty_level }}</p>
+                    
+                    {% if scenario.id in completed_ids %}
+                        <span class="badge">✅ Completed</span>
+                    {% endif %}
+                    
+                    <div class="card-actions">
+                        <a href="{{ url_for('scenarios.detail', scenario_id=scenario.id) }}" class="btn-secondary">View Details</a>
+                        
+                        <form method="POST" action="{{ url_for('scenarios.start', scenario_id=scenario.id) }}">
+                            <button type="submit" class="btn-primary">Start Now</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
         {% endfor %}
-    </div>
     {% else %}
     <div class="no-scenarios">
         <p>No scenarios available yet. Check back soon! 🔍</p>
     </div>
     {% endif %}
 </div>
+
+<script>
+    function toggleCategory(titleElement) {
+        // Get the grid that follows this title
+        const grid = titleElement.nextElementSibling;
+        const toggle = titleElement.querySelector('.category-toggle');
+        
+        // Toggle classes
+        grid.classList.toggle('collapsed');
+        toggle.classList.toggle('collapsed');
+    }
+</script>
 {% endblock %}

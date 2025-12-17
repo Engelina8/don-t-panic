@@ -1,0 +1,44 @@
+{
+  "title": "4",
+  "description": "4",
+  "category": "",
+  "incident_type": "ransomware",
+  "difficulty_level": 3,
+  "estimated_time": 30,
+  "max_points": 44,
+  "scenario_content": {
+    "intro": "",
+    "stages": [
+      {
+        "stage": "",
+        "content": "",
+        "question": "4",
+        "options": [
+          {
+            "text": "4",
+            "points": 4,
+            "eradication": 42,
+            "correctness": {}
+          },
+          {
+            "text": "44",
+            "points": 44,
+            "detection": 0,
+            "containment": 0,
+            "eradication": 100,
+            "recovery": 0,
+            "communication": 0
+          }
+        ],
+        "metrics": [
+          "eradication"
+        ]
+      }
+    ]
+  },
+  "created_by": 1,
+  "is_active": true,
+  "id": "1b7affa0",
+  "created_at": "2025-12-17T09:12:09.784283",
+  "updated_at": "2025-12-17T09:12:09.784283"
+}

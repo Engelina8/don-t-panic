@@ -297,13 +297,20 @@
                             {% for session in completed_sessions|reverse %}
                                 <tr>
                                     <td><strong>{{ session.user.username }}</strong></td>
-                                    <td>{{ session.scenario.title }}</td>
                                     <td>
-                                        <small>{{ session.completed_at.strftime('%Y-%m-%d %H:%M') if session.completed_at else '—' }}</small>
+                                        {% if scenarios_by_id.get(session.scenario_id|string) %}
+                                            {{ scenarios_by_id[session.scenario_id|string]['title'] }}
+                                        {% else %}
+                                            {{ session.scenario_id }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ session.get_local_completed_at(timezone_offset).strftime('%Y-%m-%d %H:%M') if session.completed_at else '—' }}</small>
                                     </td>
                                     <td>
                                         {% if session.score %}
-                                            <strong style="color: var(--primary-color);">{{ session.score }}/{{ session.scenario.max_points or 100 }}</strong>
+                                            {% set max_points = scenarios_by_id.get(session.scenario_id|string, {}).get('max_points', 100) %}
+                                            <strong style="color: var(--primary-color);">{{ session.score }}/{{ max_points }}</strong>
                                         {% else %}
                                             —
                                         {% endif %}

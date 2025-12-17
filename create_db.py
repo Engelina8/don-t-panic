@@ -1,5 +1,6 @@
 from app import create_app
 from models import db, User, Scenario, TrainingSession
+from scenario_manager import scenario_manager
 import json
 
 def create_sample_data():
@@ -96,7 +97,8 @@ def create_sample_data():
         print("="*50)
         print("\n📊 Database Summary:")
         print(f"   Users: {User.query.count()}")
-        print(f"   Scenarios: {Scenario.query.count()}")
+        scenarios_data = scenario_manager.get_all_scenarios()
+        print(f"   Scenarios: {len(scenarios_data)}")
         print(f"   Training Sessions: {TrainingSession.query.count()}")
         print("\n🔐 Test Credentials:")
         print("   Instructor: instructor1 / password123")

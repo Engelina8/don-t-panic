@@ -117,3 +117,51 @@ def register():
 def profile():
     """User profile page"""
     return render_template('auth/profile.html', user=current_user)
+
+@auth_bp.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """Change user password"""
+    
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Validate input
+        errors = []
+        
+        # Check current password
+        if not current_password:
+            errors.append('Current password is required')
+        elif not check_password_hash(current_user.password_hash, current_password):
+            errors.append('Current password is incorrect')
+        
+        # Validate new password
+        if not new_password or len(new_password) < 6:
+            errors.append('New password must be at least 6 characters')
+        
+        if new_password != confirm_password:
+            errors.append('New passwords do not match')
+        
+        if new_password == current_password:
+            errors.append('New password must be different from current password')
+        
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+            return render_template('auth/change_password.html')
+        
+        # Update password
+        try:
+            current_user.set_password(new_password)
+            db.session.commit()
+            flash('Password changed successfully!', 'success')
+            return redirect(url_for('auth.profile'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Failed to change password. Please try again.', 'error')
+            print(f"Password change error: {e}")
+            return render_template('auth/change_password.html')
+    
+    return render_template('auth/change_password.html')

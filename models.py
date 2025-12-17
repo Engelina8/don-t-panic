@@ -1,9 +1,26 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
+
+# ========================
+# UTILITY FUNCTIONS
+# ========================
+def get_local_time(utc_datetime, timezone_offset=1):
+    """Convert UTC datetime to local time with timezone offset
+    
+    Args:
+        utc_datetime: datetime object in UTC
+        timezone_offset: hours offset from UTC (default 1 for UTC+1)
+    
+    Returns:
+        datetime object in local time
+    """
+    if not utc_datetime:
+        return None
+    return utc_datetime + timedelta(hours=timezone_offset)
 
 # ========================
 # 1. USERS TABLE
@@ -37,11 +54,6 @@ class User(UserMixin, db.Model):
                                        backref='user', 
                                        lazy='dynamic',
                                        cascade='all, delete-orphan')
-    
-    created_scenarios = db.relationship('Scenario',
-                                       backref='creator',
-                                       lazy='dynamic',
-                                       foreign_keys='Scenario.created_by')
     
     def set_password(self, password):
         """Hash and set the password"""
@@ -133,76 +145,89 @@ class Group(db.Model):
 
 
 # ========================
-# 3. SCENARIOS TABLE
+# 3. SCENARIO (File-based, not database)
 # ========================
-class Scenario(db.Model):
-    """Training scenarios/exercises"""
-    __tablename__ = 'scenarios'
+class Scenario:
+    """Scenario class - loaded from JSON files in scenarios folder
     
-    # Primary key
-    id = db.Column(db.Integer, primary_key=True)
+    Attributes loaded from JSON:
+    - id: Unique scenario identifier
+    - title: Scenario title
+    - description: Full description
+    - category: Scenario category/folder
+    - incident_type: Type of incident (ransomware, data_breach, etc.)
+    - difficulty_level: 1-5 difficulty scale
+    - estimated_time: Estimated completion time in minutes
+    - max_points: Maximum points possible
+    - scenario_content: Decision tree/story branches as JSON
+    - created_by: User ID who created the scenario
+    - created_at: Creation timestamp
+    - updated_at: Last update timestamp
+    - is_active: Whether scenario is active
+    - times_played: Number of times played (tracked separately)
+    - average_score: Average score (tracked separately)
+    """
     
-    # Scenario information
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    
-    # Categorization
-    incident_type = db.Column(db.String(50), nullable=False)
-    # Options: 'ransomware', 'data_breach', 'ddos', 'phishing', 'insider_threat', etc.
-    
-    difficulty_level = db.Column(db.Integer, nullable=False, default=1)
-    # Scale: 1 (easy) to 5 (very hard)
-    
-    estimated_time = db.Column(db.Integer, nullable=False, default=30)
-    # Time in minutes
-    
-    # Maximum points for the scenario (used to scale final score)
-    max_points = db.Column(db.Integer, nullable=False, default=100)
-    
-    # Scenario content (JSON stored as text)
-    scenario_content = db.Column(db.Text, nullable=False)
-    # This will store the decision tree/story branches as JSON
-    
-    # Metadata
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    
-    # Statistics
-    times_played = db.Column(db.Integer, default=0)
-    average_score = db.Column(db.Float, default=0.0)
-    
-    # Relationships
-    training_sessions = db.relationship('TrainingSession',
-                                       backref='scenario',
-                                       lazy='dynamic',
-                                       cascade='all, delete-orphan')
-    
-    def increment_play_count(self):
-        """Increment the times_played counter"""
-        self.times_played += 1
-    
-    def update_average_score(self):
-        """Recalculate average score from all completed sessions"""
-        completed = self.training_sessions.filter_by(status='completed').all()
-        if not completed:
-            self.average_score = 0.0
-            return
+    def __init__(self, data=None):
+        """Initialize from dictionary (loaded from JSON)"""
+        if data is None:
+            data = {}
         
-        total = sum(session.score for session in completed if session.score)
-        self.average_score = round(total / len(completed), 2)
+        import json
+        
+        # Store all data
+        self.data = data
+        
+        # Provide direct access to common attributes
+        self.id = data.get('id')
+        self.title = data.get('title', 'Untitled Scenario')
+        self.description = data.get('description', '')
+        self.category = data.get('category', '')
+        self.incident_type = data.get('incident_type', '')
+        self.difficulty_level = data.get('difficulty_level', 1)
+        self.estimated_time = data.get('estimated_time', 30)
+        self.max_points = data.get('max_points', 100)
+        
+        # Convert scenario_content to JSON string if it's a dict
+        content = data.get('scenario_content', '{}')
+        if isinstance(content, dict):
+            self.scenario_content = json.dumps(content, indent=2)
+        else:
+            self.scenario_content = content if content else '{}'
+        
+        self.created_by = data.get('created_by')
+        self.created_at = data.get('created_at')
+        self.updated_at = data.get('updated_at')
+        self.is_active = data.get('is_active', True)
     
-    def get_completion_rate(self):
-        """Calculate percentage of started sessions that were completed"""
-        total = self.training_sessions.count()
-        if total == 0:
-            return 0
-        completed = self.training_sessions.filter_by(status='completed').count()
-        return round((completed / total) * 100, 2)
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'category': self.category,
+            'incident_type': self.incident_type,
+            'difficulty_level': self.difficulty_level,
+            'estimated_time': self.estimated_time,
+            'max_points': self.max_points,
+            'scenario_content': self.scenario_content,
+            'created_by': self.created_by,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'is_active': self.is_active
+        }
     
     def __repr__(self):
         return f'<Scenario {self.title} (Level {self.difficulty_level})>'
+    
+    def __getitem__(self, key):
+        """Allow dict-like access"""
+        return self.data.get(key)
+    
+    def get(self, key, default=None):
+        """Allow dict-like get method"""
+        return self.data.get(key, default)
 
 
 # ========================
@@ -217,7 +242,7 @@ class TrainingSession(db.Model):
     
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    scenario_id = db.Column(db.Integer, db.ForeignKey('scenarios.id'), nullable=False, index=True)
+    scenario_id = db.Column(db.Integer, nullable=False, index=True)  # Scenario ID from scenarios.db - no foreign key
     
     # Session timing
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -261,9 +286,27 @@ class TrainingSession(db.Model):
     
     def get_duration_minutes(self):
         """Get session duration in minutes"""
-        if self.time_taken:
+        # For completed sessions, use stored time_taken
+        if self.status == 'completed' and self.time_taken is not None:
             return round(self.time_taken / 60, 1)
+        
+        # For in-progress sessions, calculate from started_at to now
+        if self.started_at:
+            if self.status == 'completed' and self.completed_at:
+                delta = self.completed_at - self.started_at
+            else:
+                delta = datetime.utcnow() - self.started_at
+            return round(delta.total_seconds() / 60, 1)
+        
         return 0
+    
+    def get_local_started_at(self, timezone_offset=1):
+        """Get started_at time converted to local timezone"""
+        return get_local_time(self.started_at, timezone_offset)
+    
+    def get_local_completed_at(self, timezone_offset=1):
+        """Get completed_at time converted to local timezone"""
+        return get_local_time(self.completed_at, timezone_offset)
     
     def is_completed(self):
         """Check if session is completed"""
