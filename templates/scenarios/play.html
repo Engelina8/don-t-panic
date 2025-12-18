@@ -195,7 +195,7 @@
 {% block content %}
 <div class="play-container">
     <div class="play-row">
-        <!-- Main Scenario Content -->
+        
         <div>
             <div class="scenario-card">
                 <div class="scenario-header">
@@ -204,31 +204,31 @@
                 <div class="scenario-body" id="scenario-content">
                     <p>{{ scenario.description }}</p>
                     <div class="story-content" id="story-content">
-                        <!-- Content will be parsed from JSON -->
+                        
                     </div>
                 </div>
             </div>
 
-            <!-- Decision Buttons -->
+            
             <div class="decisions-card">
                 <div class="decisions-header">
                     <h5 id="question-text">What do you do?</h5>
                 </div>
                 <div class="decisions-body" id="decisions-body">
-                    <!-- Options will be dynamically populated from scenario JSON -->
+                    
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar Info -->
+        
         <div>
-            <!-- Timer -->
+            
             <div class="sidebar-section">
                 <div class="sidebar-title">Time Elapsed</div>
                 <div id="timer">00:00</div>
             </div>
 
-            <!-- Performance Metrics -->
+            
             <div class="sidebar-section">
                 <div class="sidebar-title">Performance Metrics</div>
                 
@@ -268,7 +268,7 @@
                 </div>
             </div>
 
-            <!-- Session Info -->
+            
             <div class="sidebar-section">
                 <div class="session-info">
                     <p><strong>Session ID:</strong> {{ session.id }}</p>
@@ -276,7 +276,7 @@
                 </div>
             </div>
 
-            <!-- Stop Scenario Button -->
+            
             <div class="sidebar-section">
                 <button type="button" onclick="stopScenario()" class="btn-icon" style="width: 100%; padding: 12px; background: var(--danger-color); color: white; border: none; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600; transition: all 0.2s ease;">
                     ⏹️ Stop Scenario
@@ -311,7 +311,7 @@
         communication: 0
     };
     
-    // Track maximum available points per metric along the actual path
+    
     let metricsMaxPath = {
         detection: 0,
         containment: 0,
@@ -320,14 +320,14 @@
         communication: 0
     };
 
-    // Parse and initialize scenario using safe JSON rendering
+    
     function initializeScenario() {
         try {
-            // Render the stored JSON directly as a JavaScript object.
-            // Using the `tojson` filter ensures proper JSON encoding for JS.
+            
+            
             scenarioData = {{ scenario.scenario_content | tojson | safe }};
 
-            // If scenarioData is a string (older format), try parse it
+            
             if (typeof scenarioData === 'string') {
                 try {
                     scenarioData = JSON.parse(scenarioData);
@@ -360,36 +360,36 @@
         const storyElement = document.getElementById('story-content');
         let html = '';
         
-        // Display intro only on first stage (index 0)
+        
         if (currentStageIndex === 0 && scenarioData.intro) {
             html += `<p><strong>Incident Report:</strong> ${scenarioData.intro}</p>`;
         }
         
-        // Display current stage content and question
+        
         if (scenarioData.stages && scenarioData.stages.length > 0) {
             const currentStage = scenarioData.stages[currentStageIndex];
             if (currentStage) {
-                // Add separator if not first stage
+                
                 if (currentStageIndex > 0) {
                     html += `<div style="margin: 12px 0; padding: 12px 0; border-top: 1px solid var(--border-color);"></div>`;
                 }
                 
-                // Display stage content (chapter text) if available
+                
                 if (currentStage.content) {
                     html += `<p style="margin-top: 12px; line-height: 1.6;">${currentStage.content}</p>`;
                 }
                 
-                // Display question
+                
                 if (currentStage.question) {
                     html += `<p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-style: italic; font-weight: 500;">${currentStage.question}</p>`;
                 }
                 
                 storyElement.innerHTML = html;
                 
-                // Update question text
+                
                 document.getElementById('question-text').textContent = currentStage.question || 'What do you do?';
                 
-                // If stage has options, display them as decisions
+                
                 if (currentStage.options && currentStage.options.length > 0) {
                     displayStageOptions(currentStage.options);
                 }
@@ -401,12 +401,12 @@
         const decisionsBody = document.getElementById('decisions-body');
         decisionsBody.innerHTML = '';
         
-        // Get the current stage to read which metrics it tests
+        
         const currentStage = scenarioData.stages[currentStageIndex];
-        // metrics is now an array like ["detection", "communication"]
+        
         const questionsMetrics = currentStage.metrics || [];
         
-        // Show which metrics are being tested in this question
+        
         if (questionsMetrics.length > 0) {
             const metricsInfo = document.createElement('div');
             metricsInfo.style.cssText = 'margin-bottom: 16px; padding: 12px; background: var(--bg-hover); border-left: 3px solid var(--primary-color); border-radius: var(--border-radius-sm);';
@@ -441,7 +441,7 @@
         });
     }
 
-    // Update timer every second
+    
     setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         const minutes = Math.floor(elapsed / 60);
@@ -450,13 +450,13 @@
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }, 1000);
 
-    // Decision handler
+    
     function handleDecision(option, buttonElement) {
         decisionCount++;
         
-        // Get the current stage to read which QUESTION metrics it tests
+        
         const currentStage = scenarioData.stages[currentStageIndex];
-        // metrics is now an array like ["detection", "communication"]
+        
         const questionsMetrics = currentStage.metrics || [];
         
         console.log(`DECISION #${decisionCount}: Option "${option.text}" selected`);
@@ -465,7 +465,7 @@
         console.log(`  option points: ${option.points}`);
         console.log(`  option metric scores: detection=${option.detection}, containment=${option.containment}, eradication=${option.eradication}, recovery=${option.recovery}, communication=${option.communication}`);
         
-        // Submit decision to server for path tracking
+        
         const optionIndex = Array.from(buttonElement.parentElement.querySelectorAll('.decision-btn')).indexOf(buttonElement);
         
         console.log(`  Submitting to server: stage_index=${currentStageIndex}, option_index=${optionIndex}`);
@@ -493,13 +493,13 @@
             console.error('Error recording decision:', err);
         });
         
-        // Update local metrics tracking for display
+        
         updateMetricsFromOption(option);
         
-        // Branching: if option.next_stage is provided, follow it. Otherwise default sequential behavior.
+        
         const nextTarget = option.next_stage;
         if (nextTarget !== undefined && nextTarget !== null && nextTarget !== '') {
-            // Special END marker (-1)
+            
             if (nextTarget === -1) {
                 setTimeout(completeScenario, 1200);
             } else if (typeof nextTarget === 'number' || !isNaN(parseInt(nextTarget))) {
@@ -508,7 +508,7 @@
                     currentStageIndex = targetIndex;
                     displayStory();
                 } else {
-                    // Invalid index: fallback to sequential
+                    
                     if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
                         currentStageIndex++;
                         displayStory();
@@ -517,13 +517,13 @@
                     }
                 }
             } else if (typeof nextTarget === 'string') {
-                // Try to find stage by name
+                
                 const idx = scenarioData.stages.findIndex(s => s.stage === nextTarget);
                 if (idx !== -1) {
                     currentStageIndex = idx;
                     displayStory();
                 } else {
-                    // fallback sequential
+                    
                     if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
                         currentStageIndex++;
                         displayStory();
@@ -533,7 +533,7 @@
                 }
             }
         } else {
-            // Default sequential behavior
+            
             if (scenarioData.stages && currentStageIndex < scenarioData.stages.length - 1) {
                 currentStageIndex++;
                 displayStory();
@@ -542,26 +542,26 @@
             }
         }
         
-        // Disable button
+        
         buttonElement.disabled = true;
         buttonElement.style.opacity = '0.5';
     }
 
     function updateMetricsFromOption(option) {
-        // NEW: option now contains individual metric values for this answer
-        // Example: option.detection = 10, option.containment = 5, etc.
+        
+        
         
         const metricsInOption = ['detection', 'containment', 'eradication', 'recovery', 'communication'];
         
         metricsInOption.forEach(metric => {
             if (option.hasOwnProperty(metric)) {
                 const points = parseInt(option[metric]) || 0;
-                // Add points from this option to the running total
+                
                 metrics[metric] = (metrics[metric] || 0) + points;
             }
         });
 
-        // Update progress bars
+        
         document.getElementById('detection-bar').style.width = Math.min(metrics.detection || 0, 100) + '%';
         document.getElementById('containment-bar').style.width = Math.min(metrics.containment || 0, 100) + '%';
         document.getElementById('eradication-bar').style.width = Math.min(metrics.eradication || 0, 100) + '%';
@@ -572,14 +572,14 @@
     }
 
     function completeScenario() {
-        // Metrics have been accumulated as point totals
-        // Send them to the server for final calculation
+        
+        
         
         console.log('=== COMPLETING SCENARIO ===');
         console.log('Final metrics earned:', metrics);
         console.log('Session ID:', {{ session.id }});
         
-        // Send metrics and let server handle the rest
+        
         fetch(`/scenarios/session/{{ session.id }}/complete`, {
             method: 'POST',
             headers: {
@@ -615,7 +615,7 @@
         }
     }
 
-    // Initialize on page load
+    
     document.addEventListener('DOMContentLoaded', initializeScenario);
 </script>
 {% endblock %}

@@ -210,10 +210,10 @@
 
 {% block content %}
 <div class="detail-container">
-    <!-- Back Button -->
+    
     <a href="{{ url_for('admin.users') }}" class="back-btn">← Back to Users</a>
 
-    <!-- Header -->
+    
     <div class="detail-header">
         <div>
             <h1>👤 {{ user.username }}</h1>
@@ -228,9 +228,9 @@
         </div>
     </div>
 
-    <!-- Main Content -->
+    
     <div class="content-grid">
-        <!-- Left: Sessions -->
+        
         <div class="card">
             <div class="card-header">
                 📋 Training Sessions
@@ -285,9 +285,9 @@
             </div>
         </div>
 
-        <!-- Right: User Info & Stats -->
+        
         <div>
-            <!-- User Information -->
+            
             <div class="card" style="margin-bottom: 24px;">
                 <div class="card-header">
                     👥 User Information
@@ -314,7 +314,7 @@
                 </div>
             </div>
 
-            <!-- Statistics -->
+            
             <div class="card">
                 <div class="card-header">
                     📊 Statistics
@@ -335,7 +335,7 @@
                         </div>
                     </div>
                     
-                    <!-- Actions -->
+                    
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
                         <button onclick="resetUserLogs({{ user.id }}, '{{ user.username }}')" 
                                 class="btn-secondary" 

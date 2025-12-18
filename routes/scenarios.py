@@ -14,7 +14,7 @@ def list():
     """List all available scenarios grouped by category"""
     scenarios_data = scenario_manager.get_all_scenarios()
     
-    # Get user's completed scenarios
+
     completed_sessions = TrainingSession.query.filter_by(
         user_id=current_user.id,
         status='completed'
@@ -22,7 +22,7 @@ def list():
     
     completed_scenario_ids = [session.scenario_id for session in completed_sessions]
     
-    # Group scenarios by category
+
     scenarios_by_category = {}
     for data in scenarios_data:
         scenario = Scenario(data)
@@ -85,7 +85,7 @@ def start(scenario_id):
     
     scenario = Scenario(scenario_data)
     
-    # Check if user has an active session for this scenario
+
     active_session = TrainingSession.query.filter_by(
         user_id=current_user.id,
         scenario_id=scenario_id,
@@ -96,7 +96,7 @@ def start(scenario_id):
         flash('You already have an active session for this scenario', 'warning')
         return redirect(url_for('scenarios.play', session_id=active_session.id))
     
-    # Create new training session
+
     new_session = TrainingSession(
         user_id=current_user.id,
         scenario_id=scenario_id,
@@ -144,11 +144,11 @@ def submit_decision(session_id):
     """Submit a decision during gameplay"""
     session = TrainingSession.query.get_or_404(session_id)
     
-    # Security check
+
     if session.user_id != current_user.id:
         return jsonify({'error': 'Access denied'}), 403
     
-    # Get decision data
+
     data = request.get_json()
     stage_index = data.get('stage_index')
     option_index = data.get('option_index')
@@ -156,7 +156,7 @@ def submit_decision(session_id):
     if stage_index is None or option_index is None:
         return jsonify({'error': 'Invalid decision data'}), 400
     
-    # Parse scenario content
+
     try:
         scenario_data_dict = scenario_manager.get_scenario(str(session.scenario_id))
         if not scenario_data_dict:
@@ -164,10 +164,10 @@ def submit_decision(session_id):
     except:
         return jsonify({'error': 'Failed to load scenario'}), 500
     
-    # Get scenario_content (which contains stages)
+
     scenario_content = scenario_data_dict.get('scenario_content', {})
     
-    # Get the selected option
+
     if stage_index >= len(scenario_content.get('stages', [])):
         return jsonify({'error': 'Invalid stage'}), 400
     
@@ -177,7 +177,7 @@ def submit_decision(session_id):
     
     selected_option = stage['options'][option_index]
     
-    # Initialize or get session_data
+
     session_data_dict = {}
     if session.session_data:
         try:
@@ -185,7 +185,7 @@ def submit_decision(session_id):
         except:
             session_data_dict = {}
     
-    # Initialize path tracking if not present
+
     if 'path' not in session_data_dict:
         session_data_dict['path'] = []
         session_data_dict['path_points'] = 0
@@ -205,7 +205,7 @@ def submit_decision(session_id):
             'communication': 0
         }
     
-    # Record the decision
+
     session_data_dict['path'].append({
         'stage_index': stage_index,
         'stage_name': stage.get('stage', 'Unknown'),
@@ -214,25 +214,25 @@ def submit_decision(session_id):
         'points': selected_option.get('points', 0)
     })
     
-    # Add points to path total
+
     session_data_dict['path_points'] += selected_option.get('points', 0)
     
     print(f"DEBUG submit_decision(): stage {stage_index}, option {option_index}, points {selected_option.get('points', 0)}, total path_points now = {session_data_dict['path_points']}")
     
-    # Calculate max points available at this stage
+
     max_points_in_stage = max([opt.get('points', 0) for opt in stage.get('options', [])], default=0)
     session_data_dict['path_max_points'] += max_points_in_stage
     
-    # Update path metrics with earned points from this option
+
     for metric in ['detection', 'containment', 'eradication', 'recovery', 'communication']:
         earned = selected_option.get(metric, 0)
         session_data_dict['path_metrics'][metric] += earned
     
     print(f"DEBUG submit_decision(): Updated metrics: {session_data_dict['path_metrics']}")
     
-    # Update available metrics from the question's metrics list
+
     for metric in stage.get('metrics', []):
-        # Find max available for this metric in this stage
+
         max_metric_in_stage = 0
         for option in stage.get('options', []):
             metric_value = option.get(metric, 0)
@@ -242,7 +242,7 @@ def submit_decision(session_id):
     
     print(f"DEBUG submit_decision(): Available metrics: {session_data_dict['available_metrics']}")
     
-    # Save updated session data
+
     session.session_data = json.dumps(session_data_dict)
     
     try:
@@ -363,7 +363,7 @@ def results(session_id):
     """Show scenario results"""
     session = TrainingSession.query.get_or_404(session_id)
     
-    # Security check
+
     if session.user_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('scenarios.list'))
@@ -372,7 +372,7 @@ def results(session_id):
         flash('Session not yet completed', 'warning')
         return redirect(url_for('scenarios.play', session_id=session_id))
     
-    # Debug: print session data
+
     print(f"DEBUG results(): session.score={session.score}")
     if session.session_data:
         try:
@@ -381,13 +381,13 @@ def results(session_id):
             print(f"DEBUG results(): full session_data_dict keys: {session_data_dict.keys()}")
         except:
             pass
-        # Extract metrics from session_data
+
     path_metrics_earned = {}
     metrics_max = {}
     path_total_available = 0
     path_points_earned = 0
     
-    # Load scenario data
+
     scenario_data = scenario_manager.get_scenario(str(session.scenario_id))
     scenario = Scenario(scenario_data) if scenario_data else None
     
@@ -396,13 +396,13 @@ def results(session_id):
             session_data_dict = json.loads(session.session_data)
             path_metrics_earned = session_data_dict.get('path_metrics_earned', {})
             metrics_max = session_data_dict.get('metrics_max', {})
-            # Use the score and path_total_available from complete() which was already calculated
+
             path_points_earned = session_data_dict.get('path_points', 0)
             path_total_available = session_data_dict.get('path_total_available', 0)
         except:
             pass
     
-    # Fallback values
+
     if not path_metrics_earned:
         path_metrics_earned = {
             'detection': session.detection_score or 0,

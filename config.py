@@ -53,10 +53,10 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     """Testing configuration"""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  # In-memory database
-    WTF_CSRF_ENABLED = False  # Disable CSRF for testing
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
 
-# Configuration dictionary
+
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,

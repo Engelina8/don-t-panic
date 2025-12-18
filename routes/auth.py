@@ -10,7 +10,7 @@ from . import auth_bp
 def login():
     """User login page"""
     
-    # If already logged in, redirect to dashboard
+
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
@@ -19,20 +19,20 @@ def login():
         password = request.form.get('password')
         remember = request.form.get('remember', False)
         
-        # Validate input
+
         if not username or not password:
             flash('Please enter both username and password', 'error')
             return render_template('auth/login.html')
         
-        # Find user
+
         user = User.query.filter_by(username=username).first()
         
-        # Check credentials
+
         if user and check_password_hash(user.password_hash, password):
             login_user(user, remember=remember)
             flash(f'Welcome back, {user.username}!', 'success')
             
-            # Redirect to next page or dashboard
+
             next_page = request.args.get('next')
             if next_page:
                 return redirect(next_page)
@@ -55,7 +55,7 @@ def logout():
 def register():
     """User registration (for trainees only)"""
     
-    # If already logged in, redirect
+
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
@@ -65,7 +65,7 @@ def register():
         password = request.form.get('password')
         password_confirm = request.form.get('password_confirm')
         
-        # Validate input
+
         errors = []
         
         if not username or len(username) < 3:
@@ -80,7 +80,7 @@ def register():
         if password != password_confirm:
             errors.append('Passwords do not match')
         
-        # Check if user exists
+
         if User.query.filter_by(username=username).first():
             errors.append('Username already exists')
         
@@ -92,7 +92,7 @@ def register():
                 flash(error, 'error')
             return render_template('auth/register.html')
         
-        # Create new user
+
         new_user = User(
             username=username,
             email=email,
@@ -128,16 +128,16 @@ def change_password():
         new_password = request.form.get('new_password')
         confirm_password = request.form.get('confirm_password')
         
-        # Validate input
+
         errors = []
         
-        # Check current password
+
         if not current_password:
             errors.append('Current password is required')
         elif not check_password_hash(current_user.password_hash, current_password):
             errors.append('Current password is incorrect')
         
-        # Validate new password
+
         if not new_password or len(new_password) < 6:
             errors.append('New password must be at least 6 characters')
         
@@ -152,7 +152,7 @@ def change_password():
                 flash(error, 'error')
             return render_template('auth/change_password.html')
         
-        # Update password
+
         try:
             current_user.set_password(new_password)
             db.session.commit()

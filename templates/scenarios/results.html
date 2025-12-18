@@ -270,7 +270,7 @@
             
             {% set performance = session.get_performance_breakdown() %}
             
-            <!-- Detection -->
+            
             {% if metrics_max.detection and metrics_max.detection > 0 %}
                 {% set detection_percent = (path_metrics_earned.detection / metrics_max.detection * 100) if metrics_max.detection > 0 else 0 %}
                 {% set detection_percent_capped = [detection_percent, 100]|min %}
@@ -283,7 +283,7 @@
                 </div>
             {% endif %}
 
-            <!-- Containment -->
+            
             {% if metrics_max.containment and metrics_max.containment > 0 %}
                 {% set containment_percent = (path_metrics_earned.containment / metrics_max.containment * 100) if metrics_max.containment > 0 else 0 %}
                 {% set containment_percent_capped = [containment_percent, 100]|min %}
@@ -296,7 +296,7 @@
                 </div>
             {% endif %}
 
-            <!-- Eradication -->
+            
             {% if metrics_max.eradication and metrics_max.eradication > 0 %}
                 {% set eradication_percent = (path_metrics_earned.eradication / metrics_max.eradication * 100) if metrics_max.eradication > 0 else 0 %}
                 {% set eradication_percent_capped = [eradication_percent, 100]|min %}
@@ -309,7 +309,7 @@
                 </div>
             {% endif %}
 
-            <!-- Recovery -->
+            
             {% if metrics_max.recovery and metrics_max.recovery > 0 %}
                 {% set recovery_percent = (path_metrics_earned.recovery / metrics_max.recovery * 100) if metrics_max.recovery > 0 else 0 %}
                 {% set recovery_percent_capped = [recovery_percent, 100]|min %}
@@ -322,7 +322,7 @@
                 </div>
             {% endif %}
 
-            <!-- Communication -->
+            
             {% if metrics_max.communication and metrics_max.communication > 0 %}
                 {% set communication_percent = (path_metrics_earned.communication / metrics_max.communication * 100) if metrics_max.communication > 0 else 0 %}
                 {% set communication_percent_capped = [communication_percent, 100]|min %}
@@ -335,7 +335,7 @@
                 </div>
             {% endif %}
             
-            <!-- Note if no metrics were tested -->
+            
             {% if not (metrics_max.detection and metrics_max.detection > 0) and not (metrics_max.containment and metrics_max.containment > 0) and not (metrics_max.eradication and metrics_max.eradication > 0) and not (metrics_max.recovery and metrics_max.recovery > 0) and not (metrics_max.communication and metrics_max.communication > 0) %}
                 <p style="color: var(--text-secondary); font-style: italic;">
                     No metrics data available for this scenario.

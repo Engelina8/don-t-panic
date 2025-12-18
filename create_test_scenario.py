@@ -5,7 +5,7 @@ from scenario_manager import scenario_manager
 app = create_app()
 
 with app.app_context():
-    # Create test scenario JSON
+
     scenario_data = {
         "title": "Ransomware Outbreak Response",
         "description": "A company discovers that multiple workstations have been infected with ransomware. You need to respond quickly to contain the threat.",
@@ -158,7 +158,7 @@ with app.app_context():
         ]
     }
     
-    # Check if test scenario already exists
+
     existing_scenarios = scenario_manager.get_all_scenarios()
     for scenario_data in existing_scenarios:
         if scenario_data.get('title') == "Ransomware Outbreak Response":
@@ -167,7 +167,7 @@ with app.app_context():
             print(f"Scenario ID: {scenario_id}")
             exit(0)
     
-    # Create the scenario file
+
     scenario_manager.create_scenario(scenario_data)
     
     print("Test scenario created successfully!")

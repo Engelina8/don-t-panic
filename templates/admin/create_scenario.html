@@ -85,7 +85,7 @@
 
     .form-group select {
         appearance: none;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d4ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http:
         background-repeat: no-repeat;
         background-position: right 10px center;
         background-size: 20px;
@@ -283,12 +283,12 @@
 
 {% block content %}
 <div class="form-container">
-    <!-- Header -->
+    
     <div class="page-header">
         <h1>{% if scenario %}✏️ Edit Scenario{% else %}➕ Create New Scenario{% endif %}</h1>
     </div>
 
-    <!-- Flash Messages -->
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -301,10 +301,10 @@
     {% endwith %}
 
     <div class="form-content">
-        <!-- Main Form -->
+        
         <form method="POST" id="scenarioForm">
             <div class="form-card">
-                <!-- Basic Info -->
+                
                 <div class="form-group">
                     <label for="title">Scenario Title *</label>
                     <input type="text" id="title" name="title" value="{{ scenario.title if scenario else '' }}" required placeholder="e.g., Ransomware Attack Response">
@@ -317,7 +317,7 @@
                     <div class="form-hint">What will trainees be learning in this scenario?</div>
                 </div>
 
-                <!-- Metadata -->
+                
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group">
                         <label for="incident_type">Incident Type *</label>
@@ -348,10 +348,23 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="estimated_time">Estimated Time (minutes) *</label>
-                    <input type="number" id="estimated_time" name="estimated_time" value="{{ scenario.estimated_time if scenario else 30 }}" min="5" max="180" required>
-                    <div class="form-hint">How long should this scenario take?</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label for="estimated_time">Estimated Time (minutes) *</label>
+                        <input type="number" id="estimated_time" name="estimated_time" value="{{ scenario.estimated_time if scenario else 30 }}" min="5" max="180" required>
+                        <div class="form-hint">How long should this scenario take?</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">📁 Folder/Category</label>
+                        <select id="category" name="category">
+                            <option value="">No folder</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat }}" {% if scenario and scenario.category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-hint">Organize scenario in a folder</div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -368,7 +381,7 @@
                     </div>
                 </div>
 
-                <!-- Scenario Builder (friendly UI) -->
+                
                 <div class="form-group">
                     <label>Scenario Builder</label>
                     <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:12px; border-radius:6px;">
@@ -404,7 +417,7 @@
                     </div>
                 </div>
 
-                <!-- Form Actions -->
+                
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">✓ {% if scenario %}Update Scenario{% else %}Create Scenario{% endif %}</button>
                     <a href="{{ url_for('admin.manage_scenarios') }}" class="btn-cancel">Cancel</a>
@@ -412,7 +425,7 @@
             </div>
         </form>
 
-        <!-- Sidebar Help -->
+        
         <div>
             <div class="sidebar-section" style="margin-bottom: 24px;">
                 <h3>📚 JSON Format Guide (For LLM)</h3>
@@ -422,7 +435,6 @@
 &nbsp;&nbsp;<span style="color: var(--primary-color);">"intro"</span>: <span style="color: #4a9;">"Brief incident report summary. Describe the initial situation and what just happened (1-2 sentences)"</span>,<br/>
 &nbsp;&nbsp;<span style="color: var(--primary-color);">"stages"</span>: [<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"stage"</span>: <span style="color: #4a9;">"stage_name"</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"content"</span>: <span style="color: #4a9;">"Detailed narrative of this phase. Include observations, initial findings, or status updates"</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"question"</span>: <span style="color: #4a9;">"What is your next action?"</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"metrics"</span>: [<br/>
@@ -432,13 +444,20 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"options"</span>: [<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"text"</span>: <span style="color: #4a9;">"Clear action description (e.g., 'Isolate affected servers from network')"</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"points"</span>: <span style="color: #f9a;">30</span>,&nbsp;<span style="color: #666;">// Total points for this option (0-100)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"detection"</span>: <span style="color: #f9a;">20</span>,&nbsp;<span style="color: #666;">// Points for this metric (0-100)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"points"</span>: <span style="color: #f9a;">30</span>,&nbsp;<span style="color: #666;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"detection"</span>: <span style="color: #f9a;">20</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"containment"</span>: <span style="color: #f9a;">0</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"eradication"</span>: <span style="color: #f9a;">5</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"recovery"</span>: <span style="color: #f9a;">0</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"communication"</span>: <span style="color: #f9a;">15</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"next_stage"</span>: <span style="color: #f9a;">1</span>&nbsp;&nbsp;<span style="color: #666;">// Optional: stage index (0-based), -1 to finish, or omit for sequential</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"correctness"</span>: {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"detection"</span>: <span style="color: #f9a;">85</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"containment"</span>: <span style="color: #f9a;">0</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"eradication"</span>: <span style="color: #f9a;">70</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"recovery"</span>: <span style="color: #f9a;">0</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"communication"</span>: <span style="color: #f9a;">80</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"next_stage"</span>: <span style="color: #f9a;">1</span>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: var(--primary-color);">"text"</span>: <span style="color: #4a9;">"Second action option"</span>,<br/>
@@ -460,13 +479,13 @@
                 <h3>🎯 Field Descriptions</h3>
                 <ul>
                     <li><strong>intro:</strong> Opening incident summary (shown only at start)</li>
-                    <li><strong>stage:</strong> Unique name for this phase (e.g., "initial_response", "threat_containment")</li>
                     <li><strong>content:</strong> Narrative text for this stage - include findings, data, or status</li>
                     <li><strong>question:</strong> Decision prompt (e.g., "What is your immediate action?")</li>
                     <li><strong>metrics:</strong> Array of metric names this question tests (e.g., ["detection", "communication"])</li>
                     <li><strong>text:</strong> Clear, concise action description (10-15 words)</li>
                     <li><strong>points:</strong> Total points earned for choosing this option (0-100, can be negative for poor choices)</li>
                     <li><strong>detection/containment/eradication/recovery/communication:</strong> Points awarded for this metric if this option is chosen (0-100)</li>
+                    <li><strong>correctness:</strong> Object with correctness percentage (0-100) for each metric (represents decision accuracy)</li>
                     <li><strong>next_stage:</strong> Override sequential flow: 0-N for stage index, -1 for finish, omit for next stage</li>
                 </ul>
             </div>
@@ -525,7 +544,7 @@
 </div>
 
 <script>
-// Update difficulty preview
+
 document.getElementById('difficulty').addEventListener('change', function() {
     const level = parseInt(this.value);
     let stars = '';
@@ -534,10 +553,10 @@ document.getElementById('difficulty').addEventListener('change', function() {
     document.getElementById('difficultyPreview').textContent = stars;
 });
 
-// Builder data model
+
 let builder = { intro: '', stages: [] };
 
-// Helpers to create DOM for builder
+
 function createOptionRow(stageIndex, optionIndex, option) {
     const row = document.createElement('div');
     row.style.display = 'flex';
@@ -553,7 +572,7 @@ function createOptionRow(stageIndex, optionIndex, option) {
     textInput.style.minWidth = '200px';
     textInput.addEventListener('input', () => syncFromDOM());
 
-    // Points input
+    
     const pointsInput = document.createElement('input');
     pointsInput.type = 'number';
     pointsInput.placeholder = 'Points';
@@ -562,12 +581,12 @@ function createOptionRow(stageIndex, optionIndex, option) {
     pointsInput.style.width = '80px';
     pointsInput.addEventListener('input', () => syncFromDOM());
 
-    // Next-stage selector: optional branching target
+    
     const nextSelect = document.createElement('select');
     nextSelect.style.width = '160px';
     nextSelect.addEventListener('change', () => syncFromDOM());
     populateNextOptions(nextSelect, stageIndex);
-    // if option already has next_stage defined, set it
+    
     if (option && option.next_stage !== undefined && option.next_stage !== null && option.next_stage !== '') {
         if (option.next_stage === -1) nextSelect.value = '-1';
         else nextSelect.value = String(option.next_stage);
@@ -579,7 +598,7 @@ function createOptionRow(stageIndex, optionIndex, option) {
     removeBtn.textContent = 'Remove';
     removeBtn.addEventListener('click', () => { removeOption(stageIndex, optionIndex); });
 
-    // Metrics button to open metrics values editor
+    
     const metricsBtn = document.createElement('button');
     metricsBtn.type = 'button';
     metricsBtn.className = 'btn-small';
@@ -597,9 +616,9 @@ function createOptionRow(stageIndex, optionIndex, option) {
     return row;
 }
 
-// Populate a "next" select with available stage targets plus default/end
+
 function populateNextOptions(selectEl, currentStageIndex) {
-    // preserve previous selection if any
+    
     const prev = selectEl.value;
     selectEl.innerHTML = '';
     const defaultOpt = document.createElement('option');
@@ -612,7 +631,7 @@ function populateNextOptions(selectEl, currentStageIndex) {
     endOpt.textContent = 'End Scenario';
     selectEl.appendChild(endOpt);
 
-    // list stages by index and name
+    
     builder.stages.forEach((st, idx) => {
         const opt = document.createElement('option');
         opt.value = idx;
@@ -620,9 +639,9 @@ function populateNextOptions(selectEl, currentStageIndex) {
         selectEl.appendChild(opt);
     });
 
-    // try restore previous value
+    
     if (prev !== undefined && prev !== null && prev !== '') {
-        // if numeric string, ensure option exists
+        
         const restore = String(prev);
         const exists = Array.from(selectEl.options).some(o => String(o.value) === restore);
         if (exists) selectEl.value = restore;
@@ -677,7 +696,7 @@ function renderStage(stage, index) {
     questionInput.style.marginBottom = '6px';
     questionInput.addEventListener('input', () => syncFromDOM());
 
-    // Add metrics button for this stage (question-level metrics)
+    
     const metricsButton = document.createElement('button');
     metricsButton.type = 'button';
     metricsButton.className = 'btn-small';
@@ -713,7 +732,7 @@ function renderStage(stage, index) {
     container.appendChild(optionsContainer);
     container.appendChild(addOptBtn);
 
-    // store references for sync
+    
     container._nameInput = nameInput;
     container._contentInput = contentInput;
     container._questionInput = questionInput;
@@ -730,7 +749,7 @@ function renderBuilder() {
         const el = renderStage(stage, idx);
         builderDiv.appendChild(el);
     });
-    // After render, repopulate next-selects for all option rows (in case stages changed)
+    
     const selects = builderDiv.querySelectorAll('select');
     selects.forEach(s => populateNextOptions(s));
 }
@@ -768,14 +787,14 @@ function removeOption(stageIndex, optionIndex) {
     renderBuilder();
 }
 
-// Stage-level metrics editor - select which metrics this question tests
+
 function openStageMetricsEditor(stageIndex) {
     const metrics = ['detection', 'containment', 'eradication', 'recovery', 'communication'];
     
-    // First sync from DOM to ensure builder is up to date
+    
     syncFromDOM();
     
-    // Get metrics array from builder stage
+    
     const metricsArray = (builder.stages[stageIndex] && builder.stages[stageIndex].metrics) || [];
     
     let html = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" id="stageMetricsEditorModal">';
@@ -801,7 +820,7 @@ function openStageMetricsEditor(stageIndex) {
     
     document.body.insertAdjacentHTML('beforeend', html);
     
-    // Add event listeners to checkboxes for visual feedback
+    
     document.querySelectorAll('.stage-metric-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const label = this.closest('.stage-metric-checkbox-label');
@@ -822,25 +841,25 @@ function saveStageMetrics(stageIndex) {
         }
     });
     
-    // First sync from DOM to make sure builder is up to date
+    
     syncFromDOM();
     
-    // Save metrics array to the stage
+    
     builder.stages[stageIndex].metrics = metricsArray;
     
-    // Update the textarea
+    
     updateTextareaFromBuilder();
     
-    // Remove the modal
+    
     document.getElementById('stageMetricsEditorModal').remove();
 }
 
-// Option-level metrics editor - set point values for each metric
+
 function openMetricsEditor(stageIndex, optionIndex, option) {
-    // First sync from DOM to ensure builder is up to date
+    
     syncFromDOM();
     
-    // Get metrics from stage to know which ones to ask for
+    
     const stageMetrics = (builder.stages[stageIndex] && builder.stages[stageIndex].metrics) || [];
     
     if (stageMetrics.length === 0) {
@@ -848,7 +867,7 @@ function openMetricsEditor(stageIndex, optionIndex, option) {
         return;
     }
     
-    // Get metric point values from builder option
+    
     const optionData = (builder.stages[stageIndex] && builder.stages[stageIndex].options[optionIndex]) || {};
     
     let html = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" id="metricsEditorModal">';
@@ -876,7 +895,7 @@ function openMetricsEditor(stageIndex, optionIndex, option) {
     
     document.body.insertAdjacentHTML('beforeend', html);
     
-    // Sync between slider and number input
+    
     document.querySelectorAll('.metric-slider').forEach(slider => {
         slider.addEventListener('input', function() {
             const metric = this.dataset.metric;
@@ -890,7 +909,7 @@ function openMetricsEditor(stageIndex, optionIndex, option) {
         input.addEventListener('input', function() {
             const metric = this.dataset.metric;
             let value = parseInt(this.value) || 0;
-            // Clamp between 0-100
+            
             if (value < 0) value = 0;
             if (value > 100) value = 100;
             this.value = value;
@@ -908,27 +927,27 @@ function saveMetrics(stageIndex, optionIndex) {
         metricsObj[metric] = Math.min(100, Math.max(0, value));
     });
     
-    // First sync from DOM to make sure builder is up to date
+    
     syncFromDOM();
     
-    // Save metrics to the option
+    
     Object.keys(metricsObj).forEach(metric => {
         builder.stages[stageIndex].options[optionIndex][metric] = metricsObj[metric];
     });
     
-    // Update the textarea
+    
     updateTextareaFromBuilder();
     
-    // Remove the modal
+    
     document.getElementById('metricsEditorModal').remove();
 }
 
-// Option-level correctness editor - set percentage correctness for each metric
+
 function openCorrectnessEditor(stageIndex, optionIndex, option) {
-    // First sync from DOM to ensure builder is up to date
+    
     syncFromDOM();
     
-    // Get metrics from stage to know which ones to ask for
+    
     const stageMetrics = (builder.stages[stageIndex] && builder.stages[stageIndex].metrics) || [];
     
     if (stageMetrics.length === 0) {
@@ -936,7 +955,7 @@ function openCorrectnessEditor(stageIndex, optionIndex, option) {
         return;
     }
     
-    // Get correctness object from builder option
+    
     const correctnessObj = (builder.stages[stageIndex] && 
                            builder.stages[stageIndex].options[optionIndex] && 
                            builder.stages[stageIndex].options[optionIndex].correctness) || {};
@@ -966,7 +985,7 @@ function openCorrectnessEditor(stageIndex, optionIndex, option) {
     
     document.body.insertAdjacentHTML('beforeend', html);
     
-    // Sync between slider and number input
+    
     document.querySelectorAll('.correctness-slider').forEach(slider => {
         slider.addEventListener('input', function() {
             const metric = this.dataset.metric;
@@ -980,7 +999,7 @@ function openCorrectnessEditor(stageIndex, optionIndex, option) {
         input.addEventListener('input', function() {
             const metric = this.dataset.metric;
             let value = parseInt(this.value) || 0;
-            // Clamp between 0-100
+            
             if (value < 0) value = 0;
             if (value > 100) value = 100;
             this.value = value;
@@ -998,23 +1017,23 @@ function saveCorrectness(stageIndex, optionIndex) {
         correctnessObj[metric] = Math.min(100, Math.max(0, value));
     });
     
-    // First sync from DOM to make sure builder is up to date
+    
     syncFromDOM();
     
-    // Save correctness to the option
+    
     if (!builder.stages[stageIndex].options[optionIndex].correctness) {
         builder.stages[stageIndex].options[optionIndex].correctness = {};
     }
     builder.stages[stageIndex].options[optionIndex].correctness = correctnessObj;
     
-    // Update the textarea
+    
     updateTextareaFromBuilder();
     
-    // Remove the modal
+    
     document.getElementById('correctnessEditorModal').remove();
 }
 
-// Read the DOM values into builder model
+
 function syncFromDOM() {
     const builderDiv = document.getElementById('stageBuilder');
     const children = Array.from(builderDiv.children).filter(n => n && n._nameInput);
@@ -1025,7 +1044,7 @@ function syncFromDOM() {
         const opts = [];
             const optionRows = Array.from(child._optionsContainer.children);
             optionRows.forEach((row, optIdx) => {
-                // include select for next_stage target in addition to inputs
+                
                 const inputs = row.querySelectorAll('input, select');
                 if (inputs.length >= 2) {
                     const text = inputs[0].value;
@@ -1033,7 +1052,7 @@ function syncFromDOM() {
                     let next_stage = null;
                     if (inputs.length >= 3) {
                         const sel = inputs[2];
-                        // treat empty string as null, '-1' as end marker, numeric strings as indices
+                        
                         if (sel && sel.value !== '') {
                             if (sel.value === '-1') next_stage = -1;
                             else if (!isNaN(parseInt(sel.value))) next_stage = parseInt(sel.value);
@@ -1043,7 +1062,7 @@ function syncFromDOM() {
                     const optObj = { text: text, points: points };
                     if (next_stage !== null) optObj.next_stage = next_stage;
                     
-                    // Preserve metric values from previous builder state if they exist
+                    
                     if (builder.stages && builder.stages[stageIdx] && 
                         builder.stages[stageIdx].options && 
                         builder.stages[stageIdx].options[optIdx]) {
@@ -1053,7 +1072,7 @@ function syncFromDOM() {
                                 optObj[metric] = prevOption[metric];
                             }
                         });
-                        // Also preserve old correctness field if it exists
+                        
                         if (prevOption.correctness) {
                             optObj.correctness = prevOption.correctness;
                         }
@@ -1064,7 +1083,7 @@ function syncFromDOM() {
             });
         const stageObj = { stage: stageName, content: content, question: question, options: opts };
         
-        // Preserve metrics array from previous builder state if it exists
+        
         if (builder.stages && builder.stages[stageIdx] && builder.stages[stageIdx].metrics) {
             stageObj.metrics = builder.stages[stageIdx].metrics;
         }
@@ -1072,7 +1091,7 @@ function syncFromDOM() {
         return stageObj;
     });
     builder.stages = newStages;
-    // update intro
+    
     const introEl = document.getElementById('builder_intro');
     builder.intro = introEl ? introEl.value : '';
 }
@@ -1090,7 +1109,7 @@ function formatJSONFromBuilder() {
     formatJSON();
 }
 
-// Existing helpers operate on #scenario_content textarea
+
 function formatJSON() {
     const textarea = document.getElementById('scenario_content');
     try {
@@ -1148,7 +1167,7 @@ function loadTemplate() {
             }
         ]
     };
-    // populate builder
+    
     builder = template;
     document.getElementById('builder_intro').value = builder.intro;
     renderBuilder();
@@ -1156,9 +1175,9 @@ function loadTemplate() {
     alert('✅ Template loaded into builder');
 }
 
-// Initialize on load: try to parse existing scenario JSON and populate builder
+
 document.addEventListener('DOMContentLoaded', function() {
-    // initialize builder intro default if scenario exists
+    
     try {
         const raw = {{ scenario.scenario_content|default('{}')|tojson }};
         let parsed = {};
@@ -1169,43 +1188,43 @@ document.addEventListener('DOMContentLoaded', function() {
             builder.intro = parsed.intro || '';
             builder.stages = parsed.stages || [];
         } else {
-            // if no parsed content, keep builder empty
+            
             builder = { intro: '', stages: [] };
         }
     } catch (e) {
         builder = { intro: '', stages: [] };
     }
 
-    // set intro textarea and render
+    
     const introEl = document.getElementById('builder_intro');
     if (introEl) introEl.value = builder.intro || '';
     renderBuilder();
     
-    // Format the JSON in the raw area if editing
+    
     if ({{ 'true' if scenario else 'false' }}) {
         const textarea = document.getElementById('scenario_content');
         try {
             const parsed = JSON.parse(textarea.value);
             textarea.value = JSON.stringify(parsed, null, 2);
         } catch (e) {
-            // If parse fails, leave as is
+            
         }
     }
 
-    // wireup: whenever the builder loses focus, sync
+    
     document.getElementById('stageBuilder').addEventListener('input', () => updateTextareaFromBuilder());
     const introElem = document.getElementById('builder_intro');
     if (introElem) introElem.addEventListener('input', () => updateTextareaFromBuilder());
 
-    // If raw JSON exists (editing scenario), ensure raw area hidden by default but up-to-date
+    
     const rawArea = document.getElementById('rawJsonArea');
     if (rawArea) rawArea.style.display = 'none';
     
-    // Ensure checkbox is unchecked by default
+    
     const showRawCheckbox = document.getElementById('showRawJSON');
     if (showRawCheckbox) showRawCheckbox.checked = false;
     
-    // Toggle raw JSON view - MOVED INSIDE DOMContentLoaded
+    
     if (showRawCheckbox) {
         showRawCheckbox.addEventListener('change', function() {
             const area = document.getElementById('rawJsonArea');
@@ -1218,7 +1237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Quick add stage button - MOVED INSIDE DOMContentLoaded
+    
     const addStageBtn = document.getElementById('addStageBtn');
     if (addStageBtn) {
         addStageBtn.addEventListener('click', function() { addStage(); });
@@ -1226,9 +1245,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     updateTextareaFromBuilder();
 
-    // Form submission: ensure textarea has builder JSON if raw not shown
+    
     document.getElementById('scenarioForm').addEventListener('submit', function(e) {
-        // Prevent double submission
+        
         if (this.hasAttribute('data-submitted')) {
             e.preventDefault();
             return false;
@@ -1239,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!rawShown) {
             updateTextareaFromBuilder();
         }
-        // validate JSON
+        
         try {
             JSON.parse(document.getElementById('scenario_content').value);
         } catch (err) {
@@ -1249,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validate that each metric has at least one answer with 100 points
+        
         try {
             const scenario = JSON.parse(document.getElementById('scenario_content').value);
             let validationError = '';
@@ -1283,13 +1302,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Auto max points functionality
+    
     const autoCheckbox = document.getElementById('auto_max_points');
     const maxPointsInput = document.getElementById('max_points');
     const calcBtn = document.getElementById('calcMaxPointsBtn');
     const hint = document.getElementById('max_points_hint');
 
-    // Toggle input enabled/disabled based on checkbox
+    
     autoCheckbox.addEventListener('change', function() {
         maxPointsInput.disabled = this.checked;
         if (this.checked) {
@@ -1300,15 +1319,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Manual calculate button
+    
     calcBtn.addEventListener('click', function() {
         calculateMaxPointsFromScenario();
     });
 
-    // Function to calculate max points from scenario
+    
     function calculateMaxPointsFromScenario() {
         try {
-            // Get current scenario from textarea
+            
             const contentText = document.getElementById('scenario_content').value;
             const scenario = JSON.parse(contentText);
             
@@ -1317,10 +1336,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Sum all points from all options in all stages
+            
             let totalPoints = 0;
             scenario.stages.forEach(stage => {
-                // Get the HIGHEST points from each stage (best answer path)
+                
                 if (stage.options && stage.options.length > 0) {
                     let maxStagePoints = 0;
                     stage.options.forEach(option => {
@@ -1333,7 +1352,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Set calculated value to actual sum, or 100 if no points
+            
             const calculatedPoints = totalPoints > 0 ? totalPoints : 100;
             maxPointsInput.value = calculatedPoints;
             
@@ -1346,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Auto-calculate when builder updates
+    
     const originalUpdateTextarea = updateTextareaFromBuilder;
     updateTextareaFromBuilder = function() {
         originalUpdateTextarea.call(this);

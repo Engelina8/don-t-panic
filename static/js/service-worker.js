@@ -1,4 +1,4 @@
-// Don't Panic Service Worker
+
 const CACHE_NAME = 'dont-panic-v1';
 const urlsToCache = [
     '/',
@@ -8,7 +8,7 @@ const urlsToCache = [
     '/templates/index.html',
 ];
 
-// Install event
+
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -18,7 +18,7 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
-// Activate event
+
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -34,9 +34,9 @@ self.addEventListener('activate', event => {
     self.clients.claim();
 });
 
-// Fetch event - Network first, fallback to cache
+
 self.addEventListener('fetch', event => {
-    // Skip non-GET requests
+    
     if (event.request.method !== 'GET') {
         return;
     }
@@ -44,7 +44,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         fetch(event.request)
             .then(response => {
-                // Cache successful responses
+                
                 if (!response || response.status !== 200 || response.type === 'error') {
                     return response;
                 }
@@ -58,7 +58,7 @@ self.addEventListener('fetch', event => {
                 return response;
             })
             .catch(() => {
-                // Return cached version if network fails
+                
                 return caches.match(event.request)
                     .then(response => response || new Response('Offline - content not available'));
             })

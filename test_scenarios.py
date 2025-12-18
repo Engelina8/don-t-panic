@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 """Test the file-based scenario system"""
 
 from app import create_app

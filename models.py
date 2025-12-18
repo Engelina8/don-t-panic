@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 
 db = SQLAlchemy()
 
-# ========================
-# UTILITY FUNCTIONS
-# ========================
+
+
+
 def get_local_time(utc_datetime, timezone_offset=1):
     """Convert UTC datetime to local time with timezone offset
     
@@ -22,9 +22,9 @@ def get_local_time(utc_datetime, timezone_offset=1):
         return None
     return utc_datetime + timedelta(hours=timezone_offset)
 
-# ========================
-# 1. USERS TABLE
-# ========================
+
+
+
 class User(UserMixin, db.Model):
     """User accounts - both trainees and instructors"""
     __tablename__ = 'users'
@@ -91,9 +91,9 @@ class User(UserMixin, db.Model):
         return f'<User {self.username} ({self.role})>'
 
 
-# ========================
-# 2. GROUPS TABLE
-# ========================
+
+
+
 class Group(db.Model):
     """Training groups/organizations"""
     __tablename__ = 'groups'
@@ -144,9 +144,9 @@ class Group(db.Model):
         return f'<Group {self.name}>'
 
 
-# ========================
-# 3. SCENARIO (File-based, not database)
-# ========================
+
+
+
 class Scenario:
     """Scenario class - loaded from JSON files in scenarios folder
     
@@ -230,9 +230,9 @@ class Scenario:
         return self.data.get(key, default)
 
 
-# ========================
-# 4. TRAINING SESSIONS TABLE
-# ========================
+
+
+
 class TrainingSession(db.Model):
     """Individual training session records"""
     __tablename__ = 'training_sessions'
@@ -279,7 +279,7 @@ class TrainingSession(db.Model):
         self.outcome = outcome
         self.status = 'completed'
         
-        # Calculate time taken
+
         if self.started_at:
             delta = self.completed_at - self.started_at
             self.time_taken = int(delta.total_seconds())
@@ -334,11 +334,11 @@ def init_db(app):
     db.init_app(app)
     
     with app.app_context():
-        # Create all tables
+
         db.create_all()
         print("✅ Database tables created successfully!")
         
-        # Create default admin if none exists
+
         if User.query.filter_by(role='admin').first() is None:
             create_default_admin()
 

@@ -165,7 +165,7 @@
         color: var(--text-secondary);
     }
 
-    /* Modal styles */
+    
     .modal {
         display: none;
         position: fixed;
@@ -317,7 +317,7 @@
         </div>
     </div>
 
-    <!-- Instructors Section -->
+    
     <div class="section">
         <div class="section-header">
             <h2>👨‍🏫 Instructors ({{ group.get_instructor_count() }})</h2>
@@ -346,7 +346,7 @@
         {% endif %}
     </div>
 
-    <!-- Trainees Section -->
+    
     <div class="section">
         <div class="section-header">
             <h2>👥 Trainees ({{ group.get_trainee_count() }})</h2>
@@ -376,7 +376,7 @@
     </div>
 </div>
 
-<!-- Add Member Modal -->
+
 <div id="addMemberModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -415,7 +415,7 @@
         modal.classList.toggle('active');
     }
 
-    // Close modal when clicking outside
+    
     document.getElementById('addMemberModal').addEventListener('click', function(e) {
         if (e.target === this) {
             toggleAddMemberModal();

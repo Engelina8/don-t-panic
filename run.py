@@ -7,10 +7,10 @@ from app import create_app
 import os
 
 if __name__ == '__main__':
-    # Create the Flask app
+
     app = create_app('development')
     
-    # Print startup info
+
     print("\n" + "="*60)
     print("🚀 DON'T PANIC - Incident Response Training")
     print("="*60)
@@ -24,10 +24,10 @@ if __name__ == '__main__':
     print("   Password: instructor123")
     print("="*60 + "\n")
     
-    # Run the application
+
     app.run(
-        host='0.0.0.0',  # Accessible from network
+        host='0.0.0.0',
         port=5000,
         debug=True,
-        use_reloader=True  # Auto-restart on code changes
+        use_reloader=True
     )

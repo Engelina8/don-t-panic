@@ -8,7 +8,7 @@ from datetime import datetime
 def migrate_scenarios_to_json():
     """Migrate scenarios from old scenarios.db to JSON files"""
     
-    # Path to the old scenarios database
+
     scenarios_db_path = Path('instance/scenarios.db')
     scenarios_dir = Path('scenarios')
     
@@ -19,12 +19,12 @@ def migrate_scenarios_to_json():
     scenarios_dir.mkdir(exist_ok=True)
     
     try:
-        # Connect to old database
+
         conn = sqlite3.connect(str(scenarios_db_path))
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        # Get all scenarios
+
         cursor.execute('SELECT * FROM scenarios')
         scenarios = cursor.fetchall()
         
@@ -32,15 +32,15 @@ def migrate_scenarios_to_json():
         
         for scenario in scenarios:
             try:
-                # Parse scenario content (stored as JSON string)
+
                 scenario_content = json.loads(scenario['scenario_content'])
                 
-                # Create complete scenario data
+
                 scenario_data = {
                     'id': str(scenario['id']),
                     'title': scenario['title'],
                     'description': scenario['description'],
-                    'category': '',  # No category info in old DB
+                    'category': '',
                     'incident_type': scenario['incident_type'],
                     'difficulty_level': scenario['difficulty_level'],
                     'estimated_time': scenario['estimated_time'],
@@ -54,7 +54,7 @@ def migrate_scenarios_to_json():
                     'average_score': scenario['average_score']
                 }
                 
-                # Write to JSON file
+
                 file_path = scenarios_dir / f"{scenario_data['id']}.json"
                 with open(file_path, 'w', encoding='utf-8') as f:
                     json.dump(scenario_data, f, indent=2, ensure_ascii=False)

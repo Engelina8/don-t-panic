@@ -112,14 +112,23 @@ Open browser: `http://localhost:5000`
   "intro": "Initial incident summary (shows once at start)",
   "stages": [
     {
-      "stage": "detection",
       "content": "Detailed chapter text shown at this stage",
       "question": "What do you do?",
+      "metrics": ["detection", "containment"],
       "options": [
         {
           "text": "Action description",
-          "points": 25,
-          "next": 1
+          "points": 30,
+          "detection": 20,
+          "containment": 10,
+          "eradication": 0,
+          "recovery": 0,
+          "communication": 0,
+          "correctness": {
+            "detection": 85,
+            "containment": 75
+          },
+          "next_stage": 1
         }
       ]
     }
@@ -127,22 +136,57 @@ Open browser: `http://localhost:5000`
 }
 ```
 
-### Key Fields
+### Root Level Fields
 - **intro**: Brief incident summary (displays only at first stage)
-- **stage**: Chapter identifier
+
+### Stage Fields
 - **content**: Rich narrative text (updates per stage)
 - **question**: Decision prompt
+- **metrics**: Array of metrics tested at this stage (`["detection", "containment", "eradication", "recovery", "communication"]`)
 - **options**: Choice array
-  - `text`: Choice description
-  - `points`: Score (positive/negative)
-  - `next`: (Optional) Next stage index, name, or "END"
+
+### Option Fields
+- **text**: Choice description
+- **points**: Total points for this option (0-100)
+- **detection**: Points allocated to detection metric (0-100)
+- **containment**: Points allocated to containment metric (0-100)
+- **eradication**: Points allocated to eradication metric (0-100)
+- **recovery**: Points allocated to recovery metric (0-100)
+- **communication**: Points allocated to communication metric (0-100)
+- **correctness**: Object with correctness percentages for each metric (0-100)
+  - `detection`: 0-100 correctness percentage
+  - `containment`: 0-100 correctness percentage
+  - `eradication`: 0-100 correctness percentage
+  - `recovery`: 0-100 correctness percentage
+  - `communication`: 0-100 correctness percentage
+- **next_stage**: (Optional) Index of next stage (0-based), or omit for sequential
+
+### Performance Metrics Explained
+- **Detection**: Ability to identify the incident occurred
+- **Containment**: Ability to limit incident scope and impact
+- **Eradication**: Ability to remove the threat completely
+- **Recovery**: Ability to restore systems and operations
+- **Communication**: Ability to inform stakeholders appropriately
 
 ### Creating Scenarios
 
-1. **Admin Dashboard** → **Manage Scenarios**
-2. **Quick Create**: Fill basic info or use **Create New Scenario** for full editor
-3. **Builder UI**: Add stages with content and questions
-4. **Raw JSON**: Paste JSON directly into advanced editor
+1. **Admin Dashboard** → **Manage Scenarios** → **Create New Scenario**
+2. **Basic Info**: Enter title, description, difficulty (1-5), estimated time, max points
+3. **Scenario Builder**: Use visual UI to add stages and options
+   - Add stage with content and question
+   - Add options with point allocations
+   - Select metrics tested at each stage
+   - Set correctness percentages for each metric
+   - Define next_stage for branching (optional)
+4. **Raw JSON Editor**: Toggle to paste/edit JSON directly
+5. **Save**: Click Save to create scenario
+
+### Builder Features
+- **Quick Add Stage**: Add stages with numbered content areas
+- **Metrics Button**: Select which 5 metrics apply to this stage
+- **Points Editor**: Allocate points across detection, containment, eradication, recovery, communication
+- **Correctness Editor**: Set correctness percentages (represents how correct each metric decision was)
+- **Branching**: Optional next_stage field skips to specific stage or continues sequentially
 
 ## 🎮 Playing Scenarios
 

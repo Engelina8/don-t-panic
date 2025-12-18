@@ -1,6 +1,6 @@
-// DON'T PANIC - Main JavaScript
 
-// Register Service Worker for PWA
+
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/static/js/service-worker.js')
@@ -9,22 +9,22 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// PWA Install Button Handler
+
 let deferredPrompt;
 const installContainer = document.getElementById('install-app-container');
 const installBtn = document.getElementById('install-app-btn');
 
-// Listen for the beforeinstallprompt event
+
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Show the install button
+    
     if (installContainer) {
         installContainer.style.display = 'block';
     }
 });
 
-// Handle install button click
+
 if (installBtn) {
     installBtn.addEventListener('click', async () => {
         if (deferredPrompt) {
@@ -39,7 +39,7 @@ if (installBtn) {
     });
 }
 
-// Hide install button if already installed
+
 window.addEventListener('appinstalled', () => {
     console.log('App installed successfully');
     if (installContainer) {
@@ -50,7 +50,7 @@ window.addEventListener('appinstalled', () => {
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Auto-dismiss flash messages
+    
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         setTimeout(() => {
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => alert.remove(), 300);
         }, 5000);
         
-        // Manual close
+        
         const closeBtn = alert.querySelector('.close-btn');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Add ripple effect to buttons
+    
     const buttons = document.querySelectorAll('.btn');
     buttons.forEach(button => {
         button.addEventListener('click', function(e) {
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add active class to current nav item
+    
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('nav a');
     navLinks.forEach(link => {
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Form validation helper
+    
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Slide out animation for alerts
+
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideOutRight {

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 """Cleanup old database files - can be run after closing VS Code or file explorer"""
 
 import os
@@ -38,7 +38,7 @@ def cleanup_old_databases():
     
     print("=" * 60)
     
-    # Show remaining database files
+
     remaining_dbs = list(instance_dir.glob('*.db*'))
     print(f"\n📊 Remaining database files ({len(remaining_dbs)}):")
     for db_file in remaining_dbs:

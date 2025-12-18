@@ -9,26 +9,20 @@ import json
 def create_app(config_name=None):
     """Application factory pattern"""
     
-    # Determine config
     if config_name is None:
         config_name = os.environ.get('FLASK_ENV', 'development')
     
-    # Create Flask app
     app = Flask(__name__)
     
-    # Load configuration
     app.config.from_object(config[config_name])
     
-    # Ensure instance folder exists
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
     
-    # Initialize database
     db.init_app(app)
     
-    # Initialize Flask-Login
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
@@ -40,7 +34,7 @@ def create_app(config_name=None):
         """Load user by ID for Flask-Login"""
         return User.query.get(int(user_id))
     
-    # Register custom Jinja filters
+
     @app.template_filter('format_json')
     def format_json(json_string):
         """Format JSON string with proper indentation - mark as safe to prevent escaping"""
@@ -131,7 +125,7 @@ def register_error_handlers(app):
     @app.errorhandler(500)
     def internal_error(error):
         """Handle 500 errors"""
-        db.session.rollback()  # Rollback any failed transactions
+        db.session.rollback()
         return render_template('errors/500.html'), 500
     
     @app.errorhandler(403)

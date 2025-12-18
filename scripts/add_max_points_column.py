@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 One-off script to add the `max_points` column to the `scenarios` table
 for an existing SQLite database at `instance/dont_panic.db`.
@@ -29,7 +29,7 @@ if not os.path.exists(DB_PATH):
     print(f"ERROR: Database not found at {DB_PATH}")
     sys.exit(1)
 
-# Backup DB if backup doesn't exist
+
 if not os.path.exists(BACKUP_PATH):
     try:
         shutil.copy2(DB_PATH, BACKUP_PATH)
@@ -43,7 +43,7 @@ else:
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 
-# Check if column exists
+
 cur.execute("PRAGMA table_info('scenarios')")
 cols_info = cur.fetchall()
 cols = [c[1] for c in cols_info]
@@ -53,7 +53,7 @@ if 'max_points' in cols:
     conn.close()
     sys.exit(0)
 
-# Add column
+
 try:
     cur.execute("ALTER TABLE scenarios ADD COLUMN max_points INTEGER")
     conn.commit()
@@ -63,7 +63,7 @@ except sqlite3.OperationalError as e:
     conn.close()
     sys.exit(1)
 
-# Set default for existing rows where NULL
+
 try:
     cur.execute("UPDATE scenarios SET max_points = 100 WHERE max_points IS NULL")
     conn.commit()

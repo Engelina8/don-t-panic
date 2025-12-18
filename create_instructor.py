@@ -3,7 +3,7 @@ from models import db, User
 
 app = create_app('development')
 with app.app_context():
-    # Check if instructor user already exists
+
     existing = User.query.filter_by(username='instructor').first()
     if existing:
         print("User 'instructor' already exists. Updating password...")

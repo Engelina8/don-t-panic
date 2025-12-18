@@ -209,7 +209,7 @@
 
 {% block content %}
 <div class="manage-container">
-    <!-- Header -->
+    
     <div class="page-header">
         <div>
             <h1>👥 Manage Users</h1>
@@ -219,7 +219,7 @@
         </div>
     </div>
 
-    <!-- Add User Form Modal -->
+    
     <div id="addUserModal" style="display: none; background: rgba(0,0,0,0.7); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center;">
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 30px; max-width: 500px; width: 90%;">
             <h2 style="color: var(--primary-color); margin-bottom: 20px;">Add New User</h2>
@@ -251,7 +251,7 @@
         </div>
     </div>
 
-    <!-- Flash Messages -->
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -263,12 +263,12 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Search Box -->
+    
     <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search by username or email..." onkeyup="filterTable()">
     </div>
 
-    <!-- Users Table -->
+    
     {% if users %}
         <div class="users-table">
             <div class="table-header">

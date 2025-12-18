@@ -116,7 +116,7 @@ Start by choosing a scenario to try!
         avg_score = sum(scores) / len(scores) if scores else 0
         total_time = sum((s.time_taken or 0) for s in completed) // 60
         
-        # Check if user has completed less than 5 scenarios
+
         if len(completed) < 5:
             scenarios_needed = 5 - len(completed)
             text = f"""📊 YOUR PERFORMANCE
@@ -132,7 +132,7 @@ Complete {scenarios_needed} more scenario(s) to unlock detailed metrics breakdow
 🎯 RECOMMENDATION:
 Keep practicing! Complete 5 scenarios for personalized feedback."""
         else:
-            # Calculate metrics breakdown (detection, containment, eradication, recovery, communication)
+
             metrics = {
                 'detection': 0,
                 'containment': 0,
@@ -141,7 +141,7 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
                 'communication': 0
             }
             
-            # Sum metrics from all completed sessions
+
             for session in completed:
                 metrics['detection'] += session.detection_score or 0
                 metrics['containment'] += session.containment_score or 0
@@ -149,8 +149,8 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
                 metrics['recovery'] += session.recovery_score or 0
                 metrics['communication'] += session.communication_score or 0
             
-            # Calculate percentage for each metric (0-100)
-            # Assuming max 100 per metric per scenario
+
+
             total_scenarios = len(completed)
             max_possible_per_metric = 100 * total_scenarios
             
@@ -162,10 +162,10 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
                 'communication': int((metrics['communication'] / max_possible_per_metric * 100)) if max_possible_per_metric > 0 else 0
             }
             
-            # Sort metrics from best to worst
+
             sorted_metrics = sorted(metrics_pct.items(), key=lambda x: x[1], reverse=True)
             
-            # Build metrics display with emojis
+
             emoji_map = {
                 'detection': '🔍',
                 'containment': '🚫',
@@ -243,7 +243,7 @@ Focus on improving your lower-performing skills!"""
             return {"type": "error", "text": "Session not found"}
         
         score = session.score or 0
-        time_taken = (session.time_taken or 0) // 60  # Convert seconds to minutes
+        time_taken = (session.time_taken or 0) // 60
         
         text = f"""✅ SCENARIO COMPLETE!
 

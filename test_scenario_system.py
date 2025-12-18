@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 """Test creating a new scenario in the file-based system"""
 
 from scenario_manager import scenario_manager

@@ -18,7 +18,7 @@ def instructor_required(f):
             flash('Please log in', 'error')
             return redirect(url_for('auth.login'))
         
-        # Allow both 'instructor' and 'admin' roles to access instructor routes
+
         if current_user.role not in ('instructor', 'admin'):
             flash('Access denied: Instructor access required', 'error')
             return redirect(url_for('dashboard'))
@@ -47,16 +47,16 @@ def admin_required(f):
 def dashboard():
     """Instructor dashboard"""
     
-    # Get statistics and recent activity based on user hierarchy
+
     if current_user.is_admin():
-        # ADMIN: Can see ALL users and sessions
+
         total_users = User.query.filter_by(role='trainee').count()
         all_scenarios = scenario_manager.get_all_scenarios()
         total_scenarios = len(all_scenarios)
         total_sessions = TrainingSession.query.count()
         completed_sessions = TrainingSession.query.filter_by(status='completed').count()
         
-        # Get most recent session per user
+
         all_recent = TrainingSession.query.order_by(
             TrainingSession.started_at.desc()
         ).all()
@@ -67,19 +67,19 @@ def dashboard():
         recent_sessions = sorted(user_sessions_map.values(), key=lambda s: s.started_at, reverse=True)[:10]
         all_user_sessions = all_recent
     else:
-        # INSTRUCTOR: Can see their own sessions + trainee sessions in their group (NO ADMINS)
+
         if current_user.group_id:
-            # Count trainees in their group
+
             total_users = User.query.filter(
                 User.group_id == current_user.group_id,
                 User.role == 'trainee'
             ).count()
             
-            # Total scenarios (available to all)
+
             all_scenarios = scenario_manager.get_all_scenarios()
             total_scenarios = len(all_scenarios)
             
-            # Sessions from: trainees in their group OR their own
+
             total_sessions = TrainingSession.query.join(User).filter(
                 ((User.group_id == current_user.group_id) & (User.role == 'trainee')) |
                 (User.id == current_user.id)
@@ -91,7 +91,7 @@ def dashboard():
                 TrainingSession.status == 'completed'
             ).count()
             
-            # Recent activity from: trainees in their group OR their own (most recent per user)
+
             all_relevant = TrainingSession.query.join(User).filter(
                 ((User.group_id == current_user.group_id) & (User.role == 'trainee')) |
                 (User.id == current_user.id)
@@ -105,7 +105,7 @@ def dashboard():
             recent_sessions = sorted(user_sessions_map.values(), key=lambda s: s.started_at, reverse=True)[:10]
             all_user_sessions = all_relevant
         else:
-            # Instructor not in a group sees only their own data
+
             total_users = 0
             all_scenarios = scenario_manager.get_all_scenarios()
             total_scenarios = len(all_scenarios)
@@ -115,7 +115,7 @@ def dashboard():
                 TrainingSession.status == 'completed'
             ).count()
             
-            # Recent activity from their own sessions
+
             recent_sessions = TrainingSession.query.filter_by(
                 user_id=current_user.id
             ).order_by(
@@ -131,7 +131,7 @@ def dashboard():
         'completion_rate': (completed_sessions / total_sessions * 100) if total_sessions > 0 else 0
     }
     
-    # Load scenario data for display
+
     scenarios_by_id = {}
     all_scenarios_data = scenario_manager.get_all_scenarios()
     for scenario_data in all_scenarios_data:
@@ -173,7 +173,7 @@ def add_user():
     password = request.form.get('password', '').strip()
     role = request.form.get('role', 'trainee')
     
-    # Validation
+
     if not username or not email or not password:
         flash('Username, email, and password are required', 'error')
         return redirect(url_for('admin.users'))
@@ -182,7 +182,7 @@ def add_user():
         flash('Password must be at least 6 characters long', 'error')
         return redirect(url_for('admin.users'))
     
-    # Check if user already exists
+
     if User.query.filter_by(username=username).first():
         flash(f'Username "{username}" already exists', 'error')
         return redirect(url_for('admin.users'))
@@ -191,7 +191,7 @@ def add_user():
         flash(f'Email "{email}" already registered', 'error')
         return redirect(url_for('admin.users'))
     
-    # Validate role - only admins can create admin users
+
     valid_roles = ['trainee', 'instructor']
     if current_user.is_admin():
         valid_roles.append('admin')
@@ -200,13 +200,13 @@ def add_user():
         flash('Invalid role selected', 'error')
         return redirect(url_for('admin.users'))
     
-    # Only admins can create other admins
+
     if role == 'admin' and not current_user.is_admin():
         flash('Only administrators can create admin users', 'error')
         return redirect(url_for('admin.users'))
     
     try:
-        # Create new user
+
         new_user = User(
             username=username,
             email=email,
@@ -215,7 +215,7 @@ def add_user():
         )
         new_user.set_password(password)
         
-        # Auto-assign to instructor's group if created by an instructor
+
         if current_user.role == 'instructor' and current_user.group_id:
             new_user.group_id = current_user.group_id
         
@@ -310,7 +310,7 @@ def create_folder():
     import json
     from pathlib import Path
     
-    # Handle both JSON and form data
+
     if request.is_json:
         data = request.get_json()
         folder_name = data.get('folder_name', '').strip()
@@ -323,7 +323,7 @@ def create_folder():
         flash('Folder name cannot be empty', 'error')
         return redirect(url_for('admin.manage_scenarios'))
     
-    # Validate folder name
+
     if not folder_name.replace('_', '').replace('-', '').isalnum():
         if request.is_json:
             return jsonify({'error': 'Folder name can only contain letters, numbers, dashes, and underscores'}), 400
@@ -334,7 +334,7 @@ def create_folder():
         scenarios_dir = Path('scenarios')
         new_folder = scenarios_dir / folder_name
         
-        # Check if folder already exists
+
         if new_folder.exists():
             if request.is_json:
                 return jsonify({'error': 'Folder already exists'}), 409
@@ -401,7 +401,7 @@ def create_scenario():
         auto_max_points = request.form.get('auto_max_points') == 'on'
         scenario_content = request.form.get('scenario_content', '{}')
         
-        # Validation
+
         if not title or not description or not scenario_content:
             flash('Title, description, and scenario content are required', 'error')
             return render_template('admin/create_scenario.html', 
@@ -409,11 +409,11 @@ def create_scenario():
                                  categories=categories)
         
         try:
-            # Validate JSON
+
             import json
             scenario_data = json.loads(scenario_content)
             
-            # Calculate max_points if auto is enabled
+
             if auto_max_points:
                 total_points = 0
                 if 'stages' in scenario_data:
@@ -427,7 +427,7 @@ def create_scenario():
                             total_points += max_stage_points
                 max_points = total_points if total_points > 0 else 100
             
-            # Create complete scenario data with all metadata
+
             complete_scenario_data = {
                 'title': title,
                 'description': description,
@@ -436,12 +436,12 @@ def create_scenario():
                 'difficulty_level': int(difficulty),
                 'estimated_time': int(estimated_time),
                 'max_points': int(max_points),
-                'scenario_content': scenario_data,  # Store as dict, not string
+                'scenario_content': scenario_data,
                 'created_by': current_user.id,
                 'is_active': True
             }
             
-            # Create the scenario file
+
             created_scenario = scenario_manager.create_scenario(complete_scenario_data, category)
             
             flash(f'✅ Scenario "{title}" created successfully! (Max Points: {max_points})', 'success')
@@ -459,7 +459,7 @@ def create_scenario():
                                  scenario=request.form,
                                  categories=categories)
     
-    # Default scenario object for template
+
     default_scenario = SimpleNamespace(
         scenario_content='{}',
         title='',
@@ -661,7 +661,7 @@ def view_group(id):
     """View group details and manage members"""
     group = Group.query.get_or_404(id)
     
-    # Get all users not in this group (including those with no group)
+
     from sqlalchemy import or_
     available_users = User.query.filter(
         or_(User.group_id == None, User.group_id != id),

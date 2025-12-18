@@ -69,18 +69,18 @@ class ScenarioManager:
     
     def create_scenario(self, scenario_data, category=''):
         """Create a new scenario file"""
-        # Generate ID if not provided
+
         if 'id' not in scenario_data:
             scenario_data['id'] = self._generate_scenario_id()
         
-        # Add timestamps if not present
+
         if 'created_at' not in scenario_data:
             scenario_data['created_at'] = datetime.utcnow().isoformat()
         
         if 'updated_at' not in scenario_data:
             scenario_data['updated_at'] = datetime.utcnow().isoformat()
         
-        # Determine file path
+
         if category:
             category_dir = self.scenarios_dir / category
             category_dir.mkdir(exist_ok=True)
@@ -88,7 +88,7 @@ class ScenarioManager:
         else:
             file_path = self.scenarios_dir / f"{scenario_data['id']}.json"
         
-        # Write JSON file
+
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(scenario_data, f, indent=2, ensure_ascii=False)
         
@@ -136,20 +136,20 @@ class ScenarioManager:
         if not scenario_file:
             raise FileNotFoundError(f"Scenario {scenario_id} not found")
         
-        # Load scenario data
+
         scenario_data = self._load_scenario_from_file(scenario_file)
         
-        # Create target directory if needed
+
         category_dir = self.scenarios_dir / category
         category_dir.mkdir(exist_ok=True)
         
-        # Move file
+
         new_path = category_dir / scenario_file.name
         scenario_file.rename(new_path)
         
         return scenario_data
     
-    # Private helper methods
+
     
     def _generate_scenario_id(self):
         """Generate a unique scenario ID"""
