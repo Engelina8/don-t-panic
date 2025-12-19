@@ -6,9 +6,11 @@ from functools import wraps
 from models import db, User, Scenario, TrainingSession, Group
 from scenario_manager import scenario_manager
 from werkzeug.security import generate_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 from . import admin_bp
 from types import SimpleNamespace
+from collections import defaultdict
+import json
 
 def instructor_required(f):
     """Decorator to require instructor role"""
@@ -45,7 +47,7 @@ def admin_required(f):
 @login_required
 @instructor_required
 def dashboard():
-    """Instructor dashboard"""
+    """Instructor dashboard with analytics"""
     
 
     if current_user.is_admin():
@@ -131,17 +133,87 @@ def dashboard():
         'completion_rate': (completed_sessions / total_sessions * 100) if total_sessions > 0 else 0
     }
     
-
     scenarios_by_id = {}
     all_scenarios_data = scenario_manager.get_all_scenarios()
     for scenario_data in all_scenarios_data:
         scenarios_by_id[scenario_data.get('id')] = scenario_data
     
+    scenario_plays = defaultdict(int)
+    scenario_avg_scores = defaultdict(lambda: {'total': 0, 'count': 0})
+    
+    for session in all_user_sessions:
+        scenario_plays[session.scenario_id] += 1
+        if session.status == 'completed' and session.score is not None:
+            scenario_avg_scores[session.scenario_id]['total'] += session.score
+            scenario_avg_scores[session.scenario_id]['count'] += 1
+    
+    scenario_chart_data = []
+    for scenario_id, plays in sorted(scenario_plays.items(), key=lambda x: x[1], reverse=True)[:10]:
+        if scenario_id not in scenarios_by_id:
+            continue
+        scenario_title = scenarios_by_id.get(scenario_id, {}).get('title', f'Scenario {scenario_id}')
+        avg_score = 0
+        if scenario_avg_scores[scenario_id]['count'] > 0:
+            avg_score = scenario_avg_scores[scenario_id]['total'] / scenario_avg_scores[scenario_id]['count']
+        scenario_chart_data.append({
+            'title': scenario_title,
+            'plays': plays,
+            'avg_score': round(avg_score, 1)
+        })
+    
+    user_scores = defaultdict(lambda: {'total': 0, 'count': 0})
+    for session in all_user_sessions:
+        if session.status == 'completed' and session.score is not None:
+            user = User.query.get(session.user_id)
+            user_name = user.username if user else f'User {session.user_id}'
+            user_scores[user_name]['total'] += session.score
+            user_scores[user_name]['count'] += 1
+    
+    user_chart_data = []
+    for user_name, scores in sorted(user_scores.items(), key=lambda x: x[1]['total']/max(1, x[1]['count']), reverse=True)[:10]:
+        avg_score = scores['total'] / max(1, scores['count']) if scores['count'] > 0 else 0
+        user_chart_data.append({
+            'name': user_name,
+            'avg_score': round(avg_score, 1),
+            'sessions': scores['count']
+        })
+    
+    completion_data = [
+        {'status': 'Completed', 'count': completed_sessions},
+        {'status': 'In Progress', 'count': total_sessions - completed_sessions}
+    ]
+    
+    score_distribution = defaultdict(int)
+    for session in all_user_sessions:
+        if session.status == 'completed' and session.score is not None:
+            if session.score >= 90:
+                score_distribution['90-100'] += 1
+            elif session.score >= 75:
+                score_distribution['75-89'] += 1
+            elif session.score >= 60:
+                score_distribution['60-74'] += 1
+            elif session.score >= 40:
+                score_distribution['40-59'] += 1
+            else:
+                score_distribution['0-39'] += 1
+    
+    score_dist_data = [
+        {'range': '0-39', 'count': score_distribution['0-39']},
+        {'range': '40-59', 'count': score_distribution['40-59']},
+        {'range': '60-74', 'count': score_distribution['60-74']},
+        {'range': '75-89', 'count': score_distribution['75-89']},
+        {'range': '90-100', 'count': score_distribution['90-100']}
+    ]
+    
     return render_template('admin/dashboard.html',
                          stats=stats,
                          recent_sessions=recent_sessions,
                          all_user_sessions=all_user_sessions,
-                         scenarios_by_id=scenarios_by_id)
+                         scenarios_by_id=scenarios_by_id,
+                         scenario_chart_data=json.dumps(scenario_chart_data),
+                         user_chart_data=json.dumps(user_chart_data),
+                         completion_data=json.dumps(completion_data),
+                         score_dist_data=json.dumps(score_dist_data))
 
 @admin_bp.route('/users')
 @login_required
@@ -183,11 +255,11 @@ def add_user():
         return redirect(url_for('admin.users'))
     
 
-    if User.query.filter_by(username=username).first():
+    if User.find_by_username(username):
         flash(f'Username "{username}" already exists', 'error')
         return redirect(url_for('admin.users'))
     
-    if User.query.filter_by(email=email).first():
+    if User.find_by_email(email):
         flash(f'Email "{email}" already registered', 'error')
         return redirect(url_for('admin.users'))
     

@@ -2,10 +2,35 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
+from cryptography.fernet import Fernet
+from flask import current_app
 
 db = SQLAlchemy()
 
 
+def get_encryption_cipher():
+    """Get Fernet cipher for encryption/decryption"""
+    key = current_app.config.get('ENCRYPTION_KEY')
+    if isinstance(key, str):
+        key = key.encode()
+    return Fernet(key)
+
+def encrypt_field(value):
+    """Encrypt a field value"""
+    if not value:
+        return value
+    cipher = get_encryption_cipher()
+    return cipher.encrypt(value.encode()).decode()
+
+def decrypt_field(encrypted_value):
+    """Decrypt a field value - returns plain text if not encrypted"""
+    if not encrypted_value:
+        return encrypted_value
+    try:
+        cipher = get_encryption_cipher()
+        return cipher.decrypt(encrypted_value.encode()).decode()
+    except Exception:
+        return encrypted_value
 
 
 def get_local_time(utc_datetime, timezone_offset=1):
@@ -32,10 +57,30 @@ class User(UserMixin, db.Model):
     # Primary key
     id = db.Column(db.Integer, primary_key=True)
     
-    # User credentials
-    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    # User credentials (username and email are encrypted)
+    _username = db.Column('username', db.String(255), unique=True, nullable=False, index=True)
+    _email = db.Column('email', db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
+    
+    @property
+    def username(self):
+        """Get decrypted username"""
+        return decrypt_field(self._username) if self._username else None
+    
+    @username.setter
+    def username(self, value):
+        """Set and encrypt username"""
+        self._username = encrypt_field(value) if value else None
+    
+    @property
+    def email(self):
+        """Get decrypted email"""
+        return decrypt_field(self._email) if self._email else None
+    
+    @email.setter
+    def email(self, value):
+        """Set and encrypt email"""
+        self._email = encrypt_field(value) if value else None
     
     # User role
     role = db.Column(db.String(20), nullable=False, default='trainee')
@@ -86,6 +131,40 @@ class User(UserMixin, db.Model):
             return 0
         total = sum(session.score for session in completed if session.score)
         return round(total / len(completed), 2)
+    
+    @staticmethod
+    def find_by_username(username):
+        """Find user by plain text username (handles both encrypted and plain text)"""
+        try:
+            all_users = User.query.all()
+            for user in all_users:
+                try:
+                    decrypted = user.username
+                    if decrypted == username:
+                        return user
+                except Exception:
+                    if user._username == username:
+                        return user
+            return None
+        except Exception:
+            return None
+    
+    @staticmethod
+    def find_by_email(email):
+        """Find user by plain text email (handles both encrypted and plain text)"""
+        try:
+            all_users = User.query.all()
+            for user in all_users:
+                try:
+                    decrypted = user.email
+                    if decrypted == email:
+                        return user
+                except Exception:
+                    if user._email == email:
+                        return user
+            return None
+        except Exception:
+            return None
     
     def __repr__(self):
         return f'<User {self.username} ({self.role})>'

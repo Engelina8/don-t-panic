@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from cryptography.fernet import Fernet
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -7,6 +8,9 @@ class Config:
     """Base configuration"""
     # Flask settings
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    
+    # Encryption key for sensitive fields (username, email)
+    ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY') or Fernet.generate_key().decode()
     
     # Database settings - Single database for users and training sessions
     # (Scenarios are stored as JSON files in the scenarios folder)

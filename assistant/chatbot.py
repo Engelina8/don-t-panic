@@ -14,8 +14,7 @@ class ChatbotAssistant:
             "options": [
                 {"id": "1", "label": "📚 Learn Concepts", "action": "learn_menu"},
                 {"id": "2", "label": "📊 Check My Progress", "action": "progress"},
-                {"id": "3", "label": "💡 Get Help Now", "action": "help_menu"},
-                {"id": "4", "label": "❓ FAQ", "action": "faq_menu"}
+                {"id": "3", "label": "❓ FAQ", "action": "faq_menu"}
             ]
         }
 
@@ -279,8 +278,6 @@ Status: {'Excellent!' if score >= 85 else 'Good!' if score >= 70 else 'Keep prac
             return self.get_concept(param)
         elif action == "progress":
             return self.get_progress(user_id)
-        elif action == "help_menu":
-            return self.get_help_menu()
         elif action == "faq_menu":
             return self.get_faq_menu()
         elif action == "show_faq":

@@ -25,7 +25,7 @@ def login():
             return render_template('auth/login.html')
         
 
-        user = User.query.filter_by(username=username).first()
+        user = User.find_by_username(username)
         
 
         if user and check_password_hash(user.password_hash, password):
@@ -81,10 +81,10 @@ def register():
             errors.append('Passwords do not match')
         
 
-        if User.query.filter_by(username=username).first():
+        if User.find_by_username(username):
             errors.append('Username already exists')
         
-        if User.query.filter_by(email=email).first():
+        if User.find_by_email(email):
             errors.append('Email already registered')
         
         if errors:
@@ -96,9 +96,9 @@ def register():
         new_user = User(
             username=username,
             email=email,
-            password_hash=generate_password_hash(password),
             role='trainee'
         )
+        new_user.set_password(password)
         
         try:
             db.session.add(new_user)
