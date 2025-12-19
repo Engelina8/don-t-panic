@@ -1,26 +1,24 @@
 {
+  "id": "3881b22d",
   "title": "A door left open",
-  "description": "door ._.",
+  "description": "Brief incident report summary",
   "category": "",
-  "incident_type": "ransomware",
+  "incident_type": "insider_threat",
   "difficulty_level": 2,
-  "estimated_time": 30,
+  "estimated_time": 10,
   "max_points": 1500,
   "scenario_content": {
     "intro": "Panic Financial Services faces a blended phishing and physical intrusion: one user entered credentials; CCTV shows after-hours access. An incident has been declared and you must choose the first focus.",
     "stages": [
       {
+        "stage": "",
         "content": "Multiple employees received an HR-impersonation phishing email. At least one user submitted credentials. Facilities report suspicious badge activity that aligns with after-hours CCTV footage confirming a brief, unauthorized entry. Leadership has formally declared an incident and asked you to lead the initial response.",
         "question": "What is your primary focus at this stage?",
-        "metrics": [
-          "detection",
-          "containment",
-          "communication"
-        ],
         "options": [
           {
             "text": "Correlate email, badge, VPN, and CCTV logs to determine incident scope",
             "points": 100,
+            "next_stage": 1,
             "detection": 100,
             "containment": 100,
             "eradication": 0,
@@ -32,12 +30,12 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 95
-            },
-            "next_stage": 1
+            }
           },
           {
             "text": "Disable compromised account and revoke badge; restrict device network access",
             "points": 35,
+            "next_stage": 4,
             "detection": 0,
             "containment": 30,
             "eradication": 0,
@@ -49,12 +47,12 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 40
-            },
-            "next_stage": 4
+            }
           },
           {
             "text": "Notify management, HR, Facilities, and IT; initiate coordinated incident communication",
             "points": 25,
+            "next_stage": 7,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -66,23 +64,24 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 85
-            },
-            "next_stage": 7
+            }
           }
+        ],
+        "metrics": [
+          "detection",
+          "containment",
+          "communication"
         ]
       },
       {
+        "stage": "",
         "content": "You prioritize detection. By correlating email delivery, badge, VPN, and CCTV timestamps, you confirm the phishing reached 12 staff, only one credential was used successfully, the intruder accessed one floor for ~18 minutes, and no other suspicious logins are evident.",
         "question": "With scoping complete, what do you prioritize next?",
-        "metrics": [
-          "containment",
-          "eradication",
-          "communication"
-        ],
         "options": [
           {
             "text": "Preserve evidence, isolate affected workstation, and secure compromised credentials",
             "points": 100,
+            "next_stage": 2,
             "detection": 0,
             "containment": 100,
             "eradication": 100,
@@ -94,12 +93,12 @@
               "eradication": 95,
               "recovery": 0,
               "communication": 95
-            },
-            "next_stage": 2
+            }
           },
           {
             "text": "Run endpoint scans and hunt for persistence or unauthorized services",
             "points": 30,
+            "next_stage": 3,
             "detection": 0,
             "containment": 0,
             "eradication": 25,
@@ -111,12 +110,12 @@
               "eradication": 80,
               "recovery": 0,
               "communication": 40
-            },
-            "next_stage": 3
+            }
           },
           {
             "text": "Brief management with a concise technical summary and current unknowns",
             "points": 25,
+            "next_stage": 6,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -128,22 +127,24 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 85
-            },
-            "next_stage": 6
+            }
           }
+        ],
+        "metrics": [
+          "containment",
+          "eradication",
+          "communication"
         ]
       },
       {
+        "stage": "",
         "content": "Containment measures enacted: the affected workstation is isolated, the compromised account is disabled, and physical badge access is revoked. Facilities increase monitoring of entry points.",
         "question": "What is your next focus after containment?",
-        "metrics": [
-          "eradication",
-          "recovery"
-        ],
         "options": [
           {
             "text": "Scan for persistence, lateral movement artifacts, and malicious scheduled tasks",
             "points": 100,
+            "next_stage": 8,
             "detection": 0,
             "containment": 0,
             "eradication": 100,
@@ -155,12 +156,12 @@
               "eradication": 95,
               "recovery": 95,
               "communication": 0
-            },
-            "next_stage": 8
+            }
           },
           {
             "text": "Plan controlled restoration for affected user with heightened monitoring",
             "points": 20,
+            "next_stage": 10,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -172,22 +173,23 @@
               "eradication": 0,
               "recovery": 80,
               "communication": 0
-            },
-            "next_stage": 10
+            }
           }
+        ],
+        "metrics": [
+          "eradication",
+          "recovery"
         ]
       },
       {
+        "stage": "",
         "content": "Eradication hunt complete: endpoint scans find no active malware, USB audit shows no rogue devices, and services/tasks appear normal. Security tooling baselines are updated and detections tuned.",
         "question": "What do you do next?",
-        "metrics": [
-          "recovery",
-          "communication"
-        ],
         "options": [
           {
             "text": "Re-enable systems gradually and monitor closely for residual indicators",
             "points": 100,
+            "next_stage": 10,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -199,12 +201,12 @@
               "eradication": 0,
               "recovery": 95,
               "communication": 95
-            },
-            "next_stage": 10
+            }
           },
           {
             "text": "Inform stakeholders of findings, residual risk, and next monitoring steps",
             "points": 25,
+            "next_stage": 6,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -216,23 +218,23 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 85
-            },
-            "next_stage": 6
+            }
           }
+        ],
+        "metrics": [
+          "recovery",
+          "communication"
         ]
       },
       {
+        "stage": "",
         "content": "You chose immediate containment. The compromised user account is disabled, badge access revoked, network for related devices restricted, and Physical Security is alerted for heightened vigilance.",
         "question": "What should follow containment?",
-        "metrics": [
-          "detection",
-          "eradication",
-          "communication"
-        ],
         "options": [
           {
             "text": "Investigate logs and footage to confirm access paths and exposure",
             "points": 100,
+            "next_stage": 5,
             "detection": 100,
             "containment": 0,
             "eradication": 100,
@@ -244,12 +246,12 @@
               "eradication": 95,
               "recovery": 0,
               "communication": 95
-            },
-            "next_stage": 5
+            }
           },
           {
             "text": "Remove potential backdoors; tighten USB and revoke unused credentials",
             "points": 30,
+            "next_stage": 8,
             "detection": 0,
             "containment": 0,
             "eradication": 30,
@@ -261,12 +263,12 @@
               "eradication": 85,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 8
+            }
           },
           {
             "text": "Prepare a concise internal message to reduce ongoing phishing risk",
             "points": 20,
+            "next_stage": 11,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -278,22 +280,24 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 80
-            },
-            "next_stage": 11
+            }
           }
+        ],
+        "metrics": [
+          "detection",
+          "eradication",
+          "communication"
         ]
       },
       {
+        "stage": "",
         "content": "Detection after containment confirms no data exfiltration and identifies awareness gaps in access control procedures. Systems appear contained with no further suspicious authentication.",
         "question": "What is the next step?",
-        "metrics": [
-          "eradication",
-          "recovery"
-        ],
         "options": [
           {
             "text": "Clean and harden systems: remove tools, tighten policies, validate baselines",
             "points": 100,
+            "next_stage": 8,
             "detection": 0,
             "containment": 0,
             "eradication": 100,
@@ -305,12 +309,12 @@
               "eradication": 95,
               "recovery": 95,
               "communication": 0
-            },
-            "next_stage": 8
+            }
           },
           {
             "text": "Return affected users to normal operations with phased monitoring",
             "points": 20,
+            "next_stage": 10,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -322,22 +326,23 @@
               "eradication": 0,
               "recovery": 80,
               "communication": 0
-            },
-            "next_stage": 10
+            }
           }
+        ],
+        "metrics": [
+          "eradication",
+          "recovery"
         ]
       },
       {
+        "stage": "",
         "content": "You brief management with a clear summary: what is known, what remains unknown, and the plan forward. Leadership aligns resources to support the next operational steps.",
         "question": "What is your next operational priority?",
-        "metrics": [
-          "containment",
-          "eradication"
-        ],
         "options": [
           {
             "text": "Secure affected accounts and devices; confirm access revocation is enforced",
             "points": 100,
+            "next_stage": 2,
             "detection": 0,
             "containment": 100,
             "eradication": 100,
@@ -349,12 +354,12 @@
               "eradication": 95,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 2
+            }
           },
           {
             "text": "Remove potential attacker footholds across endpoints and shared systems",
             "points": 30,
+            "next_stage": 8,
             "detection": 0,
             "containment": 0,
             "eradication": 30,
@@ -366,23 +371,23 @@
               "eradication": 85,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 8
+            }
           }
+        ],
+        "metrics": [
+          "containment",
+          "eradication"
         ]
       },
       {
+        "stage": "",
         "content": "You prioritize coordinated communication. Management, HR, Facilities, and IT are informed; roles are clarified; employees are asked to report suspicious activity and avoid interacting with the phishing email.",
         "question": "With communication established, what is your next focus?",
-        "metrics": [
-          "detection",
-          "containment",
-          "eradication"
-        ],
         "options": [
           {
             "text": "Investigate technical and physical evidence to validate attacker path",
             "points": 100,
+            "next_stage": 12,
             "detection": 100,
             "containment": 100,
             "eradication": 100,
@@ -394,12 +399,12 @@
               "eradication": 95,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 12
+            }
           },
           {
             "text": "Restrict access and limit risk across accounts, devices, and facilities",
             "points": 30,
+            "next_stage": 13,
             "detection": 0,
             "containment": 30,
             "eradication": 0,
@@ -411,12 +416,12 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 13
+            }
           },
           {
             "text": "Remove malicious components via scans, policy enforcement, and validation",
             "points": 30,
+            "next_stage": 14,
             "detection": 0,
             "containment": 0,
             "eradication": 30,
@@ -428,22 +433,24 @@
               "eradication": 85,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 14
+            }
           }
+        ],
+        "metrics": [
+          "detection",
+          "containment",
+          "eradication"
         ]
       },
       {
+        "stage": "",
         "content": "An internal, controlled message is sent: a security incident occurred, do not engage with the phishing email, and report suspicious messages. This reduces further risk while investigations proceed.",
         "question": "What technical action should follow this communication?",
-        "metrics": [
-          "detection",
-          "eradication"
-        ],
         "options": [
           {
             "text": "Analyze authentication and access logs to confirm full containment",
             "points": 100,
+            "next_stage": 5,
             "detection": 100,
             "containment": 0,
             "eradication": 100,
@@ -455,12 +462,12 @@
               "eradication": 95,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 5
+            }
           },
           {
             "text": "Remove attacker tools and persistence mechanisms identified during triage",
             "points": 30,
+            "next_stage": 8,
             "detection": 0,
             "containment": 0,
             "eradication": 30,
@@ -472,22 +479,23 @@
               "eradication": 85,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 8
+            }
           }
+        ],
+        "metrics": [
+          "detection",
+          "eradication"
         ]
       },
       {
+        "stage": "",
         "content": "Common eradication actions: endpoints are scanned, suspicious services/tasks reviewed, USB policies tightened, and unused or risky credentials revoked. Baselines are validated and detections strengthened.",
         "question": "What should follow eradication activities?",
-        "metrics": [
-          "recovery",
-          "communication"
-        ],
         "options": [
           {
             "text": "Restore systems and access carefully with enhanced monitoring",
             "points": 100,
+            "next_stage": 10,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -499,12 +507,12 @@
               "eradication": 0,
               "recovery": 95,
               "communication": 95
-            },
-            "next_stage": 10
+            }
           },
           {
             "text": "Communicate actions taken and current status to leadership and stakeholders",
             "points": 20,
+            "next_stage": 11,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -516,22 +524,23 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 85
-            },
-            "next_stage": 11
+            }
           }
+        ],
+        "metrics": [
+          "recovery",
+          "communication"
         ]
       },
       {
+        "stage": "",
         "content": "Recovery planning: systems show no active compromise indicators. You will re-enable access in phases, with additional monitoring and alerting for the affected user and systems.",
         "question": "How do you close out the incident effectively?",
-        "metrics": [
-          "communication",
-          "recovery"
-        ],
         "options": [
           {
             "text": "Close incident, document lessons learned, and define ongoing monitoring plan",
             "points": 100,
+            "next_stage": -1,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -543,12 +552,12 @@
               "eradication": 0,
               "recovery": 95,
               "communication": 95
-            },
-            "next_stage": -1
+            }
           },
           {
             "text": "Notify stakeholders of resolution, residual risks, and required follow-ups",
             "points": 25,
+            "next_stage": -1,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -560,23 +569,23 @@
               "eradication": 0,
               "recovery": 75,
               "communication": 85
-            },
-            "next_stage": -1
+            }
           }
+        ],
+        "metrics": [
+          "communication",
+          "recovery"
         ]
       },
       {
+        "stage": "",
         "content": "Communication-first path established. Stakeholders are aligned, responsibilities clarified, and employees instructed to report suspicious content while refraining from interacting with the phishing message.",
         "question": "What is your next focus after establishing communication?",
-        "metrics": [
-          "detection",
-          "containment",
-          "eradication"
-        ],
         "options": [
           {
             "text": "Conduct detailed investigation to validate scope and attacker movement",
             "points": 100,
+            "next_stage": 12,
             "detection": 100,
             "containment": 100,
             "eradication": 100,
@@ -588,12 +597,12 @@
               "eradication": 95,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 12
+            }
           },
           {
             "text": "Lock down systems and physical access to limit any further spread",
             "points": 30,
+            "next_stage": 13,
             "detection": 0,
             "containment": 30,
             "eradication": 0,
@@ -605,12 +614,12 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 13
+            }
           },
           {
             "text": "Proactively eliminate risks through scans, policy enforcement, and validation",
             "points": 30,
+            "next_stage": 14,
             "detection": 0,
             "containment": 0,
             "eradication": 30,
@@ -622,22 +631,24 @@
               "eradication": 85,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 14
+            }
           }
+        ],
+        "metrics": [
+          "detection",
+          "containment",
+          "eradication"
         ]
       },
       {
+        "stage": "",
         "content": "C1 – Findings confirmed: impacted resources and attacker path validated across logs and CCTV. Exposure remains limited; no evidence of data exfiltration.",
         "question": "What should follow once findings are confirmed?",
-        "metrics": [
-          "containment",
-          "recovery"
-        ],
         "options": [
           {
             "text": "Secure affected systems and accounts to enforce containment controls",
             "points": 100,
+            "next_stage": 13,
             "detection": 0,
             "containment": 100,
             "eradication": 0,
@@ -649,12 +660,12 @@
               "eradication": 0,
               "recovery": 95,
               "communication": 0
-            },
-            "next_stage": 13
+            }
           },
           {
             "text": "Begin phased restoration and trust rebuilding with monitoring",
             "points": 20,
+            "next_stage": 10,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -666,22 +677,23 @@
               "eradication": 0,
               "recovery": 80,
               "communication": 0
-            },
-            "next_stage": 10
+            }
           }
+        ],
+        "metrics": [
+          "containment",
+          "recovery"
         ]
       },
       {
+        "stage": "",
         "content": "C2 – Containment enforced following communication: systems and physical access are restricted while coordination remains active among stakeholders.",
         "question": "What comes next?",
-        "metrics": [
-          "eradication",
-          "recovery"
-        ],
         "options": [
           {
             "text": "Remove attacker tools and artifacts; validate endpoint integrity",
             "points": 100,
+            "next_stage": 8,
             "detection": 0,
             "containment": 0,
             "eradication": 100,
@@ -693,12 +705,12 @@
               "eradication": 95,
               "recovery": 95,
               "communication": 0
-            },
-            "next_stage": 8
+            }
           },
           {
             "text": "Begin returning systems to service with safeguards",
             "points": 20,
+            "next_stage": 10,
             "detection": 0,
             "containment": 0,
             "eradication": 0,
@@ -710,22 +722,23 @@
               "eradication": 0,
               "recovery": 80,
               "communication": 0
-            },
-            "next_stage": 10
+            }
           }
+        ],
+        "metrics": [
+          "eradication",
+          "recovery"
         ]
       },
       {
+        "stage": "",
         "content": "C3 – Proactive eradication: systems scanned, policies enforced, device integrity validated to eliminate potential footholds.",
         "question": "What is the next logical step?",
-        "metrics": [
-          "recovery",
-          "detection"
-        ],
         "options": [
           {
             "text": "Re-enable systems and monitor closely for any residual indicators",
             "points": 100,
+            "next_stage": 10,
             "detection": 100,
             "containment": 0,
             "eradication": 0,
@@ -737,12 +750,12 @@
               "eradication": 0,
               "recovery": 95,
               "communication": 0
-            },
-            "next_stage": 10
+            }
           },
           {
             "text": "Validate no additional indicators exist through focused detection review",
             "points": 25,
+            "next_stage": 12,
             "detection": 25,
             "containment": 0,
             "eradication": 0,
@@ -754,16 +767,18 @@
               "eradication": 0,
               "recovery": 0,
               "communication": 0
-            },
-            "next_stage": 12
+            }
           }
+        ],
+        "metrics": [
+          "recovery",
+          "detection"
         ]
       }
     ]
   },
   "created_by": 2,
-  "is_active": true,
-  "id": "3881b22d",
   "created_at": "2025-12-18T10:55:19.388561",
-  "updated_at": "2025-12-18T10:55:19.388561"
+  "is_active": true,
+  "updated_at": "2025-12-19T07:05:31.966433"
 }
