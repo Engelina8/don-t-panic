@@ -24,17 +24,22 @@ def list():
     
 
     scenarios_by_category = {}
+    uncategorized = []
+    
     for data in scenarios_data:
         scenario = Scenario(data)
-        category = scenario.category if scenario.category else 'Uncategorized'
+        category = scenario.category if scenario.category else None
         
-        if category not in scenarios_by_category:
-            scenarios_by_category[category] = []
-        
-        scenarios_by_category[category].append(scenario)
+        if category:
+            if category not in scenarios_by_category:
+                scenarios_by_category[category] = []
+            scenarios_by_category[category].append(scenario)
+        else:
+            uncategorized.append(scenario)
     
     return render_template('scenarios/list.html', 
                          scenarios_by_category=scenarios_by_category,
+                         uncategorized_scenarios=uncategorized,
                          completed_ids=completed_scenario_ids)
 
 @scenario_bp.route('/<scenario_id>')

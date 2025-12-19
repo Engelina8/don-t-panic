@@ -110,7 +110,7 @@
                 <div class="footer-section">
                     <h4>Contact</h4>
                     <ul>
-                        <li><a href="mailto:support@dontpanic.dev">support@dontpanic.dev</a></li>
+                        <li><a href="mailto:support@dont-panic.app">support@dont-panic.app</a></li>
                     </ul>
                 </div>
             </div>
@@ -126,7 +126,7 @@
     
     
     {% if current_user.is_authenticated %}
-    <button class="chatbot-widget-btn" onclick="toggleChatbot()">💬</button>
+    <button class="chatbot-widget-btn" onclick="toggleChatbot()" title="Assistant"><img src="{{ url_for('static', filename='img/chatbot_fill.png') }}" alt="Assistant"></button>
     {% include 'components/chatbot.html' %}
     {% endif %}
     

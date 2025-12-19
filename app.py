@@ -2,7 +2,8 @@ from flask import Flask, render_template, redirect, url_for, flash
 from flask_login import LoginManager, login_required, current_user
 from markupsafe import Markup
 from config import config
-from models import db, User
+from models import db, User, TrainingSession
+from scenario_manager import scenario_manager
 import os
 import json
 
@@ -73,7 +74,16 @@ def create_app(config_name=None):
         """User dashboard - redirects based on role"""
         if current_user.role in ['instructor', 'admin']:
             return redirect(url_for('admin.dashboard'))
-        return render_template('dashboard.html', user=current_user)
+        
+        sessions = TrainingSession.query.filter_by(user_id=current_user.id, status='completed').order_by(TrainingSession.completed_at.desc()).all()
+        completed_count = len(sessions)
+        avg_score = sum(s.score for s in sessions if s.score) / len([s for s in sessions if s.score]) if sessions else 0
+        
+        for session in sessions:
+            scenario_data = scenario_manager.get_scenario(str(session.scenario_id))
+            session.scenario_title = scenario_data.get('title', f'Scenario {session.scenario_id}') if scenario_data else f'Scenario {session.scenario_id}'
+        
+        return render_template('dashboard.html', user=current_user, sessions=sessions, completed_count=completed_count, avg_score=avg_score)
     
     # Context processor - makes variables available to all templates
     @app.context_processor
@@ -100,9 +110,9 @@ def register_blueprints(app):
         app.register_blueprint(admin_bp)
         app.register_blueprint(assistant_bp)
         
-        print("✅ Blueprints registered successfully")
+        print("Blueprints registered successfully")
     except ImportError as e:
-        print(f"⚠️  Could not import blueprints: {e}")
+        print(f"Could not import blueprints: {e}")
         print("   Creating basic routes instead...")
         
         # Fallback: Create basic routes if blueprints don't exist

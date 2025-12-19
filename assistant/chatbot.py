@@ -46,37 +46,37 @@ class ChatbotAssistant:
         
         if 'how_it_spreads' in concept:
             text += "\n🔄 How it spreads:\n"
-            for item in concept['how_it_spreads'][:5]:
+            for item in concept['how_it_spreads'][:3]:
                 text += f"• {item}\n"
         
         if 'how_it_works' in concept:
             text += "\n🔄 How it works:\n"
-            for item in concept['how_it_works']:
+            for item in concept['how_it_works'][:3]:
                 text += f"• {item}\n"
         
         if 'signs_of_infection' in concept:
             text += "\n⚠️ Signs of infection:\n"
-            for item in concept['signs_of_infection']:
+            for item in concept['signs_of_infection'][:3]:
                 text += f"• {item}\n"
         
         if 'red_flags' in concept:
             text += "\n🚩 Red flags:\n"
-            for item in concept['red_flags'][:5]:
+            for item in concept['red_flags'][:3]:
                 text += f"• {item}\n"
         
         if 'how_to_protect' in concept:
             text += "\n🛡️ How to protect:\n"
-            for item in concept['how_to_protect'][:5]:
+            for item in concept['how_to_protect'][:3]:
                 text += f"• {item}\n"
         
         if 'real_world_examples' in concept:
             text += "\n📰 Real-world examples:\n"
-            for item in concept['real_world_examples'][:2]:
+            for item in concept['real_world_examples'][:1]:
                 text += f"• {item}\n"
         
         if 'related_scenarios' in concept:
             text += "\n🎮 Practice in:\n"
-            for scenario in concept['related_scenarios']:
+            for scenario in concept['related_scenarios'][:1]:
                 text += f"→ {scenario}\n"
         
         return {
@@ -114,7 +114,6 @@ Start by choosing a scenario to try!
         
         scores = [s.score for s in completed if s.score]
         avg_score = sum(scores) / len(scores) if scores else 0
-        total_time = sum((s.time_taken or 0) for s in completed) // 60
         
 
         if len(completed) < 5:
@@ -124,7 +123,6 @@ Start by choosing a scenario to try!
 📈 Current Stats:
 ✅ Scenarios Completed: {len(completed)}/5
 📊 Average Score: {avg_score:.1f}%
-⏱️ Total Time: {total_time} minutes
 
 📌 DETAILED FEEDBACK:
 Complete {scenarios_needed} more scenario(s) to unlock detailed metrics breakdown for each skill area!
@@ -181,7 +179,6 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
 📈 Overall Stats:
 ✅ Scenarios Completed: {len(completed)}
 📊 Average Score: {avg_score:.1f}%
-⏱️ Total Time: {total_time} minutes
 
 📊 SKILL BREAKDOWN (Best to Worst):
 {metrics_text}

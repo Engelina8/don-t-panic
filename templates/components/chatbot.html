@@ -1,6 +1,9 @@
 <div id="chatbot-widget" class="chatbot-container">
     <div class="chatbot-header">
-        <div class="chatbot-title">🤖 Don't Panic Assistant</div>
+        <div class="chatbot-title">
+            <img src="{{ url_for('static', filename='img/chatbot_fill.png') }}" alt="Assistant">
+            Don't Panic Assistant
+        </div>
         <button class="chatbot-close" onclick="closeChatbot()">✕</button>
     </div>
     
@@ -13,7 +16,6 @@
     <div class="chatbot-options" id="chatbot-options">
         <button class="chatbot-option-btn" onclick="sendAction('learn_menu')">📚 Learn Concepts</button>
         <button class="chatbot-option-btn" onclick="sendAction('progress')">📊 Check My Progress</button>
-        <button class="chatbot-option-btn" onclick="sendAction('help_menu')">💡 Get Help Now</button>
         <button class="chatbot-option-btn" onclick="sendAction('faq_menu')">❓ FAQ</button>
     </div>
 </div>
@@ -23,21 +25,33 @@
         position: fixed;
         bottom: 30px;
         right: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        width: auto;
+        height: auto;
+        border-radius: 0;
+        background: none;
         border: none;
         cursor: pointer;
-        font-size: 28px;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        font-size: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: none;
         z-index: 999;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        padding: 0;
+    }
+
+    .chatbot-widget-btn img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .chatbot-widget-btn:hover {
         transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
     }
 
     .chatbot-widget-btn:active {
@@ -61,18 +75,42 @@
         display: flex;
         flex-direction: column;
         z-index: 1000;
-        animation: slideUp 0.3s ease;
+        animation: slideUpBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform-origin: bottom right;
     }
 
-    @keyframes slideUp {
-        from {
+    @keyframes slideUpBounce {
+        0% {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(20px) scale(0.8);
         }
-        to {
+        60% {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(-5px) scale(1.02);
         }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes slideDownClose {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        40% {
+            opacity: 0;
+            transform: translateY(20px) scale(0.8);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(30px) scale(0.6);
+        }
+    }
+
+    .chatbot-container.closing {
+        animation: slideDownClose 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .chatbot-header {
@@ -84,11 +122,21 @@
         justify-content: space-between;
         align-items: center;
         flex-shrink: 0;
+        gap: 12px;
     }
 
     .chatbot-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         font-weight: 600;
         font-size: 16px;
+    }
+
+    .chatbot-title img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
     }
 
     .chatbot-close {
@@ -278,28 +326,37 @@
         }
         
         chatbotOpen = !chatbotOpen;
-        container.style.display = chatbotOpen ? 'flex' : 'none';
         
-        // Hide/show the button
-        if (btn) {
-            if (chatbotOpen) {
+        if (chatbotOpen) {
+            container.classList.remove('closing');
+            container.style.display = 'flex';
+            if (btn) {
                 btn.classList.add('hidden');
-            } else {
-                btn.classList.remove('hidden');
             }
+        } else {
+            container.classList.add('closing');
+            setTimeout(() => {
+                container.style.display = 'none';
+                if (btn) {
+                    btn.classList.remove('hidden');
+                }
+            }, 250);
         }
     }
 
     function closeChatbot() {
+        const container = document.querySelector('.chatbot-container');
         const btn = document.querySelector('.chatbot-widget-btn');
         
         chatbotOpen = false;
-        document.querySelector('.chatbot-container').style.display = 'none';
+        container.classList.add('closing');
         
-        // Show the button again
-        if (btn) {
-            btn.classList.remove('hidden');
-        }
+        setTimeout(() => {
+            container.style.display = 'none';
+            if (btn) {
+                btn.classList.remove('hidden');
+            }
+        }, 250);
     }
 
     function showTypingIndicator() {

@@ -2,6 +2,7 @@
 
 import os
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -81,18 +82,36 @@ class ScenarioManager:
             scenario_data['updated_at'] = datetime.utcnow().isoformat()
         
 
+        filename = self._slugify_title(scenario_data.get('title', 'scenario'))
+        filename = f"{filename}_{scenario_data['id']}"
+        
+
         if category:
             category_dir = self.scenarios_dir / category
             category_dir.mkdir(exist_ok=True)
-            file_path = category_dir / f"{scenario_data['id']}.json"
+            file_path = category_dir / f"{filename}.json"
         else:
-            file_path = self.scenarios_dir / f"{scenario_data['id']}.json"
+            file_path = self.scenarios_dir / f"{filename}.json"
+        
+
+        counter = 1
+        original_file_path = file_path
+        while file_path.exists():
+            name, ext = os.path.splitext(original_file_path)
+            file_path = Path(f"{name}_{counter}{ext}")
+            counter += 1
         
 
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(scenario_data, f, indent=2, ensure_ascii=False)
         
         return scenario_data
+    
+    def _slugify_title(self, title):
+        """Convert title to filename-safe slug"""
+        slug = re.sub(r'[^\w\s-]', '', title).lower()
+        slug = re.sub(r'[-\s]+', '-', slug)
+        return slug.strip('-')
     
     def update_scenario(self, scenario_id, scenario_data):
         """Update an existing scenario"""
@@ -107,9 +126,18 @@ class ScenarioManager:
         scenario_data['created_at'] = original.get('created_at', datetime.utcnow().isoformat())
         scenario_data['updated_at'] = datetime.utcnow().isoformat()
         
+        # Generate new filename based on title and id
+        new_filename = self._slugify_title(scenario_data.get('title', 'scenario'))
+        new_filename = f"{new_filename}_{scenario_id}"
+        new_file_path = scenario_file.parent / f"{new_filename}.json"
+        
         # Write updated JSON
         with open(scenario_file, 'w', encoding='utf-8') as f:
             json.dump(scenario_data, f, indent=2, ensure_ascii=False)
+        
+        # Rename file if title changed
+        if scenario_file != new_file_path and not new_file_path.exists():
+            scenario_file.rename(new_file_path)
         
         return scenario_data
     

@@ -194,7 +194,7 @@
         <p>Sharpen your incident response skills with realistic cybersecurity scenarios</p>
     </div>
 
-    {% if scenarios_by_category %}
+    {% if scenarios_by_category or uncategorized_scenarios %}
         {% for category, scenarios in scenarios_by_category.items() | sort %}
         <div class="category-section">
             <div class="category-title" onclick="toggleCategory(this)">
@@ -226,6 +226,30 @@
             </div>
         </div>
         {% endfor %}
+        
+        {% if uncategorized_scenarios %}
+        <div class="scenarios-grid">
+            {% for scenario in uncategorized_scenarios %}
+            <div class="scenario-card">
+                <h3>{{ scenario.title }}</h3>
+                <p>{{ scenario.description }}</p>
+                <p class="difficulty">Difficulty: {{ '⭐' * scenario.difficulty_level }}</p>
+                
+                {% if scenario.id in completed_ids %}
+                    <span class="badge">✅ Completed</span>
+                {% endif %}
+                
+                <div class="card-actions">
+                    <a href="{{ url_for('scenarios.detail', scenario_id=scenario.id) }}" class="btn-secondary">View Details</a>
+                    
+                    <form method="POST" action="{{ url_for('scenarios.start', scenario_id=scenario.id) }}">
+                        <button type="submit" class="btn-primary">Start Now</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     {% else %}
     <div class="no-scenarios">
         <p>No scenarios available yet. Check back soon! 🔍</p>
