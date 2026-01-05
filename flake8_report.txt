@@ -1,0 +1,402 @@
+.\analyze_databases.py:7:1: E302 expected 2 blank lines, found 1
+.\analyze_databases.py:14:5: E303 too many blank lines (2)
+.\analyze_databases.py:28:9: E303 too many blank lines (2)
+.\analyze_databases.py:36:80: E501 line too long (80 > 79 characters)
+.\analyze_databases.py:39:9: E303 too many blank lines (2)
+.\analyze_databases.py:44:9: E303 too many blank lines (2)
+.\app.py:10:1: E302 expected 2 blank lines, found 1
+.\app.py:39:5: E303 too many blank lines (2)
+.\app.py:41:80: E501 line too long (91 > 79 characters)
+.\app.py:73:80: E501 line too long (147 > 79 characters)
+.\app.py:75:80: E501 line too long (120 > 79 characters)
+.\app.py:78:80: E501 line too long (83 > 79 characters)
+.\app.py:79:80: E501 line too long (154 > 79 characters)
+.\app.py:81:80: E501 line too long (140 > 79 characters)
+.\app.py:93:1: E302 expected 2 blank lines, found 1
+.\app.py:120:1: E302 expected 2 blank lines, found 1
+.\app.py:139:1: E305 expected 2 blank lines after class or function definition, found 1
+.\app.py:145:11: F541 f-string is missing placeholders
+.\assistant\chatbot.py:2:1: F401 'assistant.knowledge_base.HINTS' imported but unused
+.\assistant\chatbot.py:2:1: F401 'assistant.knowledge_base.FEEDBACK_RULES' imported but unused
+.\assistant\chatbot.py:3:1: F401 'datetime.datetime' imported but unused
+.\assistant\chatbot.py:15:80: E501 line too long (81 > 79 characters)
+.\assistant\chatbot.py:16:80: E501 line too long (82 > 79 characters)
+.\assistant\chatbot.py:26:80: E501 line too long (108 > 79 characters)
+.\assistant\chatbot.py:90:9: F401 'scenario_manager.scenario_manager' imported but unused
+.\assistant\chatbot.py:118:9: E303 too many blank lines (2)
+.\assistant\chatbot.py:127:80: E501 line too long (102 > 79 characters)
+.\assistant\chatbot.py:142:13: E303 too many blank lines (2)
+.\assistant\chatbot.py:151:13: E303 too many blank lines (3)
+.\assistant\chatbot.py:155:80: E501 line too long (127 > 79 characters)
+.\assistant\chatbot.py:156:80: E501 line too long (131 > 79 characters)
+.\assistant\chatbot.py:157:80: E501 line too long (131 > 79 characters)
+.\assistant\chatbot.py:158:80: E501 line too long (125 > 79 characters)
+.\assistant\chatbot.py:159:80: E501 line too long (134 > 79 characters)
+.\assistant\chatbot.py:163:13: E303 too many blank lines (2)
+.\assistant\chatbot.py:163:80: E501 line too long (90 > 79 characters)
+.\assistant\chatbot.py:166:13: E303 too many blank lines (2)
+.\assistant\chatbot.py:174:80: E501 line too long (126 > 79 characters)
+.\assistant\chatbot.py:201:80: E501 line too long (98 > 79 characters)
+.\assistant\chatbot.py:202:80: E501 line too long (89 > 79 characters)
+.\assistant\chatbot.py:212:80: E501 line too long (100 > 79 characters)
+.\assistant\chatbot.py:248:80: E501 line too long (89 > 79 characters)
+.\assistant\knowledge_base.py:4:80: E501 line too long (88 > 79 characters)
+.\assistant\knowledge_base.py:5:80: E501 line too long (137 > 79 characters)
+.\assistant\knowledge_base.py:42:80: E501 line too long (122 > 79 characters)
+.\assistant\knowledge_base.py:43:80: E501 line too long (140 > 79 characters)
+.\assistant\knowledge_base.py:52:80: E501 line too long (80 > 79 characters)
+.\assistant\knowledge_base.py:81:80: E501 line too long (114 > 79 characters)
+.\assistant\knowledge_base.py:82:80: E501 line too long (114 > 79 characters)
+.\assistant\knowledge_base.py:118:80: E501 line too long (100 > 79 characters)
+.\assistant\knowledge_base.py:156:80: E501 line too long (103 > 79 characters)
+.\assistant\knowledge_base.py:190:80: E501 line too long (96 > 79 characters)
+.\assistant\knowledge_base.py:245:80: E501 line too long (173 > 79 characters)
+.\assistant\knowledge_base.py:257:80: E501 line too long (106 > 79 characters)
+.\assistant\knowledge_base.py:269:80: E501 line too long (198 > 79 characters)
+.\assistant\knowledge_base.py:273:80: E501 line too long (193 > 79 characters)
+.\assistant\knowledge_base.py:286:80: E501 line too long (211 > 79 characters)
+.\assistant\knowledge_base.py:290:80: E501 line too long (224 > 79 characters)
+.\assistant\knowledge_base.py:296:80: E501 line too long (113 > 79 characters)
+.\assistant\knowledge_base.py:297:80: E501 line too long (109 > 79 characters)
+.\assistant\knowledge_base.py:298:80: E501 line too long (112 > 79 characters)
+.\assistant\knowledge_base.py:299:80: E501 line too long (140 > 79 characters)
+.\assistant\knowledge_base.py:300:80: E501 line too long (119 > 79 characters)
+.\assistant\knowledge_base.py:303:80: E501 line too long (89 > 79 characters)
+.\assistant\knowledge_base.py:304:80: E501 line too long (111 > 79 characters)
+.\assistant\knowledge_base.py:305:80: E501 line too long (87 > 79 characters)
+.\assistant\knowledge_base.py:306:80: E501 line too long (85 > 79 characters)
+.\assistant\knowledge_base.py:309:80: E501 line too long (95 > 79 characters)
+.\assistant\knowledge_base.py:310:80: E501 line too long (95 > 79 characters)
+.\assistant\knowledge_base.py:311:80: E501 line too long (92 > 79 characters)
+.\assistant\knowledge_base.py:312:80: E501 line too long (88 > 79 characters)
+.\assistant\knowledge_base.py:315:80: E501 line too long (90 > 79 characters)
+.\assistant\knowledge_base.py:316:80: E501 line too long (83 > 79 characters)
+.\assistant\knowledge_base.py:317:80: E501 line too long (91 > 79 characters)
+.\assistant\knowledge_base.py:318:80: E501 line too long (91 > 79 characters)
+.\assistant\knowledge_base.py:334:80: E501 line too long (97 > 79 characters)
+.\assistant\knowledge_base.py:339:80: E501 line too long (92 > 79 characters)
+.\assistant\knowledge_base.py:343:80: E501 line too long (84 > 79 characters)
+.\assistant\knowledge_base.py:344:80: E501 line too long (92 > 79 characters)
+.\assistant\knowledge_base.py:348:80: E501 line too long (83 > 79 characters)
+.\assistant\knowledge_base.py:349:80: E501 line too long (87 > 79 characters)
+.\assistant\knowledge_base.py:372:80: E501 line too long (97 > 79 characters)
+.\assistant\knowledge_base.py:377:80: E501 line too long (101 > 79 characters)
+.\assistant\knowledge_base.py:382:80: E501 line too long (92 > 79 characters)
+.\assistant\knowledge_base.py:387:80: E501 line too long (96 > 79 characters)
+.\assistant\knowledge_base.py:410:80: E501 line too long (90 > 79 characters)
+.\assistant\knowledge_base.py:415:80: E501 line too long (94 > 79 characters)
+.\assistant\knowledge_base.py:420:80: E501 line too long (92 > 79 characters)
+.\assistant\routes.py:19:80: E501 line too long (86 > 79 characters)
+.\assistant\routes.py:24:80: E501 line too long (81 > 79 characters)
+.\check_db.py:5:1: E302 expected 2 blank lines, found 1
+.\check_db.py:24:80: E501 line too long (94 > 79 characters)
+.\check_db.py:31:80: E501 line too long (83 > 79 characters)
+.\check_db.py:32:80: E501 line too long (98 > 79 characters)
+.\check_db.py:40:1: E305 expected 2 blank lines after class or function definition, found 1
+.\cleanup_databases.py:2:80: E501 line too long (84 > 79 characters)
+.\cleanup_databases.py:6:1: E302 expected 2 blank lines, found 1
+.\cleanup_databases.py:41:5: E303 too many blank lines (2)
+.\cleanup_databases.py:52:1: E305 expected 2 blank lines after class or function definition, found 1
+.\config.py:7:1: E302 expected 2 blank lines, found 1
+.\config.py:9:80: E501 line too long (86 > 79 characters)
+.\config.py:11:80: E501 line too long (87 > 79 characters)
+.\config.py:33:1: E302 expected 2 blank lines, found 1
+.\config.py:38:1: E302 expected 2 blank lines, found 1
+.\config.py:44:1: E302 expected 2 blank lines, found 1
+.\create_db.py:6:1: E302 expected 2 blank lines, found 1
+.\create_db.py:44:80: E501 line too long (83 > 79 characters)
+.\create_db.py:60:80: E501 line too long (94 > 79 characters)
+.\create_db.py:104:1: E305 expected 2 blank lines after class or function definition, found 1
+.\create_test_scenario.py:10:80: E501 line too long (159 > 79 characters)
+.\create_test_scenario.py:15:80: E501 line too long (189 > 79 characters)
+.\create_test_scenario.py:19:80: E501 line too long (92 > 79 characters)
+.\create_test_scenario.py:24:80: E501 line too long (88 > 79 characters)
+.\create_test_scenario.py:59:80: E501 line too long (97 > 79 characters)
+.\create_test_scenario.py:90:80: E501 line too long (84 > 79 characters)
+.\create_test_scenario.py:94:80: E501 line too long (87 > 79 characters)
+.\create_test_scenario.py:124:80: E501 line too long (81 > 79 characters)
+.\create_test_scenario.py:125:80: E501 line too long (88 > 79 characters)
+.\create_test_scenario.py:129:80: E501 line too long (112 > 79 characters)
+.\create_test_scenario.py:138:80: E501 line too long (83 > 79 characters)
+.\create_test_scenario.py:161:5: E303 too many blank lines (2)
+.\create_test_scenario.py:164:19: F541 f-string is missing placeholders
+.\create_test_scenario.py:170:5: E303 too many blank lines (2)
+.\create_test_scenario.py:179:80: E501 line too long (88 > 79 characters)
+.\encrypt_existing_data.py:10:1: E302 expected 2 blank lines, found 1
+.\encrypt_existing_data.py:24:21: F841 local variable 'original_username' is assigned to but never used
+.\encrypt_existing_data.py:29:21: F841 local variable 'original_email' is assigned to but never used
+.\encrypt_existing_data.py:39:80: E501 line too long (83 > 79 characters)
+.\encrypt_existing_data.py:42:1: E305 expected 2 blank lines after class or function definition, found 1
+.\migrate_scenarios.py:7:1: E302 expected 2 blank lines, found 1
+.\migrate_scenarios.py:11:5: E303 too many blank lines (2)
+.\migrate_scenarios.py:27:9: E303 too many blank lines (2)
+.\migrate_scenarios.py:38:17: E303 too many blank lines (2)
+.\migrate_scenarios.py:57:17: E303 too many blank lines (2)
+.\migrate_scenarios.py:61:80: E501 line too long (90 > 79 characters)
+.\migrate_scenarios.py:69:80: E501 line too long (92 > 79 characters)
+.\models.py:18:1: E302 expected 2 blank lines, found 1
+.\models.py:25:1: E302 expected 2 blank lines, found 1
+.\models.py:53:1: E303 too many blank lines (4)
+.\models.py:59:80: E501 line too long (94 > 79 characters)
+.\models.py:60:80: E501 line too long (88 > 79 characters)
+.\models.py:87:80: E501 line too long (80 > 79 characters)
+.\models.py:92:40: E128 continuation line under-indented for visual indent
+.\models.py:93:40: E128 continuation line under-indented for visual indent
+.\models.py:94:40: E128 continuation line under-indented for visual indent
+.\models.py:130:80: E501 line too long (86 > 79 characters)
+.\models.py:147:80: E501 line too long (83 > 79 characters)
+.\models.py:169:1: E303 too many blank lines (5)
+.\models.py:178:80: E501 line too long (81 > 79 characters)
+.\models.py:179:80: E501 line too long (80 > 79 characters)
+.\models.py:183:29: E128 continuation line under-indented for visual indent
+.\models.py:184:29: E128 continuation line under-indented for visual indent
+.\models.py:185:29: E128 continuation line under-indented for visual indent
+.\models.py:188:28: E128 continuation line under-indented for visual indent
+.\models.py:189:28: E128 continuation line under-indented for visual indent
+.\models.py:218:1: E303 too many blank lines (5)
+.\models.py:301:1: E303 too many blank lines (5)
+.\models.py:307:80: E501 line too long (90 > 79 characters)
+.\models.py:310:80: E501 line too long (80 > 79 characters)
+.\models.py:327:80: E501 line too long (80 > 79 characters)
+.\models.py:337:9: E303 too many blank lines (2)
+.\models.py:378:80: E501 line too long (104 > 79 characters)
+.\models.py:391:9: E303 too many blank lines (2)
+.\models.py:394:1: E302 expected 2 blank lines, found 1
+.\rename_scenarios.py:20:80: E501 line too long (98 > 79 characters)
+.\routes\__init__.py:14:1: F401 '.auth' imported but unused
+.\routes\__init__.py:14:1: F401 '.scenarios' imported but unused
+.\routes\__init__.py:14:1: F401 '.admin' imported but unused
+.\routes\__init__.py:14:1: E402 module level import not at top of file
+.\routes\admin.py:3:80: E501 line too long (88 > 79 characters)
+.\routes\admin.py:16:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:25:9: E303 too many blank lines (2)
+.\routes\admin.py:32:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:47:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:54:5: E303 too many blank lines (2)
+.\routes\admin.py:60:80: E501 line too long (88 > 79 characters)
+.\routes\admin.py:63:9: E303 too many blank lines (2)
+.\routes\admin.py:70:80: E501 line too long (107 > 79 characters)
+.\routes\admin.py:82:13: E303 too many blank lines (2)
+.\routes\admin.py:86:13: E303 too many blank lines (2)
+.\routes\admin.py:87:80: E501 line too long (87 > 79 characters)
+.\routes\admin.py:92:80: E501 line too long (87 > 79 characters)
+.\routes\admin.py:98:13: E303 too many blank lines (2)
+.\routes\admin.py:99:80: E501 line too long (87 > 79 characters)
+.\routes\admin.py:108:80: E501 line too long (111 > 79 characters)
+.\routes\admin.py:115:80: E501 line too long (93 > 79 characters)
+.\routes\admin.py:122:13: E303 too many blank lines (2)
+.\routes\admin.py:134:80: E501 line too long (99 > 79 characters)
+.\routes\admin.py:152:80: E501 line too long (100 > 79 characters)
+.\routes\admin.py:155:80: E501 line too long (101 > 79 characters)
+.\routes\admin.py:158:80: E501 line too long (109 > 79 characters)
+.\routes\admin.py:174:80: E501 line too long (127 > 79 characters)
+.\routes\admin.py:175:80: E501 line too long (91 > 79 characters)
+.\routes\admin.py:210:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:211:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:212:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:213:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:214:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:215:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:216:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:217:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:219:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:236:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:247:5: E303 too many blank lines (2)
+.\routes\admin.py:256:5: E303 too many blank lines (2)
+.\routes\admin.py:265:5: E303 too many blank lines (2)
+.\routes\admin.py:274:5: E303 too many blank lines (2)
+.\routes\admin.py:289:9: E303 too many blank lines (2)
+.\routes\admin.py:295:80: E501 line too long (108 > 79 characters)
+.\routes\admin.py:296:21: F541 f-string is missing placeholders
+.\routes\admin.py:296:80: E501 line too long (118 > 79 characters)
+.\routes\admin.py:297:80: E501 line too long (99 > 79 characters)
+.\routes\admin.py:304:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:317:80: E501 line too long (117 > 79 characters)
+.\routes\admin.py:331:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:332:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:333:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:334:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:336:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:347:80: E501 line too long (82 > 79 characters)
+.\routes\admin.py:352:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:365:80: E501 line too long (81 > 79 characters)
+.\routes\admin.py:371:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:376:5: F401 'json' imported but unused
+.\routes\admin.py:380:5: E303 too many blank lines (2)
+.\routes\admin.py:393:5: E303 too many blank lines (2)
+.\routes\admin.py:395:80: E501 line too long (116 > 79 characters)
+.\routes\admin.py:396:80: E501 line too long (96 > 79 characters)
+.\routes\admin.py:404:9: E303 too many blank lines (2)
+.\routes\admin.py:411:80: E501 line too long (108 > 79 characters)
+.\routes\admin.py:420:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:433:80: E501 line too long (95 > 79 characters)
+.\routes\admin.py:438:80: E501 line too long (81 > 79 characters)
+.\routes\admin.py:447:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:448:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:450:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:469:9: E303 too many blank lines (2)
+.\routes\admin.py:470:80: E501 line too long (83 > 79 characters)
+.\routes\admin.py:472:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:473:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:481:13: E303 too many blank lines (2)
+.\routes\admin.py:495:13: E303 too many blank lines (2)
+.\routes\admin.py:509:13: E303 too many blank lines (2)
+.\routes\admin.py:511:80: E501 line too long (102 > 79 characters)
+.\routes\admin.py:517:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:518:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:523:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:524:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:527:5: E303 too many blank lines (2)
+.\routes\admin.py:539:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:540:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:542:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:557:80: E501 line too long (87 > 79 characters)
+.\routes\admin.py:558:80: E501 line too long (93 > 79 characters)
+.\routes\admin.py:559:80: E501 line too long (104 > 79 characters)
+.\routes\admin.py:560:80: E501 line too long (105 > 79 characters)
+.\routes\admin.py:561:80: E501 line too long (82 > 79 characters)
+.\routes\admin.py:582:80: E501 line too long (102 > 79 characters)
+.\routes\admin.py:601:80: E501 line too long (102 > 79 characters)
+.\routes\admin.py:608:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:609:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:614:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:615:34: E128 continuation line under-indented for visual indent
+.\routes\admin.py:619:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:620:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:622:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:637:80: E501 line too long (88 > 79 characters)
+.\routes\admin.py:641:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:647:80: E501 line too long (82 > 79 characters)
+.\routes\admin.py:657:80: E501 line too long (92 > 79 characters)
+.\routes\admin.py:661:80: E501 line too long (88 > 79 characters)
+.\routes\admin.py:665:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:666:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:667:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:671:1: E303 too many blank lines (3)
+.\routes\admin.py:679:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:710:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:718:5: E303 too many blank lines (2)
+.\routes\admin.py:725:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:726:26: E128 continuation line under-indented for visual indent
+.\routes\admin.py:728:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:756:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:756:80: E501 line too long (87 > 79 characters)
+.\routes\admin.py:778:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:799:1: E302 expected 2 blank lines, found 1
+.\routes\admin.py:823:80: E501 line too long (89 > 79 characters)
+.\routes\admin.py:824:80: E501 line too long (98 > 79 characters)
+.\routes\admin.py:827:80: E501 line too long (99 > 79 characters)
+.\routes\admin.py:829:80: E501 line too long (95 > 79 characters)
+.\routes\admin.py:831:80: E501 line too long (99 > 79 characters)
+.\routes\admin.py:832:80: E501 line too long (133 > 79 characters)
+.\routes\admin.py:858:80: E501 line too long (82 > 79 characters)
+.\routes\auth.py:9:1: E302 expected 2 blank lines, found 1
+.\routes\auth.py:14:5: E303 too many blank lines (2)
+.\routes\auth.py:23:9: E303 too many blank lines (2)
+.\routes\auth.py:28:9: E303 too many blank lines (2)
+.\routes\auth.py:31:9: E303 too many blank lines (2)
+.\routes\auth.py:36:13: E303 too many blank lines (2)
+.\routes\auth.py:45:1: E302 expected 2 blank lines, found 1
+.\routes\auth.py:54:1: E302 expected 2 blank lines, found 1
+.\routes\auth.py:59:5: E303 too many blank lines (2)
+.\routes\auth.py:69:9: E303 too many blank lines (2)
+.\routes\auth.py:84:9: E303 too many blank lines (2)
+.\routes\auth.py:96:9: E303 too many blank lines (2)
+.\routes\auth.py:115:1: E302 expected 2 blank lines, found 1
+.\routes\auth.py:121:1: E302 expected 2 blank lines, found 1
+.\routes\auth.py:132:9: E303 too many blank lines (2)
+.\routes\auth.py:135:9: E303 too many blank lines (2)
+.\routes\auth.py:137:80: E501 line too long (83 > 79 characters)
+.\routes\auth.py:141:9: E303 too many blank lines (2)
+.\routes\auth.py:148:80: E501 line too long (81 > 79 characters)
+.\routes\auth.py:156:9: E303 too many blank lines (2)
+.\routes\scenarios.py:11:1: E302 expected 2 blank lines, found 1
+.\routes\scenarios.py:18:5: E303 too many blank lines (2)
+.\routes\scenarios.py:23:80: E501 line too long (84 > 79 characters)
+.\routes\scenarios.py:26:5: E303 too many blank lines (2)
+.\routes\scenarios.py:41:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:42:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:43:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:45:1: E302 expected 2 blank lines, found 1
+.\routes\scenarios.py:75:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:76:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:78:1: E302 expected 2 blank lines, found 1
+.\routes\scenarios.py:91:5: E303 too many blank lines (2)
+.\routes\scenarios.py:98:80: E501 line too long (80 > 79 characters)
+.\routes\scenarios.py:99:80: E501 line too long (80 > 79 characters)
+.\routes\scenarios.py:102:5: E303 too many blank lines (2)
+.\routes\scenarios.py:120:1: E302 expected 2 blank lines, found 1
+.\routes\scenarios.py:137:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:138:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:140:1: E302 expected 2 blank lines, found 1
+.\routes\scenarios.py:147:5: E303 too many blank lines (2)
+.\routes\scenarios.py:151:5: E303 too many blank lines (2)
+.\routes\scenarios.py:159:5: E303 too many blank lines (2)
+.\routes\scenarios.py:160:80: E501 line too long (84 > 79 characters)
+.\routes\scenarios.py:167:5: E303 too many blank lines (2)
+.\routes\scenarios.py:170:5: E303 too many blank lines (2)
+.\routes\scenarios.py:180:5: E303 too many blank lines (2)
+.\routes\scenarios.py:188:5: E303 too many blank lines (2)
+.\routes\scenarios.py:208:5: E303 too many blank lines (2)
+.\routes\scenarios.py:217:5: E303 too many blank lines (2)
+.\routes\scenarios.py:219:80: E501 line too long (184 > 79 characters)
+.\routes\scenarios.py:222:5: E303 too many blank lines (2)
+.\routes\scenarios.py:222:80: E501 line too long (100 > 79 characters)
+.\routes\scenarios.py:226:5: E303 too many blank lines (2)
+.\routes\scenarios.py:226:80: E501 line too long (91 > 79 characters)
+.\routes\scenarios.py:230:80: E501 line too long (91 > 79 characters)
+.\routes\scenarios.py:233:5: E303 too many blank lines (2)
+.\routes\scenarios.py:242:80: E501 line too long (98 > 79 characters)
+.\routes\scenarios.py:245:5: E303 too many blank lines (2)
+.\routes\scenarios.py:261:1: E302 expected 2 blank lines, found 1
+.\routes\scenarios.py:279:80: E501 line too long (88 > 79 characters)
+.\routes\scenarios.py:299:80: E501 line too long (102 > 79 characters)
+.\routes\scenarios.py:312:80: E501 line too long (82 > 79 characters)
+.\routes\scenarios.py:321:80: E501 line too long (246 > 79 characters)
+.\routes\scenarios.py:349:1: E302 expected 2 blank lines, found 1
+.\routes\scenarios.py:356:5: E303 too many blank lines (2)
+.\routes\scenarios.py:365:5: E303 too many blank lines (2)
+.\routes\scenarios.py:369:80: E501 line too long (149 > 79 characters)
+.\routes\scenarios.py:370:80: E501 line too long (94 > 79 characters)
+.\routes\scenarios.py:377:5: F841 local variable 'path_points_earned' is assigned to but never used
+.\routes\scenarios.py:380:5: E303 too many blank lines (2)
+.\routes\scenarios.py:386:80: E501 line too long (82 > 79 characters)
+.\routes\scenarios.py:389:80: E501 line too long (83 > 79 characters)
+.\routes\scenarios.py:394:5: E303 too many blank lines (2)
+.\routes\scenarios.py:416:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:417:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:418:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:419:26: E128 continuation line under-indented for visual indent
+.\routes\scenarios.py:420:26: E128 continuation line under-indented for visual indent
+.\scenario_manager.py:9:1: E302 expected 2 blank lines, found 1
+.\scenario_manager.py:29:80: E501 line too long (85 > 79 characters)
+.\scenario_manager.py:59:80: E501 line too long (85 > 79 characters)
+.\scenario_manager.py:78:9: E303 too many blank lines (2)
+.\scenario_manager.py:85:9: E303 too many blank lines (2)
+.\scenario_manager.py:89:9: E303 too many blank lines (2)
+.\scenario_manager.py:97:9: E303 too many blank lines (2)
+.\scenario_manager.py:105:9: E303 too many blank lines (2)
+.\scenario_manager.py:125:80: E501 line too long (95 > 79 characters)
+.\scenario_manager.py:128:80: E501 line too long (82 > 79 characters)
+.\scenario_manager.py:164:9: E303 too many blank lines (2)
+.\scenario_manager.py:167:9: E303 too many blank lines (2)
+.\scenario_manager.py:171:9: E303 too many blank lines (2)
+.\scenario_manager.py:178:5: E303 too many blank lines (3)
+.\scenario_manager.py:197:80: E501 line too long (80 > 79 characters)
+.\scripts\add_max_points_column.py:8:11: W605 invalid escape sequence '\s'
+.\scripts\add_max_points_column.py:68:80: E501 line too long (81 > 79 characters)
+.\test_scenario_system.py:4:1: E303 too many blank lines (3)
+.\test_scenario_system.py:17:80: E501 line too long (101 > 79 characters)
+.\test_scenario_system.py:59:80: E501 line too long (86 > 79 characters)
+.\test_scenario_system.py:60:80: E501 line too long (83 > 79 characters)
+53    E128 continuation line under-indented for visual indent
+49    E302 expected 2 blank lines, found 1
+89    E303 too many blank lines (2)
+5     E305 expected 2 blank lines after class or function definition, found 1
+1     E402 module level import not at top of file
+179   E501 line too long (80 > 79 characters)
+8     F401 'assistant.knowledge_base.HINTS' imported but unused
+3     F541 f-string is missing placeholders
+3     F841 local variable 'original_username' is assigned to but never used
+1     W605 invalid escape sequence '\s'
+391

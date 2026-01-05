@@ -12,10 +12,10 @@ def send_message():
         data = request.get_json()
         if not data:
             return jsonify({"type": "error", "text": "No data received"}), 400
-        
+
         action = data.get('action', 'welcome')
         param = data.get('param')
-        
+
         response = chatbot.handle_action(action, user_id=current_user.id, param=param)
         return jsonify(response), 200
     except Exception as e:

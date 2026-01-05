@@ -33,7 +33,7 @@ class ChatbotAssistant:
     def get_concept(self, concept_key):
         if concept_key not in CONCEPTS:
             return {"type": "error", "text": "Concept not found"}
-        
+
         concept = CONCEPTS[concept_key]
         text = f"""{concept['title']}
 
@@ -42,42 +42,42 @@ class ChatbotAssistant:
 📖 What is it?
 {concept.get('what_is_it', '')}
 """
-        
+
         if 'how_it_spreads' in concept:
             text += "\n🔄 How it spreads:\n"
             for item in concept['how_it_spreads'][:3]:
                 text += f"• {item}\n"
-        
+
         if 'how_it_works' in concept:
             text += "\n🔄 How it works:\n"
             for item in concept['how_it_works'][:3]:
                 text += f"• {item}\n"
-        
+
         if 'signs_of_infection' in concept:
             text += "\n⚠️ Signs of infection:\n"
             for item in concept['signs_of_infection'][:3]:
                 text += f"• {item}\n"
-        
+
         if 'red_flags' in concept:
             text += "\n🚩 Red flags:\n"
             for item in concept['red_flags'][:3]:
                 text += f"• {item}\n"
-        
+
         if 'how_to_protect' in concept:
             text += "\n🛡️ How to protect:\n"
             for item in concept['how_to_protect'][:3]:
                 text += f"• {item}\n"
-        
+
         if 'real_world_examples' in concept:
             text += "\n📰 Real-world examples:\n"
             for item in concept['real_world_examples'][:1]:
                 text += f"• {item}\n"
-        
+
         if 'related_scenarios' in concept:
             text += "\n🎮 Practice in:\n"
             for scenario in concept['related_scenarios'][:1]:
                 text += f"→ {scenario}\n"
-        
+
         return {
             "type": "info",
             "text": text,
@@ -88,18 +88,18 @@ class ChatbotAssistant:
 
     def get_progress(self, user_id):
         from scenario_manager import scenario_manager
-        
+
         user = User.query.get(user_id)
         if not user:
             return {"type": "error", "text": "User not found"}
-        
+
         sessions = TrainingSession.query.filter_by(user_id=user_id).all()
         completed = [s for s in sessions if s.status == 'completed']
-        
+
         if not completed:
             text = """📊 YOUR PERFORMANCE
 
-No completed scenarios yet. 
+No completed scenarios yet.
 Start by choosing a scenario to try!
 
 [Go to Scenarios] [← Back]"""
@@ -110,10 +110,10 @@ Start by choosing a scenario to try!
                     {"id": "back", "label": "← Back", "action": "welcome"}
                 ]
             }
-        
+
         scores = [s.score for s in completed if s.score]
         avg_score = sum(scores) / len(scores) if scores else 0
-        
+
 
         if len(completed) < 5:
             scenarios_needed = 5 - len(completed)
@@ -137,7 +137,7 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
                 'recovery': 0,
                 'communication': 0
             }
-            
+
 
             for session in completed:
                 metrics['detection'] += session.detection_score or 0
@@ -145,12 +145,12 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
                 metrics['eradication'] += session.eradication_score or 0
                 metrics['recovery'] += session.recovery_score or 0
                 metrics['communication'] += session.communication_score or 0
-            
+
 
 
             total_scenarios = len(completed)
             max_possible_per_metric = 100 * total_scenarios
-            
+
             metrics_pct = {
                 'detection': int((metrics['detection'] / max_possible_per_metric * 100)) if max_possible_per_metric > 0 else 0,
                 'containment': int((metrics['containment'] / max_possible_per_metric * 100)) if max_possible_per_metric > 0 else 0,
@@ -158,10 +158,10 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
                 'recovery': int((metrics['recovery'] / max_possible_per_metric * 100)) if max_possible_per_metric > 0 else 0,
                 'communication': int((metrics['communication'] / max_possible_per_metric * 100)) if max_possible_per_metric > 0 else 0
             }
-            
+
 
             sorted_metrics = sorted(metrics_pct.items(), key=lambda x: x[1], reverse=True)
-            
+
 
             emoji_map = {
                 'detection': '🔍',
@@ -170,9 +170,9 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
                 'recovery': '♻️',
                 'communication': '📢'
             }
-            
+
             metrics_text = "\n".join([f"{emoji_map[metric]} {metric.capitalize()}: {pct}%" for metric, pct in sorted_metrics])
-            
+
             text = f"""📊 YOUR PERFORMANCE
 
 📈 Overall Stats:
@@ -184,7 +184,7 @@ Keep practicing! Complete 5 scenarios for personalized feedback."""
 
 🎯 RECOMMENDATION:
 Focus on improving your lower-performing skills!"""
-        
+
         return {
             "type": "info",
             "text": text,
@@ -219,12 +219,12 @@ Focus on improving your lower-performing skills!"""
     def get_faq_answer(self, faq_key):
         if faq_key not in FAQ:
             return {"type": "error", "text": "FAQ not found"}
-        
+
         faq = FAQ[faq_key]
         text = f"""{faq['question']}
 
 {faq['answer']}"""
-        
+
         return {
             "type": "info",
             "text": text,
@@ -237,10 +237,10 @@ Focus on improving your lower-performing skills!"""
         session = TrainingSession.query.get(session_id)
         if not session:
             return {"type": "error", "text": "Session not found"}
-        
+
         score = session.score or 0
         time_taken = (session.time_taken or 0) // 60
-        
+
         text = f"""✅ SCENARIO COMPLETE!
 
 Score: {score}/100
@@ -248,19 +248,19 @@ Time: {time_taken} minutes
 Status: {'Excellent!' if score >= 85 else 'Good!' if score >= 70 else 'Keep practicing!'}
 
 """
-        
+
         if score >= 85:
             text += "💪 Great job! You're performing well.\n\n"
         elif score >= 70:
             text += "📈 Good effort! Room for improvement.\n\n"
         else:
             text += "🎯 Keep practicing - you'll improve!\n\n"
-        
+
         text += """Review the detailed feedback to see:
 ✓ What you did well
 ✗ What could be better
 💡 Tips for next time"""
-        
+
         return {
             "type": "info",
             "text": text,

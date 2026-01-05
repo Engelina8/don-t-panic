@@ -247,7 +247,7 @@ FAQ = {
     "scoring": {
         "question": "How is my score calculated?",
         "answer": """Each scenario has a maximum score (usually 100 points).
-        
+
 Points are awarded for:
 • Correct decisions (40%)
 • Speed of response (30%)

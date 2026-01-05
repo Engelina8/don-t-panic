@@ -17,6 +17,6 @@ with app.app_context():
         )
         instructor.set_password('instructor123')
         db.session.add(instructor)
-    
+
     db.session.commit()
     print("✅ User 'instructor' with password 'instructor123' is ready to use!")

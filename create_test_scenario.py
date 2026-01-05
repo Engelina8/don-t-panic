@@ -1,4 +1,3 @@
-import json
 from app import create_app
 from scenario_manager import scenario_manager
 
@@ -157,7 +156,7 @@ with app.app_context():
             }
         ]
     }
-    
+
 
     existing_scenarios = scenario_manager.get_all_scenarios()
     for scenario_data in existing_scenarios:
@@ -166,10 +165,10 @@ with app.app_context():
             scenario_id = scenario_data.get('id')
             print(f"Scenario ID: {scenario_id}")
             exit(0)
-    
+
 
     scenario_manager.create_scenario(scenario_data)
-    
+
     print("Test scenario created successfully!")
     print("Title: {0}".format(scenario_data['title']))
     print("Max Points: {0}".format(scenario_data['max_points']))

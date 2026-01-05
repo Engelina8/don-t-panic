@@ -128,6 +128,94 @@
     {% if current_user.is_authenticated %}
     <button class="chatbot-widget-btn" onclick="toggleChatbot()" title="Assistant"><img src="{{ url_for('static', filename='img/chatbot_fill.png') }}" alt="Assistant"></button>
     {% include 'components/chatbot.html' %}
+    
+    <!-- Inactivity Warning Modal -->
+    <div id="inactivityModal" class="modal" style="display:none;">
+        <div class="modal-dialog" style="max-width: 400px; margin: 100px auto;">
+            <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 30px; text-align: center;">
+                <h5 style="color: var(--text-primary); margin-bottom: 20px; font-size: 1.3rem;">⏱️ Are you still there?</h5>
+                <p style="color: var(--text-secondary); margin-bottom: 30px;">You've been inactive for 5 minutes. Your session will expire in:</p>
+                <div id="countdown" style="font-size: 3rem; font-weight: bold; color: #ff1493; margin-bottom: 30px;">5:00</div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="stayLoggedInBtn" class="btn btn-primary" onclick="dismissInactivityWarning()" style="padding: 10px 30px;">Stay Logged In</button>
+                    <button id="logoutBtn" class="btn btn-secondary" onclick="window.location.href='{{ url_for('auth.logout') }}'" style="padding: 10px 30px;">Logout Now</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" onclick="dismissInactivityWarning()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;"></div>
+    </div>
+
+    <script>
+        let inactivityTimer;
+        let warningTimer;
+        let countdownTimer;
+        const INACTIVITY_WARNING_TIME = 5 * 60 * 1000; // 5 minutes
+        const LOGOUT_TIME = 10 * 60 * 1000; // 10 minutes total
+        const COUNTDOWN_TIME = 5 * 60; // 5 minutes in seconds
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            clearTimeout(warningTimer);
+            clearTimeout(countdownTimer);
+            
+            const modal = document.getElementById('inactivityModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+
+            inactivityTimer = setTimeout(() => {
+                showInactivityWarning();
+            }, INACTIVITY_WARNING_TIME);
+        }
+
+        function showInactivityWarning() {
+            const modal = document.getElementById('inactivityModal');
+            if (modal) {
+                modal.style.display = 'block';
+                startCountdown();
+            }
+
+            warningTimer = setTimeout(() => {
+                window.location.href = '{{ url_for('auth.logout') }}';
+            }, 5 * 60 * 1000); // 5 minutes for countdown
+        }
+
+        function dismissInactivityWarning() {
+            const modal = document.getElementById('inactivityModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            clearTimeout(warningTimer);
+            clearTimeout(countdownTimer);
+            resetInactivityTimer();
+        }
+
+        function startCountdown() {
+            let timeLeft = COUNTDOWN_TIME;
+            const countdownElement = document.getElementById('countdown');
+
+            countdownTimer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                timeLeft--;
+
+                if (timeLeft < 0) {
+                    clearInterval(countdownTimer);
+                }
+            }, 1000);
+        }
+
+        // Track user activity
+        document.addEventListener('mousemove', resetInactivityTimer);
+        document.addEventListener('keypress', resetInactivityTimer);
+        document.addEventListener('click', resetInactivityTimer);
+        document.addEventListener('scroll', resetInactivityTimer);
+        document.addEventListener('touchstart', resetInactivityTimer);
+
+        // Initialize timer on page load
+        window.addEventListener('load', resetInactivityTimer);
+    </script>
     {% endif %}
     
     {% block extra_js %}{% endblock %}

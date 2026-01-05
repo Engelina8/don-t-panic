@@ -9,25 +9,27 @@ import os
 if __name__ == '__main__':
 
     app = create_app('development')
-    
+
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    host = os.environ.get('FLASK_HOST', '127.0.0.1')
+    port = int(os.environ.get('FLASK_PORT', 5000))
 
     print("\n" + "="*60)
     print("DON'T PANIC - Incident Response Training")
     print("="*60)
-    print(f"Local: http://localhost:5000")
-    print(f"Network: http://0.0.0.0:5000")
+    print(f"Local: http://localhost:{port}")
+    print(f"Host: {host}")
     print(f"Environment: {os.environ.get('FLASK_ENV', 'development')}")
-    print(f"Debug: {app.config['DEBUG']}")
+    print(f"Debug: {debug_mode}")
     print("="*60)
     print("Default Login:")
     print("   Username: instructor")
     print("   Password: instructor123")
     print("="*60 + "\n")
-    
 
     app.run(
-        host='0.0.0.0',
-        port=5000,
-        debug=True,
+        host=host,
+        port=port,
+        debug=debug_mode,
         use_reloader=True
     )

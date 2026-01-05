@@ -6,15 +6,13 @@ import json
 def create_sample_data():
     """Create some sample data for testing"""
     app = create_app('development')
-    
+
     with app.app_context():
-        # Clear existing data (be careful with this!)
         db.drop_all()
         db.create_all()
-        
+
         print("🗄️  Creating database tables...")
-        
-        # Create instructor
+
         instructor = User(
             username='instructor1',
             email='instructor@dontpanic.com',
@@ -22,28 +20,26 @@ def create_sample_data():
         )
         instructor.set_password('password123')
         db.session.add(instructor)
-        
-        # Create trainees
+
         trainee1 = User(
             username='tom',
             email='tom@student.com',
             role='trainee'
         )
         trainee1.set_password('password123')
-        
+
         trainee2 = User(
             username='joshua',
             email='joshua@student.com',
             role='trainee'
         )
         trainee2.set_password('password123')
-        
+
         db.session.add_all([trainee1, trainee2])
         db.session.commit()
-        
+
         print("✅ Users created!")
-        
-        # Create sample scenario
+
         scenario_content = {
             "intro": "Your company's systems have been encrypted by ransomware...",
             "stages": [
@@ -58,7 +54,7 @@ def create_sample_data():
                 }
             ]
         }
-        
+
         scenario = Scenario(
             title='Ransomware Attack Response',
             description='Handle a critical ransomware incident affecting your infrastructure',
@@ -70,10 +66,9 @@ def create_sample_data():
         )
         db.session.add(scenario)
         db.session.commit()
-        
+
         print("✅ Sample scenario created!")
-        
-        # Create a sample completed session
+
         session = TrainingSession(
             user_id=trainee1.id,
             scenario_id=scenario.id,
@@ -87,10 +82,10 @@ def create_sample_data():
             communication_score=80
         )
         session.complete_session(85, 'success')
-        
+
         db.session.add(session)
         db.session.commit()
-        
+
         print("✅ Sample training session created!")
         print("\n" + "="*50)
         print("🎉 Database created successfully!")
