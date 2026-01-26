@@ -56,11 +56,13 @@ def dashboard():
         total_users = User.query.filter_by(role='trainee').count()
         all_scenarios = scenario_manager.get_all_scenarios()
         total_scenarios = len(all_scenarios)
-        total_sessions = TrainingSession.query.count()
-        completed_sessions = TrainingSession.query.filter_by(status='completed').count()
+        total_sessions = TrainingSession.query.join(User).filter(User.role == 'trainee').count()
+        completed_sessions = TrainingSession.query.join(User).filter(User.role == 'trainee', TrainingSession.status == 'completed').count()
 
 
-        all_recent = TrainingSession.query.order_by(
+        all_recent = TrainingSession.query.join(User).filter(
+            User.role == 'trainee'
+        ).order_by(
             TrainingSession.started_at.desc()
         ).all()
         user_sessions_map = {}
@@ -231,7 +233,9 @@ def users():
             ).order_by(User.created_at.desc()).all()
         else:
             all_users = []
-    return render_template('admin/users.html', users=all_users)
+    
+    all_groups = Group.query.order_by(Group.name).all()
+    return render_template('admin/users.html', users=all_users, groups=all_groups)
 
 @admin_bp.route('/users/add', methods=['POST'])
 @login_required
@@ -624,19 +628,28 @@ def edit_scenario(scenario_id):
 @instructor_required
 def delete_scenario(scenario_id):
     """Delete a scenario"""
+    print(f"Delete request for scenario: {scenario_id}")
+    
     scenario_data = scenario_manager.get_scenario(scenario_id)
-
+    
     if not scenario_data:
+        print(f"Scenario not found: {scenario_id}")
         return jsonify({'success': False, 'error': 'Scenario not found'}), 404
 
     title = scenario_data.get('title', 'Unknown')
 
     try:
+        print(f"Attempting to delete scenario file for ID: {scenario_id}")
         scenario_manager.delete_scenario(scenario_id)
+        print(f"Successfully deleted scenario: {scenario_id}")
         flash(f'Scenario "{title}" has been deleted', 'success')
         return jsonify({'success': True, 'redirect': url_for('admin.manage_scenarios')})
+    except FileNotFoundError as e:
+        print(f"File not found error: {e}")
+        return jsonify({'success': False, 'error': f'Scenario file not found: {str(e)}'}), 404
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"Error deleting scenario: {e}")
+        return jsonify({'success': False, 'error': f'Error deleting scenario: {str(e)}'}), 500
 
 @admin_bp.route('/reports')
 @login_required
@@ -714,11 +727,12 @@ def view_group(id):
     """View group details and manage members"""
     group = Group.query.get_or_404(id)
 
-
-    from sqlalchemy import or_
+    from sqlalchemy import and_, or_
     available_users = User.query.filter(
-        or_(User.group_id is None, User.group_id != id),
-        User.role.in_(['trainee', 'instructor'])
+        and_(
+            or_(User.group_id.is_(None), User.group_id != id),
+            User.role.in_(['trainee', 'instructor'])
+        )
     ).order_by(User._username).all()
 
     return render_template('admin/group_detail.html',
@@ -857,3 +871,20 @@ def export_user_statistics():
         as_attachment=True,
         download_name=f'user_statistics_{datetime.now().strftime("%Y-%m-%d")}.csv'
     )
+
+@admin_bp.route('/users/<int:user_id>/assign-to-group/<int:group_id>', methods=['POST'])
+@login_required
+@instructor_required
+def assign_user_to_group(user_id, group_id):
+    """Assign a user to a group"""
+    user = User.query.get_or_404(user_id)
+    group = Group.query.get_or_404(group_id)
+    
+    if current_user.role == 'instructor' and not current_user.is_admin():
+        if group.created_by != current_user.id:
+            return jsonify({'success': False, 'error': 'You can only assign users to your own groups'}), 403
+    
+    user.group_id = group.id
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': f'User assigned to {group.name}'})

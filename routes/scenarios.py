@@ -1,4 +1,3 @@
-"""Scenario routes - List, Start, Play scenarios"""
 
 from flask import render_template, redirect, url_for, flash, jsonify, request
 from flask_login import login_required, current_user

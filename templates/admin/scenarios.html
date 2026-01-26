@@ -383,7 +383,7 @@
 
                     <div class="scenario-actions">
                         <a href="{{ url_for('admin.edit_scenario', scenario_id=scenario.id) }}" class="btn-icon btn-edit">✏️ Edit</a>
-                        <button onclick="deleteScenario({{ scenario.id }}, '{{ scenario.title|replace("'", "\\'") }}')" class="btn-icon btn-danger">🗑️ Delete</button>
+                        <button onclick="deleteScenario('{{ scenario.id }}', '{{ scenario.title|replace("'", "\\'") }}')" class="btn-icon btn-danger">🗑️ Delete</button>
                     </div>
                 </div>
             {% endfor %}
@@ -541,43 +541,53 @@
 
     // Delete handler
     function deleteScenario(scenarioId, title) {
-            if (confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
-                fetch(`/admin/scenarios/${scenarioId}/delete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(async response => {
-                    // Try to parse JSON if possible, otherwise fallback to text
-                    let payload = null;
-                    try {
-                        payload = await response.json();
-                    } catch (e) {
-                        const txt = await response.text();
-                        throw new Error(txt || `HTTP ${response.status}`);
-                    }
+        if (confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
+            console.log('Deleting scenario:', scenarioId, title);
+            const url = `/admin/scenarios/${encodeURIComponent(scenarioId)}/delete`;
+            console.log('Request URL:', url);
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+            .then(async response => {
+                console.log('Response status:', response.status);
+                let payload = null;
+                try {
+                    payload = await response.json();
+                } catch (e) {
+                    const txt = await response.text();
+                    console.error('Error parsing response:', e, txt);
+                    throw new Error(txt || `HTTP ${response.status}`);
+                }
 
-                    if (!response.ok) {
-                        throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
-                    }
+                if (!response.ok) {
+                    console.error('Response not OK:', payload);
+                    throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
+                }
 
-                    return payload;
-                })
-                .then(data => {
-                    if (data && data.success) {
-                        window.location.href = data.redirect || '/admin/scenarios/manage';
-                    } else {
-                        alert('❌ Error deleting scenario: ' + (data && data.error ? data.error : 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error deleting scenario:', error);
-                    alert('❌ Error deleting scenario: ' + (error.message || error));
-                });
-            }
+                return payload;
+            })
+            .then(data => {
+                console.log('Delete response:', data);
+                if (data && data.success) {
+                    alert('✅ Scenario deleted successfully!');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    alert('❌ Error deleting scenario: ' + (data && data.error ? data.error : 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting scenario:', error);
+                alert('❌ Error deleting scenario: ' + (error.message || error));
+            });
+        }
     }
 </script>
 {% endblock %}

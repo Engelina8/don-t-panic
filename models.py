@@ -26,10 +26,18 @@ def decrypt_field(encrypted_value):
     """Decrypt a field value - returns plain text if not encrypted"""
     if not encrypted_value:
         return encrypted_value
+    
+    # If it doesn't look like an encrypted Fernet token, return as-is
+    if not encrypted_value.startswith('gAAAAA'):
+        return encrypted_value
+    
     try:
         cipher = get_encryption_cipher()
         return cipher.decrypt(encrypted_value.encode()).decode()
-    except Exception:
+    except Exception as e:
+        # Log the error for debugging
+        print(f"[WARNING] Decryption failed: {e}")
+        print(f"[WARNING] Returning encrypted value as fallback")
         return encrypted_value
 
 
@@ -305,7 +313,7 @@ class TrainingSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    scenario_id = db.Column(db.Integer, nullable=False, index=True)
+    scenario_id = db.Column(db.String(255), nullable=False, index=True)
 
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)

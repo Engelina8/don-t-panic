@@ -254,7 +254,9 @@
     </div>
 
     
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 30px; max-width: 500px; width: 90%;">
+    <!-- Add User Modal -->
+    <div id="addUserModal" style="display: none; background: rgba(0,0,0,0.7); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; overflow-y: auto;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 30px; max-width: 500px; width: 90%; margin: 20px auto;">
             <h2 style="color: var(--primary-color); margin-bottom: 20px;">Add New User</h2>
             <form method="POST" action="{{ url_for('admin.add_user') }}" style="display: flex; flex-direction: column; gap: 16px;">
                 <div>
@@ -330,8 +332,10 @@
                         <div style="text-align: center;">
                             {% if user.group %}
                             <span style="color: var(--primary-color); font-size: 0.9rem;">{{ user.group.name }}</span>
+                            <button onclick="openAssignGroupModal({{ user.id }}, '{{ user.username }}')" style="margin-left: 10px; padding: 4px 8px; background: var(--primary-color); color: var(--bg-primary); border: none; border-radius: var(--border-radius-sm); cursor: pointer; font-size: 0.8rem;">✎ Change</button>
                             {% else %}
                             <span style="color: var(--text-secondary); font-size: 0.85rem; font-style: italic;">No group</span>
+                            <button onclick="openAssignGroupModal({{ user.id }}, '{{ user.username }}')" style="margin-left: 10px; padding: 4px 8px; background: var(--primary-color); color: var(--bg-primary); border: none; border-radius: var(--border-radius-sm); cursor: pointer; font-size: 0.8rem;">✚ Assign</button>
                             {% endif %}
                         </div>
                         <div style="text-align: center;">
@@ -491,5 +495,85 @@
             }
         });
     }
+
+    // Group Assignment Modal
+    function openAssignGroupModal(userId, username) {
+        const modal = document.getElementById('assignGroupModal');
+        document.getElementById('assignUserId').value = userId;
+        document.getElementById('assignUsername').textContent = username;
+        modal.style.display = 'flex';
+    }
+
+    function closeAssignGroupModal() {
+        const modal = document.getElementById('assignGroupModal');
+        modal.style.display = 'none';
+    }
+
+    function assignUserToGroup() {
+        const userId = document.getElementById('assignUserId').value;
+        const groupId = document.getElementById('groupSelect').value;
+        
+        if (!groupId) {
+            alert('Please select a group');
+            return;
+        }
+
+        fetch(`/admin/users/${userId}/assign-to-group/${groupId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ User assigned to group successfully!');
+                closeAssignGroupModal();
+                window.location.reload();
+            } else {
+                alert('❌ Error: ' + (data.error || 'Failed to assign user'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Error assigning user to group');
+        });
+    }
+
+    const assignGroupModal = document.getElementById('assignGroupModal');
+    if (assignGroupModal) {
+        assignGroupModal.addEventListener('click', function(event) {
+            if (event.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    }
 </script>
+
+<!-- Group Assignment Modal -->
+<div id="assignGroupModal" style="display: none; background: rgba(0,0,0,0.7); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 30px; max-width: 400px; width: 90%;">
+        <h2 style="color: var(--primary-color); margin-bottom: 10px;">Assign User to Group</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">User: <strong id="assignUsername"></strong></p>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="color: var(--text-secondary); display: block; margin-bottom: 8px;">Select Group</label>
+            <select id="groupSelect" style="width: 100%; padding: 12px; background: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);">
+                <option value="">-- Choose a group --</option>
+                {% for group in groups %}
+                <option value="{{ group.id }}">{{ group.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" id="assignUserId">
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="button" onclick="closeAssignGroupModal()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-secondary); cursor: pointer;">Cancel</button>
+            <button type="button" onclick="assignUserToGroup()" style="padding: 10px 20px; background: var(--primary-color); color: var(--bg-primary); border: none; border-radius: var(--border-radius-sm); cursor: pointer; font-weight: 600;">Assign</button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

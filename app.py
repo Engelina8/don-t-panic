@@ -91,7 +91,6 @@ def create_app(config_name=None):
     return app
 
 def register_blueprints(app):
-    """Register all blueprints"""
 
     try:
         from routes.auth import auth_bp
